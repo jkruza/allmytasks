@@ -60,9 +60,9 @@ depends on nobody else being able to sign in as you.
    linux-x64 and linux-arm64, then waits.
 4. Approve the `release` environment deployment in the Actions run.
 5. Windows and macOS binaries are **not** built automatically. When you want them, run
-   Actions → "Desktop binaries (on demand)" → Run workflow, enter the tag (for example
-   `v0.1.0`) and choose windows, macos or both. Approve the `release` deployment again;
-   the files are uploaded to the existing draft release.
+   Actions → "Desktop binaries (on demand)" → Run workflow, choose the `v*` tag under
+   "Use workflow from" (not a branch), and pick windows, macos or both. Approve the
+   `release` deployment again; the files are uploaded to the existing draft release.
 6. Review the draft release, then publish it.
 
 Binaries are not code-signed yet, so Windows SmartScreen and macOS Gatekeeper will warn.
