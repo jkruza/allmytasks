@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# Read-only token. No secrets are used by this workflow.
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    # Job names are required status checks in .github/rulesets/main-protection.json; keep them in sync.
+    name: build (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+    env:
+      DOTNET_NOLOGO: true
+      DOTNET_CLI_TELEMETRY_OPTOUT: true
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          global-json-file: global.json
+
+      - name: Restore
+        run: dotnet restore AllMyTasks.slnx
+
+      - name: Check formatting
+        if: matrix.os == 'ubuntu-latest'
+        run: dotnet format AllMyTasks.slnx --verify-no-changes --no-restore
+
+      - name: Build
+        run: dotnet build AllMyTasks.slnx -c Release --no-restore
+
+      - name: Test
+        run: dotnet test --solution AllMyTasks.slnx -c Release --no-build

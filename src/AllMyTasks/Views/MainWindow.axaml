@@ -1,0 +1,28 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:AllMyTasks.ViewModels"
+        xmlns:tasks="using:AllMyTasks.Core.Tasks"
+        x:Class="AllMyTasks.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="All My Tasks"
+        Width="720" Height="480">
+  <DockPanel Margin="16">
+    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="12" Margin="0,0,0,12">
+      <TextBlock Text="All My Tasks" FontSize="22" FontWeight="SemiBold" VerticalAlignment="Center" />
+      <Button Content="Refresh" Command="{Binding LoadCommand}" />
+      <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsLoading}" Width="80" />
+    </StackPanel>
+    <ListBox ItemsSource="{Binding Tasks}">
+      <ListBox.ItemTemplate>
+        <DataTemplate x:DataType="tasks:TaskItem">
+          <DockPanel>
+            <TextBlock DockPanel.Dock="Right" Opacity="0.7"
+                       Text="{Binding Due, StringFormat='{}{0:d}'}" />
+            <CheckBox IsChecked="{Binding IsCompleted, Mode=OneWay}" IsEnabled="False"
+                      Content="{Binding Title}" />
+          </DockPanel>
+        </DataTemplate>
+      </ListBox.ItemTemplate>
+    </ListBox>
+  </DockPanel>
+</Window>

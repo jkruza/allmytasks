@@ -1,0 +1,18 @@
+# Every change needs review from the maintainer. The explicit entries below are
+# here so they stay owned even if the catch-all is ever narrowed.
+*                    @jkruza
+
+# CI, release, rulesets and repo config
+/.github/            @jkruza
+/scripts/            @jkruza
+
+# Claude Code configuration runs on maintainers' machines: review with care.
+/.claude/            @jkruza
+CLAUDE.md            @jkruza
+
+# Build and dependency configuration
+*.csproj             @jkruza
+*.slnx               @jkruza
+Directory.*.props    @jkruza
+global.json          @jkruza
+NuGet.config         @jkruza

@@ -1,0 +1,102 @@
+name: Release
+
+# Runs when an admin pushes a v* tag (only admins can create them, see
+# .github/rulesets/protect-release-tags.json). Builds self-contained binaries and
+# publishes a draft release after the `release` environment is approved.
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: publish (${{ matrix.rid }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - { os: windows-latest, rid: win-x64 }
+          - { os: windows-latest, rid: win-arm64 }
+          - { os: ubuntu-latest, rid: linux-x64 }
+          - { os: ubuntu-latest, rid: linux-arm64 }
+          - { os: macos-latest, rid: osx-x64 }
+          - { os: macos-latest, rid: osx-arm64 }
+    env:
+      DOTNET_NOLOGO: true
+      DOTNET_CLI_TELEMETRY_OPTOUT: true
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          global-json-file: global.json
+
+      - name: Test
+        run: dotnet test --solution AllMyTasks.slnx -c Release
+
+      - name: Publish
+        shell: bash
+        env:
+          TAG: ${{ github.ref_name }}
+          RID: ${{ matrix.rid }}
+        run: |
+          version="${TAG#v}"
+          # Single-file publish adds an implicit Microsoft.NET.ILLink.Tasks reference whose
+          # version follows the runner's SDK, so it can't be in packages.lock.json. App
+          # packages still resolve to the versions Test just restored in locked mode.
+          dotnet publish src/AllMyTasks/AllMyTasks.csproj -c Release -r "$RID" \
+            --self-contained true -p:PublishSingleFile=true -p:RestoreLockedMode=false \
+            -p:IncludeNativeLibrariesForSelfExtract=true \
+            -p:Version="$version" -o "out/$RID"
+
+      - name: Package
+        shell: bash
+        env:
+          TAG: ${{ github.ref_name }}
+          RID: ${{ matrix.rid }}
+        run: |
+          mkdir -p dist
+          name="AllMyTasks-${TAG}-${RID}"
+          if [[ "$RID" == win-* ]]; then
+            (cd "out/$RID" && 7z a -tzip "../../dist/${name}.zip" . > /dev/null)
+          else
+            tar -C "out/$RID" -czf "dist/${name}.tar.gz" .
+          fi
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ matrix.rid }}
+          path: dist/*
+          if-no-files-found: error
+
+  release:
+    name: draft release
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Required reviewer (the maintainer) must approve before this job gets a write token.
+    environment: release
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Checksums
+        run: cd dist && sha256sum * > SHA256SUMS.txt
+
+      - name: Create draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          gh release create "$TAG" dist/* --repo "$GITHUB_REPOSITORY" \
+            --draft --verify-tag --title "$TAG" --generate-notes
