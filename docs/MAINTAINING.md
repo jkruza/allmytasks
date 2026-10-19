@@ -57,9 +57,13 @@ depends on nobody else being able to sign in as you.
 1. Make sure `main` is green.
 2. Tag and push: `git tag -s v0.1.0 -m "v0.1.0" && git push origin v0.1.0`
 3. The Release workflow tests, publishes self-contained single-file builds for
-   win-x64, win-arm64, linux-x64, linux-arm64, osx-x64 and osx-arm64, then waits.
+   linux-x64 and linux-arm64, then waits.
 4. Approve the `release` environment deployment in the Actions run.
-5. Review the draft release it creates, then publish it.
+5. Windows and macOS binaries are **not** built automatically. When you want them, run
+   Actions → "Desktop binaries (on demand)" → Run workflow, enter the tag (for example
+   `v0.1.0`) and choose windows, macos or both. Approve the `release` deployment again;
+   the files are uploaded to the existing draft release.
+6. Review the draft release, then publish it.
 
 Binaries are not code-signed yet, so Windows SmartScreen and macOS Gatekeeper will warn.
 macOS builds are plain executables, not `.app` bundles.

@@ -1,0 +1,15 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "All My Tasks",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      "program": "${workspaceFolder}/src/AllMyTasks/bin/Debug/net10.0/AllMyTasks.dll",
+      "cwd": "${workspaceFolder}/src/AllMyTasks",
+      "console": "internalConsole",
+      "stopAtEntry": false
+    }
+  ]
+}

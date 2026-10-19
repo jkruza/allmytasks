@@ -3,6 +3,8 @@ name: Release
 # Runs when an admin pushes a v* tag (only admins can create them, see
 # .github/rulesets/protect-release-tags.json). Builds self-contained binaries and
 # publishes a draft release after the `release` environment is approved.
+# Only the Linux builds run automatically; Windows and macOS binaries are built on
+# demand by .github/workflows/desktop-binaries.yml and added to the draft release.
 on:
   push:
     tags: ['v*']
@@ -19,12 +21,8 @@ jobs:
       fail-fast: true
       matrix:
         include:
-          - { os: windows-latest, rid: win-x64 }
-          - { os: windows-latest, rid: win-arm64 }
           - { os: ubuntu-latest, rid: linux-x64 }
           - { os: ubuntu-latest, rid: linux-arm64 }
-          - { os: macos-latest, rid: osx-x64 }
-          - { os: macos-latest, rid: osx-arm64 }
     env:
       DOTNET_NOLOGO: true
       DOTNET_CLI_TELEMETRY_OPTOUT: true
