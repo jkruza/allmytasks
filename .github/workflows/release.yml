@@ -1,30 +1,87 @@
 name: Release
 
-# Runs when an admin pushes a v* tag (only admins can create them, see
-# .github/rulesets/protect-release-tags.json). Builds self-contained binaries and
-# publishes a draft release after the `release` environment is approved.
+# Pushing a v* tag builds the Linux binaries and opens a draft release.
+# Windows and macOS binaries are built on demand: Actions > Release > Run workflow,
+# pick the v* tag under "Use workflow from", tick the platforms, and run. They are
+# added to the draft release for that tag. (Admins only: tags are protected by
+# .github/rulesets/protect-release-tags.json.)
 on:
   push:
     tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      windows:
+        description: Build Windows binaries (win-x64, win-arm64)
+        type: boolean
+        default: false
+      macos:
+        description: Build macOS binaries (osx-x64, osx-arm64)
+        type: boolean
+        default: false
+      linux:
+        description: Build Linux binaries (linux-x64, linux-arm64)
+        type: boolean
+        default: false
 
 permissions:
   contents: read
 
 jobs:
+  plan:
+    name: choose platforms
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+    steps:
+      - id: plan
+        shell: bash
+        env:
+          EVENT: ${{ github.event_name }}
+          REF_TYPE: ${{ github.ref_type }}
+          REF_NAME: ${{ github.ref_name }}
+          IN_WINDOWS: ${{ inputs.windows }}
+          IN_MACOS: ${{ inputs.macos }}
+          IN_LINUX: ${{ inputs.linux }}
+        run: |
+          if [[ "$REF_TYPE" != tag || "$REF_NAME" != v* ]]; then
+            echo "::error::Run this workflow from a v* tag: choose it under 'Use workflow from'."
+            exit 1
+          fi
+
+          if [[ "$EVENT" == push ]]; then
+            linux=true; windows=false; macos=false
+          else
+            linux=$IN_LINUX; windows=$IN_WINDOWS; macos=$IN_MACOS
+          fi
+
+          entries=()
+          if [[ "$linux" == true ]]; then
+            entries+=('{"os":"ubuntu-latest","rid":"linux-x64"}' '{"os":"ubuntu-latest","rid":"linux-arm64"}')
+          fi
+          if [[ "$windows" == true ]]; then
+            entries+=('{"os":"windows-latest","rid":"win-x64"}' '{"os":"windows-latest","rid":"win-arm64"}')
+          fi
+          if [[ "$macos" == true ]]; then
+            entries+=('{"os":"macos-latest","rid":"osx-x64"}' '{"os":"macos-latest","rid":"osx-arm64"}')
+          fi
+          if ((${#entries[@]} == 0)); then
+            echo "::error::No platform selected."
+            exit 1
+          fi
+
+          matrix="$(printf '%s\n' "${entries[@]}" | jq -sc '{include: .}')"
+          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
+          echo "Building: $matrix"
+
   build:
     name: publish (${{ matrix.rid }})
+    needs: plan
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     strategy:
       fail-fast: true
-      matrix:
-        include:
-          - { os: windows-latest, rid: win-x64 }
-          - { os: windows-latest, rid: win-arm64 }
-          - { os: ubuntu-latest, rid: linux-x64 }
-          - { os: ubuntu-latest, rid: linux-arm64 }
-          - { os: macos-latest, rid: osx-x64 }
-          - { os: macos-latest, rid: osx-arm64 }
+      matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
     env:
       DOTNET_NOLOGO: true
       DOTNET_CLI_TELEMETRY_OPTOUT: true
@@ -91,12 +148,22 @@ jobs:
           merge-multiple: true
 
       - name: Checksums
-        run: cd dist && sha256sum * > SHA256SUMS.txt
+        run: |
+          cd dist
+          shopt -s nullglob
+          for f in *.zip *.tar.gz; do
+            sha256sum "$f" > "$f.sha256"
+          done
+          ls -l
 
-      - name: Create draft release
+      - name: Create or update draft release
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.ref_name }}
         run: |
-          gh release create "$TAG" dist/* --repo "$GITHUB_REPOSITORY" \
-            --draft --verify-tag --title "$TAG" --generate-notes
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            gh release upload "$TAG" dist/* --repo "$GITHUB_REPOSITORY" --clobber
+          else
+            gh release create "$TAG" dist/* --repo "$GITHUB_REPOSITORY" \
+              --draft --verify-tag --title "$TAG" --generate-notes
+          fi
