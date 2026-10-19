@@ -21,20 +21,35 @@ permissions:
   contents: read
 
 jobs:
+  plan:
+    name: select platforms
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      matrix: ${{ steps.pick.outputs.matrix }}
+    steps:
+      - id: pick
+        env:
+          PLATFORMS: ${{ inputs.platforms }}
+        run: |
+          win='{"os":"windows-latest","rid":"win-x64"},{"os":"windows-latest","rid":"win-arm64"}'
+          mac='{"os":"macos-latest","rid":"osx-x64"},{"os":"macos-latest","rid":"osx-arm64"}'
+          case "$PLATFORMS" in
+            windows) include="$win" ;;
+            macos) include="$mac" ;;
+            both) include="$win,$mac" ;;
+            *) echo "Unknown platforms: $PLATFORMS"; exit 1 ;;
+          esac
+          echo "matrix={\"include\":[$include]}" >> "$GITHUB_OUTPUT"
+
   build:
     name: publish (${{ matrix.rid }})
+    needs: plan
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          - { os: windows-latest, rid: win-x64, platform: windows }
-          - { os: windows-latest, rid: win-arm64, platform: windows }
-          - { os: macos-latest, rid: osx-x64, platform: macos }
-          - { os: macos-latest, rid: osx-arm64, platform: macos }
-    # Skip rows that were not requested.
-    if: inputs.platforms == 'both' || inputs.platforms == matrix.platform
+      matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
     env:
       DOTNET_NOLOGO: true
       DOTNET_CLI_TELEMETRY_OPTOUT: true
