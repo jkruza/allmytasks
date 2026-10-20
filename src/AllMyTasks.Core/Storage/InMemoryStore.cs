@@ -17,6 +17,8 @@ public sealed class InMemoryStore : IItemStore, ISourceRepository
     private readonly Dictionary<(string Source, string Collection), CollectionInfo> _collections = [];
     private readonly Dictionary<(string Source, string Collection), (bool IsVisible, string? Color)> _preferences = [];
     private readonly Dictionary<string, SourceInfo> _sources = [];
+    private readonly Dictionary<string, SourceConfig> _configs = [];
+    private readonly Dictionary<(string Source, string Collection), SyncState> _states = [];
 
     public Task ApplyAsync(string sourceId, string collectionId, SyncResult<CalendarEvent> result, CancellationToken cancellationToken = default)
     {
@@ -120,6 +122,95 @@ public sealed class InMemoryStore : IItemStore, ISourceRepository
             {
                 _collections[key] = ApplyPreferences(key, existing);
             }
+        }
+
+        return Task.CompletedTask;
+    }
+
+    public Task SaveSourceAsync(SourceInfo source, SourceConfig config, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(config);
+        lock (_gate)
+        {
+            _sources[source.Id] = source;
+            _configs[source.Id] = config;
+        }
+
+        return Task.CompletedTask;
+    }
+
+    public Task<SourceConfig?> GetSourceConfigAsync(string sourceId, CancellationToken cancellationToken = default)
+    {
+        lock (_gate)
+        {
+            return Task.FromResult(_configs.TryGetValue(sourceId, out var c) ? c : null);
+        }
+    }
+
+    public Task RemoveSourceAsync(string sourceId, CancellationToken cancellationToken = default)
+    {
+        lock (_gate)
+        {
+            _sources.Remove(sourceId);
+            _configs.Remove(sourceId);
+            foreach (var key in _collections.Keys.Where(k => k.Source == sourceId).ToList())
+            {
+                _collections.Remove(key);
+                _preferences.Remove(key);
+            }
+
+            foreach (var key in _states.Keys.Where(k => k.Source == sourceId).ToList())
+            {
+                _states.Remove(key);
+            }
+
+            foreach (var key in _events.Keys.Where(k => k.SourceId == sourceId).ToList())
+            {
+                _events.Remove(key);
+            }
+
+            foreach (var key in _tasks.Keys.Where(k => k.SourceId == sourceId).ToList())
+            {
+                _tasks.Remove(key);
+            }
+        }
+
+        return Task.CompletedTask;
+    }
+
+    public Task<SyncState?> GetSyncStateAsync(string sourceId, string collectionId, CancellationToken cancellationToken = default)
+    {
+        lock (_gate)
+        {
+            return Task.FromResult(_states.TryGetValue((sourceId, collectionId), out var s) ? s : null);
+        }
+    }
+
+    public Task SaveSyncStateAsync(string sourceId, string collectionId, SyncState? state, CancellationToken cancellationToken = default)
+    {
+        lock (_gate)
+        {
+            if (state is null)
+            {
+                _states.Remove((sourceId, collectionId));
+            }
+            else
+            {
+                _states[(sourceId, collectionId)] = state;
+            }
+        }
+
+        return Task.CompletedTask;
+    }
+
+    public Task ResetCacheAsync(CancellationToken cancellationToken = default)
+    {
+        lock (_gate)
+        {
+            _events.Clear();
+            _tasks.Clear();
+            _states.Clear();
         }
 
         return Task.CompletedTask;

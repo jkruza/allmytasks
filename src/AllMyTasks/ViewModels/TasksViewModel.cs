@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using AllMyTasks.Core.Tasks;
 using AllMyTasks.Core.Views;
+using AllMyTasks.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace AllMyTasks.ViewModels;
@@ -84,8 +85,10 @@ public sealed record Choice<T>(string Label, T Value)
 }
 
 /// <summary>State of the All tasks view: its filters, sort and grouping, and the resulting rows.</summary>
-public sealed partial class TasksViewModel(ITaskListService service, TimeProvider clock) : ContentViewModel, IDisposable
+public sealed partial class TasksViewModel(ITaskListService service, TimeProvider clock, ViewStateStore? state = null) : ContentViewModel, IDisposable
 {
+    internal const string StateKey = "view.tasks";
+    private bool _restoring;
     private ViewContext? _context;
     private CancellationTokenSource? _debounce;
 
@@ -172,6 +175,35 @@ public sealed partial class TasksViewModel(ITaskListService service, TimeProvide
         _debounce?.Dispose();
     }
 
+    /// <summary>Restores the filter, sort and grouping from the previous session.</summary>
+    public async Task RestoreAsync()
+    {
+        if (state is null || await state.LoadAsync<TasksState>(StateKey) is not { } saved)
+        {
+            return;
+        }
+
+        _restoring = true;
+        try
+        {
+            Status = StatusChoices.FirstOrDefault(c => c.Value.ToString() == saved.Status) ?? StatusChoices[0];
+            Due = DueChoices.FirstOrDefault(c => c.Value?.ToString() == saved.Due) ?? DueChoices[0];
+            Sort = SortChoices.FirstOrDefault(c => c.Value.ToString() == saved.Sort) ?? SortChoices[0];
+            Grouping = GroupChoices.FirstOrDefault(c => c.Value.ToString() == saved.Grouping) ?? GroupChoices[0];
+            Descending = saved.Descending;
+            High = saved.High;
+            Medium = saved.Medium;
+            Low = saved.Low;
+            NoPriority = saved.NoPriority;
+            LabelsText = saved.Labels;
+            AllLabels = saved.AllLabels;
+        }
+        finally
+        {
+            _restoring = false;
+        }
+    }
+
     public override Task LoadAsync(ViewContext context, CancellationToken cancellationToken)
     {
         _context = context;
@@ -205,6 +237,27 @@ public sealed partial class TasksViewModel(ITaskListService service, TimeProvide
 
     private void Refresh(bool debounce = false)
     {
+        if (_restoring)
+        {
+            return;
+        }
+
+        if (state is not null)
+        {
+            _ = state.SaveAsync(StateKey, new TasksState(
+                Status.Value.ToString(),
+                Due.Value?.ToString(),
+                Sort.Value.ToString(),
+                Grouping.Value.ToString(),
+                Descending,
+                High,
+                Medium,
+                Low,
+                NoPriority,
+                LabelsText,
+                AllLabels));
+        }
+
         if (_context is null)
         {
             return;

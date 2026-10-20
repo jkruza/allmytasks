@@ -6,10 +6,11 @@ rough: S ≈ a few days, M ≈ 1-2 weeks, L ≈ several weeks of part-time work.
 
 ## Where we are
 
-M1 and M2 are implemented: the domain model, provider interfaces, in-memory sources, a fake
+M1, M2 and M3 are implemented: the domain model, provider interfaces, in-memory sources, a fake
 recurrence expander, the Core view logic (`AgendaService`, day/week/month/upcoming layouts,
 `TaskListService`), `InMemoryStore`, and the Avalonia shell with four calendar views and All
-tasks over sample data. Everything from M3 on is still to do.
+tasks over sample data, backed by the SQLite store with settings and secret stores. Everything from
+M4 on is still to do.
 
 ## Milestones
 

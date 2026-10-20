@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using AllMyTasks.Core.Storage;
 using AllMyTasks.Core.Views;
+using AllMyTasks.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -22,6 +23,8 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
     private readonly UpcomingViewModel _upcoming;
     private readonly TasksViewModel _tasks;
     private readonly ITimer _midnightTimer;
+    private readonly ViewStateStore? _state;
+    private bool _restoring;
     private CancellationTokenSource? _loading;
     private DateOnly _today;
 
@@ -30,8 +33,10 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
         ITaskListService taskList,
         ISourceRepository sources,
         TimeProvider clock,
-        TimeZoneInfo zone)
+        TimeZoneInfo zone,
+        ViewStateStore? state = null)
     {
+        _state = state;
         _sources = sources;
         _clock = clock;
         _zone = zone;
@@ -41,7 +46,7 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
         _week = new WeekViewModel(agenda);
         _month = new MonthViewModel(agenda, OpenDay);
         _upcoming = new UpcomingViewModel(agenda);
-        _tasks = new TasksViewModel(taskList, clock);
+        _tasks = new TasksViewModel(taskList, clock, state);
         Content = _day;
 
         // Rolls the "today" boundary over at midnight without the user having to refresh.
@@ -98,6 +103,7 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
         {
             _week.HideWeekends = value;
             OnPropertyChanged();
+            SaveState();
         }
     }
 
@@ -105,6 +111,7 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
 
     partial void OnModeChanged(ViewMode value)
     {
+        SaveState();
         Content = value switch
         {
             ViewMode.Day => _day,
@@ -124,11 +131,23 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
 
     partial void OnCurrentDateChanged(DateOnly value) => _ = ReloadAsync();
 
-    partial void OnShowEventsChanged(bool value) => _ = ReloadAsync();
+    partial void OnShowEventsChanged(bool value)
+    {
+        SaveState();
+        _ = ReloadAsync();
+    }
 
-    partial void OnShowTasksChanged(bool value) => _ = ReloadAsync();
+    partial void OnShowTasksChanged(bool value)
+    {
+        SaveState();
+        _ = ReloadAsync();
+    }
 
-    partial void OnShowCompletedChanged(bool value) => _ = ReloadAsync();
+    partial void OnShowCompletedChanged(bool value)
+    {
+        SaveState();
+        _ = ReloadAsync();
+    }
 
     [RelayCommand]
     private void SetMode(ViewMode mode) => Mode = mode;
@@ -155,6 +174,7 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
     /// <summary>Loads collections and the first view. Call once after the window is shown.</summary>
     public async Task InitializeAsync()
     {
+        await RestoreStateAsync();
         await LoadCollectionsAsync();
         await ReloadAsync();
     }
@@ -165,6 +185,47 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
         _tasks.Dispose();
         _loading?.Cancel();
         _loading?.Dispose();
+    }
+
+    private async Task RestoreStateAsync()
+    {
+        if (_state is null)
+        {
+            return;
+        }
+
+        await _tasks.RestoreAsync();
+        if (await _state.LoadAsync<ShellState>("view.shell") is not { } saved)
+        {
+            return;
+        }
+
+        _restoring = true;
+        try
+        {
+            ShowEvents = saved.ShowEvents;
+            ShowTasks = saved.ShowTasks;
+            ShowCompleted = saved.ShowCompleted;
+            HideWeekends = saved.HideWeekends;
+            if (Enum.TryParse<ViewMode>(saved.Mode, out var mode))
+            {
+                Mode = mode;
+            }
+        }
+        finally
+        {
+            _restoring = false;
+        }
+    }
+
+    private void SaveState()
+    {
+        if (_state is null || _restoring)
+        {
+            return;
+        }
+
+        _ = _state.SaveAsync("view.shell", new ShellState(Mode.ToString(), ShowEvents, ShowTasks, ShowCompleted, HideWeekends));
     }
 
     private void OpenDay(DateOnly day)
