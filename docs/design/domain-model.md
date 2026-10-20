@@ -17,17 +17,22 @@ CollectionId  which calendar or task list in it e.g. "/dav/cal/work/"
 ItemId     provider's id within the collection  e.g. iCalendar UID
 ```
 
-`ItemKey(SourceId, CollectionId, ItemId)` is a value type used as the primary key in the
-store. Recurring-event overrides add a `RecurrenceId` (see [recurrence](#recurrence)).
+`ItemKey(SourceId, CollectionId, ItemId, RecurrenceId?)` is a value type used as the
+primary key in the store. Recurring-event overrides set `RecurrenceId` to the start of the
+occurrence they replace (midnight UTC of the date for all-day events); see
+[recurrence](#recurrence). Parts are validated non-blank, also on `with`.
 
 ## Sources and collections
 
 ```csharp
 record SourceInfo(string Id, string Kind, string DisplayName);        // account / feed
-record Collection(string SourceId, string Id, string DisplayName,
-                  CollectionKind Kind,        // Calendar | TaskList
-                  string? Color, bool IsVisible, bool IsReadOnly);
+record CollectionInfo(string SourceId, string Id, string DisplayName,
+                      CollectionKind Kind,    // Calendar | TaskList
+                      string? Color, bool IsVisible, bool IsReadOnly);
 ```
+
+(Named `CollectionInfo` because the build's analyzers forbid a type name ending in
+`Collection`.)
 
 `Color` and `IsVisible` are user-adjustable and stored locally, even when the provider has
 its own values. The user's choice wins; the provider's value is the default.
@@ -64,7 +69,7 @@ record TaskItem(
     string? Notes,
     TaskDue? Due,                      // date-only or date+time, see below
     DateTimeOffset? Start,             // "do not show before", optional
-    TaskStatus Status,                 // Open | InProgress | Completed | Cancelled
+    TaskItemStatus Status,             // Open | InProgress | Completed | Cancelled
     DateTimeOffset? CompletedAt,
     Priority Priority,                 // None | Low | Medium | High (normalised)
     IReadOnlyList<string> Labels,
@@ -76,8 +81,11 @@ record TaskItem(
 
 Notes:
 
-- `IsCompleted` becomes derived from `Status`. `IsOverdue(now)` stays, now using
-  `TaskDue` semantics.
+- `IsCompleted` becomes derived from `Status`; `IsOpen` is true for Open and InProgress.
+  `IsOverdue(now, displayZone)` stays, now using `TaskDue` semantics: a date-only task is
+  overdue from the day after its date, a timed task from its time.
+- The status enum is `TaskItemStatus` because `TaskStatus` clashes with
+  `System.Threading.Tasks.TaskStatus`.
 - Providers with a different priority scale (Todoist 1-4, iCalendar 1-9, Microsoft
   low/normal/high) map to the four-level enum. The raw value is kept in the payload.
 - Task lists with sections/projects/hierarchies map to `Collection` (list) plus
@@ -91,7 +99,7 @@ The most error-prone part of any calendar app, so it is explicit.
 
 ```csharp
 abstract record EventTime;
-record TimedEvent(DateTimeOffset Start, DateTimeOffset End, string? TimeZoneId) : EventTime;
+record TimedEvent(DateTimeOffset Start, DateTimeOffset End, string? TimeZoneId, bool IsFloating) : EventTime;
 record AllDayEvent(DateOnly Start, DateOnly EndExclusive) : EventTime;
 ```
 
@@ -102,8 +110,13 @@ record AllDayEvent(DateOnly Start, DateOnly EndExclusive) : EventTime;
 - **All-day**: a date range, **not** instants. A holiday on 25 December is on 25
   December in every time zone. `EndExclusive` follows iCalendar (`DTEND` is the day
   after), which makes spans and month-grid maths simple.
-- **Floating times** (iCalendar times with no zone): resolved to the user's local zone at
-  read time and flagged, because they genuinely mean "local time wherever you are".
+- **Floating times** (iCalendar times with no zone): flagged with `IsFloating`. Only the
+  wall-clock reading of `Start`/`End` counts; their offset is ignored and the display zone
+  is applied when the instant is needed (`StartInstant(zone)`), because they genuinely mean
+  "local time wherever you are".
+- `EventTime.StartInstant(zone)`, `EndInstant(zone)` and `Overlaps(from, to, zone)` are the
+  only way views and expanders place an event. All-day days are resolved to the first
+  instant of the date in the zone, so a DST day is 23 or 25 hours long.
 - Windows time zone names, which some servers emit, are mapped to IANA ids at the provider
   boundary. Unknown zones fall back to UTC with a warning on the source status, not an
   exception.
@@ -113,6 +126,9 @@ abstract record TaskDue;
 record DueDate(DateOnly Date) : TaskDue;                 // "due Friday"
 record DueDateTime(DateTimeOffset At, string? TimeZoneId) : TaskDue;
 ```
+
+`TaskDue.SortKey(zone)` orders both kinds on one axis (a date-only value sorts at the start
+of its day, so before timed tasks that day) and `IsPast(now, zone)` decides overdue-ness.
 
 Tasks need the same split: "due Friday" and "due Friday 17:00" are different things and
 must not be compared as if they were the same.
@@ -144,7 +160,18 @@ Decisions:
 
 ```csharp
 record EventOccurrence(CalendarEvent Event, EventTime Time, bool IsOverride);
+
+interface IRecurrenceExpander
+{
+    IReadOnlyList<EventOccurrence> Expand(CalendarEvent master,
+        IEnumerable<CalendarEvent> modifiedOccurrences,
+        DateTimeOffset rangeStart, DateTimeOffset rangeEnd, TimeZoneInfo displayZone);
+}
 ```
+
+   Range is half-open, results are ordered by start and never include cancelled
+   occurrences. `FakeRecurrenceExpander` implements the contract from `RDATE`/`EXDATE`
+   only (it ignores `Rule`) for tests and samples until the real one lands in M5.
 
 The recurrence implementation should use an existing library (see
 [the iCal provider doc](ical-caldav-provider.md#libraries)) rather than a handwritten

@@ -1,3 +1,4 @@
+using AllMyTasks.Core.Model;
 using AllMyTasks.Core.Providers;
 using AllMyTasks.Core.Tasks;
 using AllMyTasks.ViewModels;
@@ -16,7 +17,10 @@ public sealed partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            var viewModel = new MainWindowViewModel(new TaskAggregator([CreateSampleSource()]));
+            var zone = TimeZoneInfo.Local;
+            var today = DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, zone).DateTime);
+            var aggregator = new TaskAggregator([CreateSampleSource(today)], zone);
+            var viewModel = new MainWindowViewModel(aggregator, zone);
             desktop.MainWindow = new MainWindow { DataContext = viewModel };
             _ = viewModel.LoadCommand.ExecuteAsync(null);
         }
@@ -25,15 +29,22 @@ public sealed partial class App : Application
     }
 
     // Placeholder until real providers (Todoist, Google, Microsoft, CalDAV...) are added.
-    private static InMemoryTaskSource CreateSampleSource()
+    private static InMemoryTaskSource CreateSampleSource(DateOnly today)
     {
-        var today = DateTimeOffset.Now.Date;
-        return new InMemoryTaskSource("sample", "Sample tasks",
+        const string SourceId = "sample";
+        const string ListId = "inbox";
+        var list = new CollectionInfo(SourceId, ListId, "Sample list", CollectionKind.TaskList);
+
+        return new InMemoryTaskSource(SourceId, "Sample tasks", [list],
         [
-            new TaskItem("1", "sample", "Connect your first calendar", today),
-            new TaskItem("2", "sample", "Connect your first task list", today.AddDays(1)),
-            new TaskItem("3", "sample", "Read CONTRIBUTING.md"),
-            new TaskItem("4", "sample", "Install All My Tasks", today.AddDays(-1), IsCompleted: true),
+            new TaskItem(new ItemKey(SourceId, ListId, "1"), "Connect your first calendar", Due: new DueDate(today)),
+            new TaskItem(new ItemKey(SourceId, ListId, "2"), "Connect your first task list", Due: new DueDate(today.AddDays(1))),
+            new TaskItem(new ItemKey(SourceId, ListId, "3"), "Read CONTRIBUTING.md"),
+            new TaskItem(
+                new ItemKey(SourceId, ListId, "4"),
+                "Install All My Tasks",
+                Due: new DueDate(today.AddDays(-1)),
+                Status: TaskItemStatus.Completed),
         ]);
     }
 }

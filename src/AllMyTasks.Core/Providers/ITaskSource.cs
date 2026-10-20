@@ -1,17 +1,18 @@
+using AllMyTasks.Core.Model;
 using AllMyTasks.Core.Tasks;
 
 namespace AllMyTasks.Core.Providers;
 
-/// <summary>
-/// A provider of tasks, such as a local list, Todoist or Microsoft To Do.
-/// </summary>
-public interface ITaskSource
+/// <summary>A source that serves tasks, such as a local list, Todoist or Microsoft To Do.</summary>
+public interface ITaskSource : ISource
 {
-    /// <summary>Stable identifier for this source, used in <see cref="TaskItem.SourceId"/>.</summary>
-    string Id { get; }
-
-    /// <summary>Name shown to the user.</summary>
-    string DisplayName { get; }
-
-    Task<IReadOnlyList<TaskItem>> GetTasksAsync(CancellationToken cancellationToken = default);
+    /// <summary>
+    /// Returns what changed in <paramref name="collection"/> since <paramref name="previous"/>.
+    /// A null <paramref name="previous"/> means first sync and yields a full snapshot.
+    /// Throws <see cref="SyncStateExpiredException"/> if <paramref name="previous"/> is no longer valid.
+    /// </summary>
+    Task<SyncResult<TaskItem>> SyncTasksAsync(
+        CollectionInfo collection,
+        SyncState? previous,
+        CancellationToken cancellationToken = default);
 }

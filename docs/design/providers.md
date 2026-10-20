@@ -18,19 +18,19 @@ public interface ISource
     string Kind { get; }                // provider type, e.g. "ical", "caldav", "todoist"
     string DisplayName { get; }
 
-    Task<IReadOnlyList<Collection>> GetCollectionsAsync(CancellationToken ct = default);
+    Task<IReadOnlyList<CollectionInfo>> GetCollectionsAsync(CancellationToken ct = default);
 }
 
 public interface ICalendarSource : ISource
 {
     Task<SyncResult<CalendarEvent>> SyncEventsAsync(
-        Collection collection, SyncState? previous, CancellationToken ct = default);
+        CollectionInfo collection, SyncState? previous, CancellationToken ct = default);
 }
 
 public interface ITaskSource : ISource
 {
     Task<SyncResult<TaskItem>> SyncTasksAsync(
-        Collection collection, SyncState? previous, CancellationToken ct = default);
+        CollectionInfo collection, SyncState? previous, CancellationToken ct = default);
 }
 ```
 
@@ -40,7 +40,9 @@ check, not a capability bitfield, so the compiler stays honest.
 
 The existing `ITaskSource` (`Id`, `DisplayName`, `GetTasksAsync`) is the seed of this. It
 migrates by moving `Id`/`DisplayName` up into `ISource` and replacing `GetTasksAsync` with
-the sync call. `InMemoryTaskSource` stays as the test and sample implementation.
+the sync call. `InMemoryTaskSource` and `InMemoryCalendarSource` are the test and sample implementations:
+first sync is a snapshot, syncing with the returned state is an empty delta, any other
+state throws `SyncStateExpiredException`.
 
 ### Optional base class
 
@@ -48,8 +50,11 @@ the sync call. `InMemoryTaskSource` stays as the test and sample implementation.
 public abstract class SourceBase(string id, string kind, string displayName) : ISource
 ```
 
-Provides the identity properties, a protected `ILogger`, and shared helpers (retry with
-backoff, mapping exceptions to `SourceException`). Providers may use it or implement the
+Provides the identity properties, a protected `ILogger` and `TimeProvider`, and shared
+helpers: `RetryAsync` (exponential backoff on `SourceUnavailableException`) and
+`MapException` (network errors become `SourceUnavailableException`, anything else
+`SourceException`; messages name only the exception type so URLs with credentials never
+leak). Providers may use it or implement the
 interfaces directly. It never adds abstract members beyond the interfaces, so it is a
 convenience, not a constraint.
 
@@ -64,8 +69,14 @@ public sealed record SyncResult<T>(
     IReadOnlyList<T> Upserts,                         // new or changed items
     IReadOnlyList<string> DeletedItemIds,
     SyncState NewState,
-    bool IsFullSnapshot);                             // true: anything not in Upserts is gone
+    bool IsFullSnapshot,                              // true: anything not in Upserts is gone
+    IReadOnlyList<SyncWarning>? Warnings = null);     // per-item problems, see Errors
+
+public sealed record SyncWarning(string? ItemId, string Message);
 ```
+
+`SyncResult.Snapshot(...)` and `SyncResult.Delta(...)` build the two shapes. `SyncState.ToString()`
+does not print the token.
 
 Rules:
 

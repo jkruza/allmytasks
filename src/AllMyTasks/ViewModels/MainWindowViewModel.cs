@@ -5,9 +5,9 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace AllMyTasks.ViewModels;
 
-public sealed partial class MainWindowViewModel(TaskAggregator aggregator) : ViewModelBase
+public sealed partial class MainWindowViewModel(TaskAggregator aggregator, TimeZoneInfo displayZone) : ViewModelBase
 {
-    public ObservableCollection<TaskItem> Tasks { get; } = [];
+    public ObservableCollection<TaskRow> Tasks { get; } = [];
 
     [ObservableProperty]
     public partial bool IsLoading { get; set; }
@@ -22,7 +22,7 @@ public sealed partial class MainWindowViewModel(TaskAggregator aggregator) : Vie
             Tasks.Clear();
             foreach (var task in tasks)
             {
-                Tasks.Add(task);
+                Tasks.Add(TaskRow.From(task, displayZone));
             }
         }
         finally
