@@ -41,6 +41,10 @@ public sealed partial class SourceItemViewModel : ObservableObject
     [ObservableProperty]
     public partial IBrush StatusBrush { get; set; } = Brushes.Gray;
 
+    public ObservableCollection<CollectionRowViewModel> Collections { get; } = [];
+
+    public bool HasCollections => Collections.Count > 0;
+
     [ObservableProperty]
     public partial bool IsBusy { get; set; }
 
@@ -105,10 +109,18 @@ public sealed partial class SourcesViewModel : ViewModelBase, IDisposable
     private readonly TimeProvider _clock;
     private readonly DialogService _dialogs;
     private readonly ITimer _ticker;
+    private readonly Func<Task>? _collectionsChanged;
     private readonly Dictionary<string, SourceStatus> _latest = [];
 
-    public SourcesViewModel(SyncEngine engine, SourceRegistry registry, ISourceRepository repository, TimeProvider clock, DialogService dialogs)
+    public SourcesViewModel(
+        SyncEngine engine,
+        SourceRegistry registry,
+        ISourceRepository repository,
+        TimeProvider clock,
+        DialogService dialogs,
+        Func<Task>? collectionsChanged = null)
     {
+        _collectionsChanged = collectionsChanged;
         _engine = engine;
         _registry = registry;
         _repository = repository;
@@ -135,9 +147,15 @@ public sealed partial class SourcesViewModel : ViewModelBase, IDisposable
             _latest[id] = status;
         }
 
+        var collections = await _repository.GetCollectionsAsync();
         foreach (var info in infos)
         {
             var item = new SourceItemViewModel(info, _registry.FactoryFor(info.Kind)?.DisplayName ?? info.Kind, this);
+            foreach (var c in collections.Where(c => c.SourceId == info.Id))
+            {
+                item.Collections.Add(new CollectionRowViewModel(c, null, OnCollectionChangedAsync));
+            }
+
             item.Apply(statuses.GetValueOrDefault(info.Id) ?? SourceStatus.NewFor(info.Id), _clock.GetUtcNow());
             Sources.Add(item);
         }
@@ -169,6 +187,22 @@ public sealed partial class SourcesViewModel : ViewModelBase, IDisposable
             {
                 _ = _engine.SyncSourceAsync(id);
             }
+        }
+    }
+
+    /// <summary>Saves the user's visibility and colour choice, tells the views, and syncs a collection that was just shown.</summary>
+    internal async Task OnCollectionChangedAsync(CollectionRowViewModel row)
+    {
+        await _repository.SetCollectionPreferencesAsync(row.Info.SourceId, row.Info.Id, row.IsVisible, row.ColorOverride);
+        if (_collectionsChanged is not null)
+        {
+            await _collectionsChanged();
+        }
+
+        if (row.IsVisible && !row.Info.IsVisible)
+        {
+            // It was hidden, so it was not being synced: fetch it now.
+            _ = _engine.SyncSourceAsync(row.Info.SourceId);
         }
     }
 

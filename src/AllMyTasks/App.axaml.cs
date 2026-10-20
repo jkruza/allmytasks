@@ -3,6 +3,7 @@ using AllMyTasks.Core.Storage;
 using AllMyTasks.Core.Sync;
 using AllMyTasks.Core.Views;
 using AllMyTasks.Providers.ICal;
+using AllMyTasks.Providers.ICal.CalDav;
 using AllMyTasks.Secrets;
 using AllMyTasks.Services;
 using AllMyTasks.Storage.Sqlite;
@@ -54,7 +55,8 @@ public sealed partial class App : Application
         // something first needs it.
         var secrets = new SecretStoreFactory(dataDirectory, new DialogSecretPrompt(desktop));
         var feedFactory = new IcalFeedFactory();
-        var registry = new SourceRegistry([feedFactory, new SampleSourceFactory(clock, zone)], sources, secrets);
+        var davFactory = new CalDavFactory();
+        var registry = new SourceRegistry([feedFactory, davFactory, new SampleSourceFactory(clock, zone)], sources, secrets);
         var engine = new SyncEngine(items, sources, registry, clock);
         var scheduler = new SyncScheduler(engine, sources, clock);
         var dialogs = new DialogService(desktop);
@@ -68,7 +70,8 @@ public sealed partial class App : Application
         }
 
         var agenda = new AgendaService(items, sources, new IcalRecurrenceExpander(), clock);
-        var shell = new CalendarShellViewModel(
+        CalendarShellViewModel? shell = null;
+        shell = new CalendarShellViewModel(
             agenda,
             new TaskListService(items, sources, clock),
             sources,
@@ -76,7 +79,7 @@ public sealed partial class App : Application
             zone,
             new ViewStateStore(settings),
             engine,
-            () => dialogs.ShowSources(new SourcesViewModel(engine, registry, sources, clock, dialogs)));
+            () => dialogs.ShowSources(new SourcesViewModel(engine, registry, sources, clock, dialogs, () => shell!.OnCollectionsChangedAsync())));
 
         desktop.MainWindow = new MainWindow { DataContext = shell };
         desktop.MainWindow.Activated += (_, _) => _ = scheduler.OnWindowActivatedAsync();
@@ -84,6 +87,7 @@ public sealed partial class App : Application
         {
             scheduler.Dispose();
             feedFactory.Dispose();
+            davFactory.Dispose();
             shell.Dispose();
             engine.Dispose();
             secrets.Dispose();

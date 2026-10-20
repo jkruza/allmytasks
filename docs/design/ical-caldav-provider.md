@@ -184,6 +184,30 @@ the licence and current version at that time.
   repeat a rule date.
 - Not done: `X-WR-TIMEZONE` for floating times, `VTIMEZONE` that disagrees with IANA (IANA wins, no warning).
 
+## Implementation notes (M6)
+
+- Kind `caldav` (`CalDavFactory`, `CalDavSource`, `CalDavClient`), read-only, events only. Fields: server address,
+  user name, password (secret), "allow insecure connection (http)", refresh interval.
+- Discovery: PROPFIND on the address for `resourcetype`, `current-user-principal`, `calendar-home-set`; the address may
+  already be a calendar; otherwise principal, then home (Depth 1). A bare domain that fails is retried at
+  `/.well-known/caldav`. Only collections that can hold `VEVENT` are listed; `calendar-color` (`#RRGGBBAA`) is trimmed to
+  `#RRGGBB`. Collection ids are the collection paths.
+- Sync strategies: `sync-collection` when advertised (supported-report-set or a `sync-token`), else ctag + etag diff, else a full
+  `calendar-query`. A server that advertises sync-collection but rejects the REPORT (501, 403 without the
+  `valid-sync-token` precondition, ...) falls back to the next strategy. `valid-sync-token` with a saved token throws
+  `SyncStateExpiredException`. The state token is JSON with the strategy, token or ctag, and an href to (etag, UIDs) map, so
+  removals (which only name a href) become item ids.
+- Auth: Basic only; credentials are sent only over https (http needs the explicit per-source switch), only to the
+  configured host (a redirect to another host, or https to http, is refused), and never appear in errors. 401 is
+  `SourceAuthException`; 5xx (except 501/507) is unavailable.
+- A collection that answers 404 keeps its cached events and adds a warning (not auto-deleted). One that disappears from
+  discovery is removed with its items.
+- Collection picker: the Sources window lists each source's calendars with a visibility checkbox and a colour choice.
+  Hidden collections are not synced; the colour override is stored locally and wins over the server's colour.
+- Hand-tested against Radicale 3.8 (discovery, sync-collection snapshot, empty delta, edit and delete). An opt-in
+  integration test (`AMT_CALDAV_URL`, `AMT_CALDAV_USER`, `AMT_CALDAV_PASSWORD`) exists; it never runs in CI.
+- Not done: Nextcloud and Fastmail/iCloud manual verification, OAuth, digest auth, `VTODO`, time-range limited sync.
+
 ## Open questions
 
 - Time-range limited sync: needed for very large calendars?

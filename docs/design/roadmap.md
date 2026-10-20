@@ -6,13 +6,14 @@ rough: S ≈ a few days, M ≈ 1-2 weeks, L ≈ several weeks of part-time work.
 
 ## Where we are
 
-M1 to M5 are implemented: the domain model, provider interfaces, in-memory sources, a fake
+M1 to M6 are implemented: the domain model, provider interfaces, in-memory sources, a fake
 recurrence expander, the Core view logic (`AgendaService`, day/week/month/upcoming layouts,
 `TaskListService`), `InMemoryStore`, and the Avalonia shell with four calendar views and All
 tasks over sample data, backed by the SQLite store with settings and secret stores. The sync engine, scheduler,
 source registry and the Sources / Add source UI are in; the `ical` feed provider
 (`AllMyTasks.Providers.ICal`) and the real recurrence expander (Ical.Net) are in, next to the sample provider.
-Everything from M6 on is still to do.
+CalDAV (read-only, events) is in as kind `caldav`. Verified by hand against a local Radicale 3.8
+only; Nextcloud and a hosted service (Fastmail/iCloud) still need a manual check with throwaway accounts.
 
 ## Milestones
 
