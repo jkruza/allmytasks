@@ -26,6 +26,22 @@
                     <TextBlock Text="{Binding StatusText}" Foreground="{Binding StatusBrush}" />
                   </StackPanel>
                   <TextBlock Text="{Binding Detail}" TextWrapping="Wrap" Opacity="0.8" FontSize="12" />
+                  <Expander Header="Calendars and lists" Margin="0,6,0,0" IsVisible="{Binding HasCollections}">
+                    <ItemsControl ItemsSource="{Binding Collections}">
+                      <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:CollectionRowViewModel">
+                          <Grid ColumnDefinitions="Auto,Auto,*,Auto,140" ColumnSpacing="8" Margin="0,3">
+                            <CheckBox IsChecked="{Binding IsVisible}" AutomationProperties.Name="Show" />
+                            <Border Grid.Column="1" Width="10" Height="10" CornerRadius="5" Background="{Binding Accent}" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="2" Text="{Binding Name}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                            <TextBlock Grid.Column="3" Text="{Binding KindText}" Opacity="0.6" FontSize="11" VerticalAlignment="Center" />
+                            <ComboBox Grid.Column="4" ItemsSource="{x:Static vm:ColorChoice.All}" SelectedItem="{Binding SelectedColor}"
+                                      HorizontalAlignment="Stretch" AutomationProperties.Name="Colour" />
+                          </Grid>
+                        </DataTemplate>
+                      </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                  </Expander>
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                   <Button Content="Refresh" Command="{Binding RefreshCommand}" IsEnabled="{Binding !IsBusy}" />

@@ -282,6 +282,13 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
         _ = _state.SaveAsync("view.shell", new ShellState(Mode.ToString(), ShowEvents, ShowTasks, ShowCompleted, HideWeekends));
     }
 
+    /// <summary>Re-reads collections and the current view after the user changed a collection's visibility or colour.</summary>
+    public async Task OnCollectionsChangedAsync()
+    {
+        await LoadCollectionsAsync();
+        await ReloadAsync();
+    }
+
     // Sync events arrive on background threads and often in bursts (one per source), so they are coalesced.
     private void OnSourceSynced(object? sender, SourceSyncedEventArgs e)
     {

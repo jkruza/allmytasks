@@ -33,7 +33,7 @@ public static class IcalMapper
 
     /// <summary>Parses <paramref name="text"/> for the given collection.</summary>
     /// <exception cref="SourceDataException">The text is not an iCalendar document.</exception>
-    public static IcalParseResult Parse(string text, string sourceId, string collectionId)
+    public static IcalParseResult Parse(string text, string sourceId, string collectionId, string? idSeed = null)
     {
         ArgumentNullException.ThrowIfNull(text);
         if (!LooksLikeCalendar(text))
@@ -42,7 +42,7 @@ public static class IcalMapper
         }
 
         var warnings = new List<SyncWarning>();
-        text = EnsureUids(text, warnings);
+        text = EnsureUids(text, warnings, idSeed);
         string? name = null;
         List<IcalEvent> components;
         try
@@ -154,12 +154,13 @@ public static class IcalMapper
     /// Ical.Net invents a random UID for events that have none, which would make every sync look like a change. Events
     /// without a UID get a stable one derived from their own text instead (prefixed so it is not mistaken for server data).
     /// </summary>
-    internal static string EnsureUids(string text, List<SyncWarning> warnings)
+    internal static string EnsureUids(string text, List<SyncWarning> warnings, string? idSeed = null)
     {
         var lines = text.TrimStart('\uFEFF').Replace("\r\n", "\n", StringComparison.Ordinal).Replace('\r', '\n').Split('\n');
         var output = new StringBuilder(text.Length + 64);
         var block = new List<string>();
         var inEvent = false;
+        var index = 0;
 
         void Flush()
         {
@@ -167,7 +168,7 @@ public static class IcalMapper
             output.Append(block[0]).Append("\r\n");
             if (!hasUid)
             {
-                var id = "noid-" + Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(string.Join('\n', block)))).AsSpan(0, 16).ToString().ToLowerInvariant();
+                var id = "noid-" + Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(idSeed is null ? string.Join('\n', block) : idSeed + "#" + index))).AsSpan(0, 16).ToString().ToLowerInvariant();
                 output.Append("UID:").Append(id).Append("\r\n");
                 warnings.Add(new SyncWarning(id, "An event had no UID; an id was derived from its content."));
             }
@@ -178,6 +179,7 @@ public static class IcalMapper
             }
 
             block.Clear();
+            index++;
         }
 
         foreach (var line in lines)

@@ -17,6 +17,17 @@ public sealed partial class FieldViewModel(SourceConfigField field, bool isEdit)
 
     public bool IsSecret { get; } = field.IsSecretField;
 
+    public bool IsBool { get; } = field.Kind == FieldKind.Bool;
+
+    public bool IsText => !IsBool;
+
+    /// <summary>For switch fields: stored as <c>true</c> or empty.</summary>
+    public bool BoolValue
+    {
+        get => string.Equals(Value, "true", StringComparison.OrdinalIgnoreCase);
+        set => Value = value ? "true" : string.Empty;
+    }
+
     public string? Placeholder { get; } = isEdit && field.IsSecretField ? "Leave blank to keep the saved value" : null;
 
     public char? PasswordChar { get; } = field.IsSecretField ? '●' : null;
@@ -30,6 +41,8 @@ public sealed partial class FieldViewModel(SourceConfigField field, bool isEdit)
     public bool HasError => !string.IsNullOrEmpty(Error);
 
     partial void OnErrorChanged(string? value) => OnPropertyChanged(nameof(HasError));
+
+    partial void OnValueChanged(string value) => OnPropertyChanged(nameof(BoolValue));
 }
 
 /// <summary>Add or edit a source. The form is built from the provider's schema, so no provider-specific UI is needed.</summary>
