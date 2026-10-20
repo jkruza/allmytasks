@@ -1,27 +1,75 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:AllMyTasks.ViewModels"
+        xmlns:views="using:AllMyTasks.Views"
         x:Class="AllMyTasks.Views.MainWindow"
-        x:DataType="vm:MainWindowViewModel"
+        x:DataType="vm:CalendarShellViewModel"
         Title="All My Tasks"
-        Width="720" Height="480">
-  <DockPanel Margin="16">
-    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="12" Margin="0,0,0,12">
-      <TextBlock Text="All My Tasks" FontSize="22" FontWeight="SemiBold" VerticalAlignment="Center" />
-      <Button Content="Refresh" Command="{Binding LoadCommand}" />
-      <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsLoading}" Width="80" />
-    </StackPanel>
-    <ListBox ItemsSource="{Binding Tasks}">
-      <ListBox.ItemTemplate>
-        <DataTemplate x:DataType="vm:TaskRow">
-          <DockPanel>
-            <TextBlock DockPanel.Dock="Right" Opacity="0.7"
-                       Text="{Binding DueText}" />
-            <CheckBox IsChecked="{Binding IsCompleted, Mode=OneWay}" IsEnabled="False"
-                      Content="{Binding Title}" />
-          </DockPanel>
-        </DataTemplate>
-      </ListBox.ItemTemplate>
-    </ListBox>
+        Width="1100" Height="760" MinWidth="640" MinHeight="420">
+  <DockPanel>
+    <Border DockPanel.Dock="Top" Padding="12,8" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
+      <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto" ColumnSpacing="12">
+        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="4">
+          <Button Content="‹" Command="{Binding PreviousCommand}" IsEnabled="{Binding CanNavigate}"
+                  AutomationProperties.Name="Previous" ToolTip.Tip="Previous (←)" />
+          <Button Content="Today" Command="{Binding GoTodayCommand}" ToolTip.Tip="Today (T)" />
+          <Button Content="›" Command="{Binding NextCommand}" IsEnabled="{Binding CanNavigate}"
+                  AutomationProperties.Name="Next" ToolTip.Tip="Next (→)" />
+        </StackPanel>
+        <TextBlock Grid.Column="1" Text="{Binding Title}" FontSize="20" FontWeight="SemiBold" VerticalAlignment="Center" />
+        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4" HorizontalAlignment="Center">
+          <ToggleButton Content="Day" IsChecked="{Binding IsDay, Mode=OneWay}"
+                        Command="{Binding SetModeCommand}" CommandParameter="{x:Static vm:ViewMode.Day}" ToolTip.Tip="Day (D)" />
+          <ToggleButton Content="Week" IsChecked="{Binding IsWeek, Mode=OneWay}"
+                        Command="{Binding SetModeCommand}" CommandParameter="{x:Static vm:ViewMode.Week}" ToolTip.Tip="Week (W)" />
+          <ToggleButton Content="Month" IsChecked="{Binding IsMonth, Mode=OneWay}"
+                        Command="{Binding SetModeCommand}" CommandParameter="{x:Static vm:ViewMode.Month}" ToolTip.Tip="Month (M)" />
+          <ToggleButton Content="Upcoming" IsChecked="{Binding IsUpcoming, Mode=OneWay}"
+                        Command="{Binding SetModeCommand}" CommandParameter="{x:Static vm:ViewMode.Upcoming}" ToolTip.Tip="Upcoming (U)" />
+          <ToggleButton Content="All tasks" IsChecked="{Binding IsTasks, Mode=OneWay}"
+                        Command="{Binding SetModeCommand}" CommandParameter="{x:Static vm:ViewMode.Tasks}" ToolTip.Tip="All tasks (A)" />
+        </StackPanel>
+        <Button Grid.Column="3" Content="Filter ▾">
+          <Button.Flyout>
+            <Flyout>
+              <StackPanel Spacing="6" MinWidth="220">
+                <TextBlock Text="Show" FontWeight="SemiBold" />
+                <CheckBox Content="Events" IsChecked="{Binding ShowEvents}" />
+                <CheckBox Content="Tasks" IsChecked="{Binding ShowTasks}" />
+                <CheckBox Content="Completed tasks" IsChecked="{Binding ShowCompleted}" />
+                <CheckBox Content="Hide weekends (week view)" IsChecked="{Binding HideWeekends}" />
+                <Separator />
+                <TextBlock Text="Calendars and lists" FontWeight="SemiBold" />
+                <ItemsControl ItemsSource="{Binding Collections}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:CollectionToggle">
+                      <CheckBox IsChecked="{Binding IsVisible}">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                          <Border Width="10" Height="10" CornerRadius="5" Background="{Binding Accent}" VerticalAlignment="Center" />
+                          <TextBlock Text="{Binding Name}" />
+                        </StackPanel>
+                      </CheckBox>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </StackPanel>
+            </Flyout>
+          </Button.Flyout>
+        </Button>
+        <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="8">
+          <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsLoading}" Width="48" />
+          <Button Content="Refresh" Command="{Binding RefreshCommand}" ToolTip.Tip="Refresh (R)" />
+        </StackPanel>
+      </Grid>
+    </Border>
+    <ContentControl Content="{Binding Content}">
+      <ContentControl.DataTemplates>
+        <DataTemplate DataType="vm:DayViewModel"><views:DayView /></DataTemplate>
+        <DataTemplate DataType="vm:WeekViewModel"><views:WeekView /></DataTemplate>
+        <DataTemplate DataType="vm:MonthViewModel"><views:MonthView /></DataTemplate>
+        <DataTemplate DataType="vm:UpcomingViewModel"><views:UpcomingView /></DataTemplate>
+        <DataTemplate DataType="vm:TasksViewModel"><views:TasksView /></DataTemplate>
+      </ContentControl.DataTemplates>
+    </ContentControl>
   </DockPanel>
 </Window>
