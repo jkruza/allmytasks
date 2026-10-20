@@ -19,10 +19,19 @@ public static class SampleData
     public const string WorkTasksSourceId = "sample-work-tasks";
     public const string HomeTasksSourceId = "sample-home-tasks";
 
-    /// <summary>Creates a store filled through the normal sync path, as a real provider would fill it.</summary>
+    /// <summary>Creates an in-memory store filled through the normal sync path, as a real provider would fill it.</summary>
     public static async Task<InMemoryStore> CreateStoreAsync(DateOnly today, TimeZoneInfo zone, CancellationToken cancellationToken = default)
     {
         var store = new InMemoryStore();
+        await SeedAsync(store, store, today, zone, cancellationToken).ConfigureAwait(false);
+        return store;
+    }
+
+    /// <summary>Fills any store and repository through the normal sync path, as a real provider would fill them.</summary>
+    public static async Task SeedAsync(IItemStore store, ISourceRepository repository, DateOnly today, TimeZoneInfo zone, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(store);
+        ArgumentNullException.ThrowIfNull(repository);
         var calendars = new List<ICalendarSource> { WorkCalendar(today, zone), PersonalCalendar(today, zone) };
         var taskSources = new List<ITaskSource> { WorkTasks(today, zone), HomeTasks(today, zone) };
 
@@ -30,24 +39,25 @@ public static class SampleData
         {
             var info = new SourceInfo(source.Id, source.Kind, source.DisplayName);
             var collections = await source.GetCollectionsAsync(cancellationToken).ConfigureAwait(false);
-            await store.SaveCollectionsAsync(info, collections, cancellationToken).ConfigureAwait(false);
+            await repository.SaveSourceAsync(info, SourceConfig.Empty, cancellationToken).ConfigureAwait(false);
+            await repository.SaveCollectionsAsync(info, collections, cancellationToken).ConfigureAwait(false);
             foreach (var collection in collections)
             {
                 if (source is ICalendarSource calendar && collection.Kind == CollectionKind.Calendar)
                 {
                     var result = await calendar.SyncEventsAsync(collection, null, cancellationToken).ConfigureAwait(false);
                     await store.ApplyAsync(collection.SourceId, collection.Id, result, cancellationToken).ConfigureAwait(false);
+                    await repository.SaveSyncStateAsync(collection.SourceId, collection.Id, result.NewState, cancellationToken).ConfigureAwait(false);
                 }
 
                 if (source is ITaskSource tasks && collection.Kind == CollectionKind.TaskList)
                 {
                     var result = await tasks.SyncTasksAsync(collection, null, cancellationToken).ConfigureAwait(false);
                     await store.ApplyAsync(collection.SourceId, collection.Id, result, cancellationToken).ConfigureAwait(false);
+                    await repository.SaveSyncStateAsync(collection.SourceId, collection.Id, result.NewState, cancellationToken).ConfigureAwait(false);
                 }
             }
         }
-
-        return store;
     }
 
     public static InMemoryCalendarSource WorkCalendar(DateOnly today, TimeZoneInfo zone)

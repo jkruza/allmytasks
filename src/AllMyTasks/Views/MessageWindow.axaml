@@ -1,0 +1,14 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="AllMyTasks.Views.MessageWindow"
+        Title="All My Tasks" Width="480" SizeToContent="Height" CanResize="False"
+        WindowStartupLocation="CenterScreen">
+  <StackPanel Margin="20" Spacing="14">
+    <TextBlock x:Name="Heading" FontSize="18" FontWeight="SemiBold" TextWrapping="Wrap" />
+    <TextBlock x:Name="Body" TextWrapping="Wrap" />
+    <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+      <Button x:Name="Secondary" IsVisible="False" Click="OnSecondary" />
+      <Button x:Name="Primary" IsDefault="True" Click="OnPrimary" />
+    </StackPanel>
+  </StackPanel>
+</Window>

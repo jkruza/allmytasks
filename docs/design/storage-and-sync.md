@@ -205,6 +205,33 @@ Last successful sync time is always shown, so stale data is never mistaken for f
   option and would interact with the Linux PIN-protected secret file.
 - Export and "delete all my data" are straightforward because it is one directory.
 
+## Implementation notes (M3)
+
+- **Projects.** `AllMyTasks.Storage.Sqlite` (database, migrations, stores) and `AllMyTasks.Secrets` (secret
+  store backends) are separate libraries with their own test projects, rather than living in the app
+  project, so they can be unit tested. Core holds the interfaces (`IItemStore`, `ISourceRepository`,
+  `ISettingsStore`, `ISecretStore`).
+- **Schema.** As sketched above, with two differences: each event/task row also keeps the full item as JSON
+  (`json` column) as the source of truth, with the query columns derived from it; and there is no `raw`
+  provider payload yet because the model does not carry one. All-day events store midnight-UTC of their dates
+  in `start_utc`/`end_utc`, and range queries add a one-day margin; `AgendaService`/the expander filter exactly.
+  `until_utc` is derived from `UNTIL`/`RDATE` and is NULL (unbounded) for `COUNT`-only or open rules.
+- **Migrations.** Embedded `Migrations/NNN_name.sql`, applied in a transaction each, version in `schema_info`.
+  A database newer than the app is a `StorageVersionException`, shown by the app as an explained error.
+- **Data directory.** `%LOCALAPPDATA%\AllMyTasks` on Windows (not roaming `%APPDATA%`: it is a cache),
+  `~/Library/Application Support/AllMyTasks`, `$XDG_DATA_HOME/allmytasks`; `--data-dir` overrides it.
+- **Secrets.** One backend entry per `(source, field)` plus a small index entry per source so a whole source can be
+  deleted without enumerating the store. Windows: Credential Manager via P/Invoke. macOS: Keychain via the
+  Security framework's generic-password functions. Linux: the Secret Service through the `secret-tool` client
+  (secrets on stdin) when it can reach a service; otherwise, only with the user's consent, the PIN-protected file.
+  The file is AES-256-GCM with the header as associated data, Argon2id (Konscious, MIT) with calibrated
+  parameters stored in the header, written atomically with owner-only permissions. After 5 wrong PINs the prompt
+  is delayed (1, 2, 4... up to 30 s). Choosing Argon2id resolves the open question about the library.
+- **Not verified here.** The Windows and macOS backends compile on all platforms but were not run on those OSes
+  during development; the Linux tool backend is tested against a stand-in script, not a real keyring.
+- **Preferences.** Shell and All tasks view state (mode, filters, sort, grouping) are saved as JSON in `settings`.
+- **First run.** Until providers can be added, an empty database is seeded with sample data through the sync path.
+
 ## Open questions
 
 - Encrypt the database at rest?
