@@ -210,7 +210,7 @@ public class ClientTests
 public class SourceTests
 {
     private static readonly CancellationToken Ct = TestContext.Current.CancellationToken;
-    private static readonly string Secret = "https://example.com/private/TOP-SECRET-TOKEN/cal.ics";
+    internal const string Secret = "https://example.com/private/TOP-SECRET-TOKEN/cal.ics";
 
     private static (IcalFeedSource Source, FakeHandler Handler, CollectionInfo Collection) Create(string? url = Secret)
     {
