@@ -1,8 +1,10 @@
 using System.Collections.ObjectModel;
 using System.Globalization;
 using AllMyTasks.Core.Storage;
+using AllMyTasks.Core.Sync;
 using AllMyTasks.Core.Views;
 using AllMyTasks.Services;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -24,6 +26,10 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
     private readonly TasksViewModel _tasks;
     private readonly ITimer _midnightTimer;
     private readonly ViewStateStore? _state;
+    private readonly SyncEngine? _engine;
+    private readonly Action? _openSources;
+    private readonly Dictionary<string, SourceStatus> _statuses = [];
+    private int _reloadScheduled;
     private bool _restoring;
     private CancellationTokenSource? _loading;
     private DateOnly _today;
@@ -34,9 +40,19 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
         ISourceRepository sources,
         TimeProvider clock,
         TimeZoneInfo zone,
-        ViewStateStore? state = null)
+        ViewStateStore? state = null,
+        SyncEngine? engine = null,
+        Action? openSources = null)
     {
         _state = state;
+        _engine = engine;
+        _openSources = openSources;
+        if (engine is not null)
+        {
+            engine.SourceSynced += OnSourceSynced;
+            engine.StatusChanged += OnStatusChanged;
+        }
+
         _sources = sources;
         _clock = clock;
         _zone = zone;
@@ -81,6 +97,16 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
 
     [ObservableProperty]
     public partial string LastRefreshed { get; set; } = string.Empty;
+
+    /// <summary>One line about all sources, such as "All sources up to date" or "1 source needs attention".</summary>
+    [ObservableProperty]
+    public partial string SyncSummary { get; set; } = string.Empty;
+
+    [ObservableProperty]
+    public partial bool HasProblems { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsSyncing { get; set; }
 
     public bool IsDay => Mode == ViewMode.Day;
 
@@ -168,19 +194,47 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
         _ = ReloadAsync();
     }
 
+    /// <summary>Refresh: syncs every source (when there is an engine) and then re-queries the view.</summary>
     [RelayCommand]
-    public Task RefreshAsync() => ReloadAsync();
+    public async Task RefreshAsync()
+    {
+        if (_engine is not null)
+        {
+            await _engine.SyncAllAsync();
+        }
+
+        await ReloadAsync();
+    }
+
+    [RelayCommand]
+    private void OpenSources() => _openSources?.Invoke();
 
     /// <summary>Loads collections and the first view. Call once after the window is shown.</summary>
     public async Task InitializeAsync()
     {
         await RestoreStateAsync();
         await LoadCollectionsAsync();
+        if (_engine is not null)
+        {
+            foreach (var status in await _engine.GetStatusesAsync())
+            {
+                _statuses[status.SourceId] = status;
+            }
+
+            UpdateSummary();
+        }
+
         await ReloadAsync();
     }
 
     public void Dispose()
     {
+        if (_engine is not null)
+        {
+            _engine.SourceSynced -= OnSourceSynced;
+            _engine.StatusChanged -= OnStatusChanged;
+        }
+
         _midnightTimer.Dispose();
         _tasks.Dispose();
         _loading?.Cancel();
@@ -226,6 +280,45 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
         }
 
         _ = _state.SaveAsync("view.shell", new ShellState(Mode.ToString(), ShowEvents, ShowTasks, ShowCompleted, HideWeekends));
+    }
+
+    // Sync events arrive on background threads and often in bursts (one per source), so they are coalesced.
+    private void OnSourceSynced(object? sender, SourceSyncedEventArgs e)
+    {
+        if (Interlocked.Exchange(ref _reloadScheduled, 1) == 1)
+        {
+            return;
+        }
+
+        Dispatcher.UIThread.Post(async () =>
+        {
+            Interlocked.Exchange(ref _reloadScheduled, 0);
+            await LoadCollectionsAsync();
+            await ReloadAsync();
+        });
+    }
+
+    private void OnStatusChanged(object? sender, SourceStatus status) =>
+        Dispatcher.UIThread.Post(() =>
+        {
+            _statuses[status.SourceId] = status;
+            UpdateSummary();
+        });
+
+    private void UpdateSummary()
+    {
+        var all = _statuses.Values.ToList();
+        var attention = all.Count(s => s.Kind is SourceStatusKind.NeedsAttention);
+        var errors = all.Count(s => s.Kind is SourceStatusKind.Error);
+        var offline = all.Count(s => s.Kind is SourceStatusKind.Offline);
+        IsSyncing = all.Any(s => s.Kind == SourceStatusKind.Syncing);
+        HasProblems = attention + errors + offline > 0;
+        SyncSummary = IsSyncing ? "Syncing…"
+            : attention > 0 ? $"{attention} source{(attention == 1 ? string.Empty : "s")} need{(attention == 1 ? "s" : string.Empty)} attention"
+            : errors > 0 ? $"{errors} source{(errors == 1 ? string.Empty : "s")} failed to sync"
+            : offline > 0 ? "Offline: showing saved data"
+            : all.Count == 0 ? "No sources"
+            : "All sources up to date";
     }
 
     private void OpenDay(DateOnly day)

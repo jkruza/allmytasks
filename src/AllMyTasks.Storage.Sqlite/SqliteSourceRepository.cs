@@ -3,6 +3,7 @@ using System.Text.Json;
 using AllMyTasks.Core.Model;
 using AllMyTasks.Core.Providers;
 using AllMyTasks.Core.Storage;
+using AllMyTasks.Core.Sync;
 using Microsoft.Data.Sqlite;
 
 namespace AllMyTasks.Storage.Sqlite;
@@ -175,13 +176,61 @@ public sealed class SqliteSourceRepository(SqliteDatabase database) : ISourceRep
         await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
     }
 
+    public async Task<IReadOnlyList<SourceStatus>> GetSourceStatusesAsync(CancellationToken cancellationToken = default)
+    {
+        await using var connection = await database.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+        await using var command = connection.CreateCommand();
+        command.CommandText = "SELECT id, status, last_synced_at, last_error, warning, skipped_items, consecutive_failures, next_retry_at FROM sources;";
+        var result = new List<SourceStatus>();
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+        {
+            var kind = reader.IsDBNull(1) || !Enum.TryParse<SourceStatusKind>(reader.GetString(1), out var parsed) ? SourceStatusKind.New : parsed;
+            result.Add(new SourceStatus(
+                reader.GetString(0),
+                kind,
+                ReadDate(reader, 2),
+                reader.IsDBNull(3) ? null : reader.GetString(3),
+                reader.IsDBNull(4) ? null : reader.GetString(4),
+                reader.GetInt32(5),
+                reader.GetInt32(6),
+                ReadDate(reader, 7)));
+        }
+
+        return result;
+    }
+
+    public async Task SaveSourceStatusAsync(SourceStatus status, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(status);
+        await using var connection = await database.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+        await using var command = connection.CreateCommand();
+        command.CommandText = """
+            UPDATE sources SET status = $status, last_synced_at = $synced, last_error = $error, warning = $warning,
+                               skipped_items = $skipped, consecutive_failures = $failures, next_retry_at = $retry
+            WHERE id = $id;
+            """;
+        command.Parameters.AddWithValue("$id", status.SourceId);
+        command.Parameters.AddWithValue("$status", status.Kind.ToString());
+        command.Parameters.AddWithValue("$synced", status.LastSyncedAt?.ToString("O", CultureInfo.InvariantCulture) ?? (object)DBNull.Value);
+        command.Parameters.AddWithValue("$error", (object?)status.LastError ?? DBNull.Value);
+        command.Parameters.AddWithValue("$warning", (object?)status.Warning ?? DBNull.Value);
+        command.Parameters.AddWithValue("$skipped", status.SkippedItems);
+        command.Parameters.AddWithValue("$failures", status.ConsecutiveFailures);
+        command.Parameters.AddWithValue("$retry", status.NextRetryAt?.ToString("O", CultureInfo.InvariantCulture) ?? (object)DBNull.Value);
+        await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    private static DateTimeOffset? ReadDate(SqliteDataReader reader, int index) =>
+        reader.IsDBNull(index) ? null : DateTimeOffset.Parse(reader.GetString(index), CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
+
     public async Task ResetCacheAsync(CancellationToken cancellationToken = default)
     {
         await using var connection = await database.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
         await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
         await using var command = connection.CreateCommand();
         command.Transaction = transaction;
-        command.CommandText = "DELETE FROM events; DELETE FROM tasks; UPDATE collections SET sync_token = NULL; UPDATE sources SET last_synced_at = NULL, last_error = NULL, status = NULL;";
+        command.CommandText = "DELETE FROM events; DELETE FROM tasks; UPDATE collections SET sync_token = NULL; UPDATE sources SET last_synced_at = NULL, last_error = NULL, status = NULL, warning = NULL, skipped_items = 0, consecutive_failures = 0, next_retry_at = NULL;";
         await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
         await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
     }

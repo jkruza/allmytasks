@@ -57,7 +57,13 @@
           </Button.Flyout>
         </Button>
         <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="8">
-          <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsLoading}" Width="48" />
+          <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsSyncing}" Width="48" />
+          <Button Command="{Binding OpenSourcesCommand}" ToolTip.Tip="Sources" AutomationProperties.Name="Sources">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <Border Width="8" Height="8" CornerRadius="4" Background="IndianRed" VerticalAlignment="Center" IsVisible="{Binding HasProblems}" />
+              <TextBlock Text="{Binding SyncSummary}" FontSize="12" />
+            </StackPanel>
+          </Button>
           <Button Content="Refresh" Command="{Binding RefreshCommand}" ToolTip.Tip="Refresh (R)" />
         </StackPanel>
       </Grid>

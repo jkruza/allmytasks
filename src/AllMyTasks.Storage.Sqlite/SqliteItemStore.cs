@@ -87,6 +87,19 @@ public sealed class SqliteItemStore(SqliteDatabase database) : IItemStore
         return result;
     }
 
+    public async Task<int> CountItemsAsync(string sourceId, string collectionId, CancellationToken cancellationToken = default)
+    {
+        await using var connection = await database.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+        await using var command = connection.CreateCommand();
+        command.CommandText = """
+            SELECT (SELECT count(*) FROM events WHERE source_id = $s AND collection_id = $c)
+                 + (SELECT count(*) FROM tasks WHERE source_id = $s AND collection_id = $c);
+            """;
+        command.Parameters.AddWithValue("$s", sourceId);
+        command.Parameters.AddWithValue("$c", collectionId);
+        return Convert.ToInt32(await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false), CultureInfo.InvariantCulture);
+    }
+
     public async Task<IReadOnlyList<TaskItem>> GetTasksAsync(CancellationToken cancellationToken = default)
     {
         await using var connection = await database.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);

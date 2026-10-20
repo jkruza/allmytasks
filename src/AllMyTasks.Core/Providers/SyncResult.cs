@@ -12,12 +12,17 @@ public sealed record SyncWarning(string? ItemId, string Message);
 /// <param name="NewState">Pass this back as <c>previous</c> on the next sync.</param>
 /// <param name="IsFullSnapshot">True when anything not in <paramref name="Upserts"/> no longer exists.</param>
 /// <param name="Warnings">Per-item problems; the UI shows "N items skipped".</param>
+/// <param name="ConfirmedEmpty">
+/// For a full snapshot with no items: the provider positively knows the collection is empty. Without this the sync
+/// engine refuses to wipe a well-filled cache on an empty result, which usually means a server error was parsed as "no items".
+/// </param>
 public sealed record SyncResult<T>(
     IReadOnlyList<T> Upserts,
     IReadOnlyList<string> DeletedItemIds,
     SyncState NewState,
     bool IsFullSnapshot,
-    IReadOnlyList<SyncWarning>? Warnings = null)
+    IReadOnlyList<SyncWarning>? Warnings = null,
+    bool ConfirmedEmpty = false)
 {
     public IReadOnlyList<T> Upserts { get; init => field = Guard.NotNull(value); } = Guard.NotNull(Upserts);
 
@@ -32,8 +37,8 @@ public sealed record SyncResult<T>(
 public static class SyncResult
 {
     /// <summary>A full snapshot: the engine deletes cached items that are not in <paramref name="items"/>.</summary>
-    public static SyncResult<T> Snapshot<T>(IReadOnlyList<T> items, SyncState newState, IReadOnlyList<SyncWarning>? warnings = null) =>
-        new(items, [], newState, IsFullSnapshot: true, warnings);
+    public static SyncResult<T> Snapshot<T>(IReadOnlyList<T> items, SyncState newState, IReadOnlyList<SyncWarning>? warnings = null, bool confirmedEmpty = false) =>
+        new(items, [], newState, IsFullSnapshot: true, warnings, confirmedEmpty);
 
     /// <summary>A delta: only the listed items changed or were deleted.</summary>
     public static SyncResult<T> Delta<T>(

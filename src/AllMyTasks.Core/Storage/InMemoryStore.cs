@@ -1,6 +1,7 @@
 using AllMyTasks.Core.Calendar;
 using AllMyTasks.Core.Model;
 using AllMyTasks.Core.Providers;
+using AllMyTasks.Core.Sync;
 using AllMyTasks.Core.Tasks;
 
 namespace AllMyTasks.Core.Storage;
@@ -18,6 +19,7 @@ public sealed class InMemoryStore : IItemStore, ISourceRepository
     private readonly Dictionary<(string Source, string Collection), (bool IsVisible, string? Color)> _preferences = [];
     private readonly Dictionary<string, SourceInfo> _sources = [];
     private readonly Dictionary<string, SourceConfig> _configs = [];
+    private readonly Dictionary<string, SourceStatus> _statuses = [];
     private readonly Dictionary<(string Source, string Collection), SyncState> _states = [];
 
     public Task ApplyAsync(string sourceId, string collectionId, SyncResult<CalendarEvent> result, CancellationToken cancellationToken = default)
@@ -62,6 +64,35 @@ public sealed class InMemoryStore : IItemStore, ISourceRepository
             ];
             return Task.FromResult(result);
         }
+    }
+
+    public Task<int> CountItemsAsync(string sourceId, string collectionId, CancellationToken cancellationToken = default)
+    {
+        lock (_gate)
+        {
+            return Task.FromResult(
+                _events.Keys.Count(k => k.SourceId == sourceId && k.CollectionId == collectionId)
+                + _tasks.Keys.Count(k => k.SourceId == sourceId && k.CollectionId == collectionId));
+        }
+    }
+
+    public Task<IReadOnlyList<SourceStatus>> GetSourceStatusesAsync(CancellationToken cancellationToken = default)
+    {
+        lock (_gate)
+        {
+            return Task.FromResult<IReadOnlyList<SourceStatus>>([.. _statuses.Values]);
+        }
+    }
+
+    public Task SaveSourceStatusAsync(SourceStatus status, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(status);
+        lock (_gate)
+        {
+            _statuses[status.SourceId] = status;
+        }
+
+        return Task.CompletedTask;
     }
 
     public Task<IReadOnlyList<TaskItem>> GetTasksAsync(CancellationToken cancellationToken = default)
@@ -154,6 +185,7 @@ public sealed class InMemoryStore : IItemStore, ISourceRepository
         {
             _sources.Remove(sourceId);
             _configs.Remove(sourceId);
+            _statuses.Remove(sourceId);
             foreach (var key in _collections.Keys.Where(k => k.Source == sourceId).ToList())
             {
                 _collections.Remove(key);
@@ -211,6 +243,7 @@ public sealed class InMemoryStore : IItemStore, ISourceRepository
             _events.Clear();
             _tasks.Clear();
             _states.Clear();
+            _statuses.Clear();
         }
 
         return Task.CompletedTask;

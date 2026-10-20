@@ -1,6 +1,7 @@
 using AllMyTasks.Core.Calendar;
 using AllMyTasks.Core.Samples;
 using AllMyTasks.Core.Storage;
+using AllMyTasks.Core.Sync;
 using AllMyTasks.Core.Views;
 using AllMyTasks.Secrets;
 using AllMyTasks.Services;
@@ -49,28 +50,51 @@ public sealed partial class App : Application
         var sources = new SqliteSourceRepository(database);
         var settings = new SqliteSettingsStore(database);
 
-        // Until real providers can be added (M4/M5), the first run is seeded with sample data through the
-        // normal sync path. After that the app reads only from the local database, so a restart shows the same
+        // Secrets are not needed by the sample provider; the store is created lazily and only asks the user when
+        // something first needs it.
+        var secrets = new SecretStoreFactory(dataDirectory, new DialogSecretPrompt(desktop));
+        var registry = new SourceRegistry([new SampleSourceFactory(clock, zone)], sources, secrets);
+        var engine = new SyncEngine(items, sources, registry, clock);
+        var scheduler = new SyncScheduler(engine, sources, clock);
+        var dialogs = new DialogService(desktop);
+
+        // First run: add the sample source through the registry; the first sync below fills the database through
+        // the normal sync path. After that the app only reads from the local database, so a restart shows the same
         // data with no network.
         if (sources.GetSourcesAsync().GetAwaiter().GetResult().Count == 0)
         {
-            var today = DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(clock.GetUtcNow(), zone).DateTime);
-            SampleData.SeedAsync(items, sources, today, zone).GetAwaiter().GetResult();
+            registry.AddAsync(SampleSourceFactory.KindName, "Sample data", new Dictionary<string, string>()).GetAwaiter().GetResult();
         }
 
-        // Secrets are not needed yet; the store is created lazily and only asks the user when first used.
-        var secrets = new SecretStoreFactory(dataDirectory, new DialogSecretPrompt(desktop));
-
         var agenda = new AgendaService(items, sources, new FakeRecurrenceExpander(), clock);
-        var shell = new CalendarShellViewModel(agenda, new TaskListService(items, sources, clock), sources, clock, zone, new ViewStateStore(settings));
+        var shell = new CalendarShellViewModel(
+            agenda,
+            new TaskListService(items, sources, clock),
+            sources,
+            clock,
+            zone,
+            new ViewStateStore(settings),
+            engine,
+            () => dialogs.ShowSources(new SourcesViewModel(engine, registry, sources, clock, dialogs)));
 
         desktop.MainWindow = new MainWindow { DataContext = shell };
+        desktop.MainWindow.Activated += (_, _) => _ = scheduler.OnWindowActivatedAsync();
         desktop.Exit += (_, _) =>
         {
+            scheduler.Dispose();
             shell.Dispose();
+            engine.Dispose();
             secrets.Dispose();
         };
-        _ = shell.InitializeAsync();
+
+        // Show cached data first, then sync in the background.
+        _ = StartAsync(shell, scheduler);
+    }
+
+    private static async Task StartAsync(CalendarShellViewModel shell, SyncScheduler scheduler)
+    {
+        await shell.InitializeAsync();
+        await scheduler.StartAsync();
     }
 
     private static void ShowFatal(IClassicDesktopStyleApplicationLifetime desktop, string heading, string message)

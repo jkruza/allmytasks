@@ -1,0 +1,44 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:AllMyTasks.ViewModels"
+        xmlns:core="using:AllMyTasks.Core.Sync"
+        x:Class="AllMyTasks.Views.SourceEditorWindow"
+        x:DataType="vm:SourceEditorViewModel"
+        Title="{Binding Title}" Width="480" SizeToContent="Height" CanResize="False"
+        WindowStartupLocation="CenterOwner">
+  <StackPanel Margin="20" Spacing="12">
+    <TextBlock Text="{Binding Title}" FontSize="18" FontWeight="SemiBold" />
+    <StackPanel Spacing="4" IsVisible="{Binding !IsEdit}">
+      <TextBlock Text="Type" />
+      <ComboBox ItemsSource="{Binding Kinds}" SelectedItem="{Binding SelectedKind}" HorizontalAlignment="Stretch">
+        <ComboBox.ItemTemplate>
+          <DataTemplate x:DataType="core:ISourceFactory"><TextBlock Text="{Binding DisplayName}" /></DataTemplate>
+        </ComboBox.ItemTemplate>
+      </ComboBox>
+    </StackPanel>
+    <StackPanel Spacing="4">
+      <TextBlock Text="Name *" />
+      <TextBox Text="{Binding Name}" />
+      <TextBlock Text="{Binding NameError}" Foreground="IndianRed" IsVisible="{Binding NameError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+    </StackPanel>
+    <ItemsControl ItemsSource="{Binding Fields}">
+      <ItemsControl.ItemTemplate>
+        <DataTemplate x:DataType="vm:FieldViewModel">
+          <StackPanel Spacing="4" Margin="0,0,0,12">
+            <TextBlock Text="{Binding Label}" />
+            <TextBox Text="{Binding Value}" PasswordChar="{Binding PasswordChar}" PlaceholderText="{Binding Placeholder}" />
+            <TextBlock Text="{Binding Help}" Opacity="0.7" FontSize="12" TextWrapping="Wrap"
+                       IsVisible="{Binding Help, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+            <TextBlock Text="{Binding Error}" Foreground="IndianRed" IsVisible="{Binding HasError}" />
+          </StackPanel>
+        </DataTemplate>
+      </ItemsControl.ItemTemplate>
+    </ItemsControl>
+    <TextBlock Text="{Binding SaveError}" Foreground="IndianRed" TextWrapping="Wrap"
+               IsVisible="{Binding SaveError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+    <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+      <Button Content="Cancel" Click="OnCancel" />
+      <Button Content="Save" IsDefault="True" Click="OnSave" />
+    </StackPanel>
+  </StackPanel>
+</Window>

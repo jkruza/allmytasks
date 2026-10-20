@@ -60,9 +60,9 @@ public static class SampleData
         }
     }
 
-    public static InMemoryCalendarSource WorkCalendar(DateOnly today, TimeZoneInfo zone)
+    public static InMemoryCalendarSource WorkCalendar(DateOnly today, TimeZoneInfo zone, string sourceId = WorkSourceId)
     {
-        var key = (string id) => new ItemKey(WorkSourceId, "meetings", id);
+        var key = (string id) => new ItemKey(sourceId, "meetings", id);
         TimedEvent Timed(DateOnly day, int h, int m, int minutes, string? tz = null) =>
             new(At(day, h, m, zone), At(day, h, m, zone).AddMinutes(minutes), tz ?? zone.Id);
 
@@ -103,12 +103,12 @@ public static class SampleData
             new(key("dst-autumn"), "Night shift (clocks go back)", new TimedEvent(new DateTimeOffset(2026, 10, 25, 1, 0, 0, TimeSpan.FromHours(2)), new DateTimeOffset(2026, 10, 25, 5, 0, 0, TimeSpan.FromHours(1)), "Europe/Warsaw")),
         };
 
-        return new InMemoryCalendarSource(WorkSourceId, "Work", [new CollectionInfo(WorkSourceId, "meetings", "Meetings", CollectionKind.Calendar, "#3b82f6")], events);
+        return new InMemoryCalendarSource(sourceId, "Work", [new CollectionInfo(sourceId, "meetings", "Meetings", CollectionKind.Calendar, "#3b82f6")], events);
     }
 
-    public static InMemoryCalendarSource PersonalCalendar(DateOnly today, TimeZoneInfo zone)
+    public static InMemoryCalendarSource PersonalCalendar(DateOnly today, TimeZoneInfo zone, string sourceId = HomeSourceId)
     {
-        var key = (string id) => new ItemKey(HomeSourceId, "personal", id);
+        var key = (string id) => new ItemKey(sourceId, "personal", id);
         var events = new List<CalendarEvent>
         {
             new(key("birthday"), "Alex's birthday", new AllDayEvent(today.AddDays(3), today.AddDays(4))),
@@ -117,12 +117,12 @@ public static class SampleData
             new(key("untitled"), string.Empty, new TimedEvent(At(today.AddDays(5), 12, 0, zone), At(today.AddDays(5), 12, 0, zone), zone.Id)),
         };
 
-        return new InMemoryCalendarSource(HomeSourceId, "Home", [new CollectionInfo(HomeSourceId, "personal", "Personal", CollectionKind.Calendar, "#10b981")], events);
+        return new InMemoryCalendarSource(sourceId, "Home", [new CollectionInfo(sourceId, "personal", "Personal", CollectionKind.Calendar, "#10b981")], events);
     }
 
-    public static InMemoryTaskSource WorkTasks(DateOnly today, TimeZoneInfo zone)
+    public static InMemoryTaskSource WorkTasks(DateOnly today, TimeZoneInfo zone, string sourceId = WorkTasksSourceId)
     {
-        var key = (string id) => new ItemKey(WorkTasksSourceId, "todo", id);
+        var key = (string id) => new ItemKey(sourceId, "todo", id);
         var tasks = new List<TaskItem>
         {
             new(key("report"), "Quarterly report", Notes: "Numbers from finance", Due: new DueDate(today.AddDays(-2)), Priority: Priority.High, Labels: ["finance"]),
@@ -137,12 +137,12 @@ public static class SampleData
             new(key("later"), "Renew certificate", Due: new DueDate(today.AddDays(30)), Priority: Priority.High, Labels: ["ops"]),
         };
 
-        return new InMemoryTaskSource(WorkTasksSourceId, "Work tasks", [new CollectionInfo(WorkTasksSourceId, "todo", "Work tasks", CollectionKind.TaskList, "#f59e0b")], tasks);
+        return new InMemoryTaskSource(sourceId, "Work tasks", [new CollectionInfo(sourceId, "todo", "Work tasks", CollectionKind.TaskList, "#f59e0b")], tasks);
     }
 
-    public static InMemoryTaskSource HomeTasks(DateOnly today, TimeZoneInfo zone)
+    public static InMemoryTaskSource HomeTasks(DateOnly today, TimeZoneInfo zone, string sourceId = HomeTasksSourceId)
     {
-        var key = (string id) => new ItemKey(HomeTasksSourceId, "chores", id);
+        var key = (string id) => new ItemKey(sourceId, "chores", id);
         var tasks = new List<TaskItem>
         {
             new(key("milk"), "Buy milk", Due: new DueDate(today)),
@@ -151,7 +151,7 @@ public static class SampleData
             new(key("garden"), "Tidy the garden"),
         };
 
-        return new InMemoryTaskSource(HomeTasksSourceId, "Home tasks", [new CollectionInfo(HomeTasksSourceId, "chores", "Chores", CollectionKind.TaskList, "#ec4899")], tasks);
+        return new InMemoryTaskSource(sourceId, "Home tasks", [new CollectionInfo(sourceId, "chores", "Chores", CollectionKind.TaskList, "#ec4899")], tasks);
     }
 
     private static DateTimeOffset At(DateOnly day, int hour, int minute, TimeZoneInfo zone)
