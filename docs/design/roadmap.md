@@ -6,8 +6,9 @@ rough: S ≈ a few days, M ≈ 1-2 weeks, L ≈ several weeks of part-time work.
 
 ## Where we are
 
-Scaffold only: Avalonia shell, a `TaskItem` record, `ITaskSource`, `InMemoryTaskSource`,
-`TaskAggregator`, sample tasks in the main window.
+M1 is implemented: the domain model, provider interfaces, in-memory sources, a fake
+recurrence expander and `TaskAggregator` on the new types, with sample tasks in the main
+window. Everything from M2 on is still to do.
 
 ## Milestones
 

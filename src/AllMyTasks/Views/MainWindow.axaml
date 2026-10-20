@@ -1,7 +1,6 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:AllMyTasks.ViewModels"
-        xmlns:tasks="using:AllMyTasks.Core.Tasks"
         x:Class="AllMyTasks.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Title="All My Tasks"
@@ -14,10 +13,10 @@
     </StackPanel>
     <ListBox ItemsSource="{Binding Tasks}">
       <ListBox.ItemTemplate>
-        <DataTemplate x:DataType="tasks:TaskItem">
+        <DataTemplate x:DataType="vm:TaskRow">
           <DockPanel>
             <TextBlock DockPanel.Dock="Right" Opacity="0.7"
-                       Text="{Binding Due, StringFormat='{}{0:d}'}" />
+                       Text="{Binding DueText}" />
             <CheckBox IsChecked="{Binding IsCompleted, Mode=OneWay}" IsEnabled="False"
                       Content="{Binding Title}" />
           </DockPanel>
