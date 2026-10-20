@@ -26,6 +26,11 @@ dotnet run --project src/AllMyTasks
 | `src/AllMyTasks.Core` | UI-independent logic: tasks, providers, aggregation |
 | `tests/AllMyTasks.Core.Tests` | xUnit tests for Core |
 
+## Design
+
+The intended design (data model, providers, views, storage, roadmap) is in
+[docs/design](docs/design/README.md).
+
 ## Contributing
 
 Contributions are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) first,
