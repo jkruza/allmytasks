@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>AllMyTasks.Providers.ICal</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Ical.Net" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\AllMyTasks.Core\AllMyTasks.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="AllMyTasks.Providers.ICal.Tests" />
+  </ItemGroup>
+</Project>
