@@ -232,6 +232,24 @@ Last successful sync time is always shown, so stale data is never mistaken for f
 - **Preferences.** Shell and All tasks view state (mode, filters, sort, grouping) are saved as JSON in `settings`.
 - **First run.** Until providers can be added, an empty database is seeded with sample data through the sync path.
 
+## Implementation notes (M4)
+
+- `SyncEngine` (Core/Sync) syncs each visible collection: previous state from the repository, provider call, one
+  expiry retry, empty-snapshot guard, `IItemStore.ApplyAsync`, then the new state is saved. The cache write and the state
+  write are two steps; a crash between them only repeats idempotent changes on the next sync.
+- One sync per source at a time (concurrent requests join it); up to 4 sources in parallel. Hidden collections are
+  not synced. Failures are recorded in `SourceStatus`, not thrown; status text never contains provider messages.
+- Backoff 1, 2, 4 ... 30 minutes (`Backoff`). Auth failures stop automatic retries until the user edits the source
+  (`ResetAttentionAsync`); a manual Refresh still tries.
+- Empty-snapshot guard: an unconfirmed empty full snapshot is refused when the collection holds at least 5 items;
+  providers that know a collection is really empty set `SyncResult.ConfirmedEmpty`.
+- `SyncScheduler`: startup sync, 30 s tick, window re-activation; interval per source via the `refreshMinutes` config
+  value (default 15, minimum 1).
+- Status is persisted (migration 002), so a restart shows the last known state.
+- `ISourceFactory` + `SourceConfigSchema` drive the Add/Edit source form; `SourceRegistry` splits secret fields
+  into the secret store and the rest into config. `SampleSourceFactory` ("sample") is the only provider until M5; the app's
+  first run adds one through the registry and the first sync fills the database.
+
 ## Open questions
 
 - Encrypt the database at rest?

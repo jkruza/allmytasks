@@ -27,6 +27,9 @@ public interface IItemStore
         TimeZoneInfo displayZone,
         CancellationToken cancellationToken = default);
 
+    /// <summary>How many events and tasks are cached in the collection (overrides count too).</summary>
+    Task<int> CountItemsAsync(string sourceId, string collectionId, CancellationToken cancellationToken = default);
+
     /// <summary>Returns all cached tasks.</summary>
     Task<IReadOnlyList<TaskItem>> GetTasksAsync(CancellationToken cancellationToken = default);
 }

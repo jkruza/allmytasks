@@ -1,0 +1,42 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:AllMyTasks.ViewModels"
+        x:Class="AllMyTasks.Views.SourcesWindow"
+        x:DataType="vm:SourcesViewModel"
+        Title="Sources" Width="720" Height="520" MinWidth="480" MinHeight="300"
+        WindowStartupLocation="CenterOwner">
+  <DockPanel Margin="16">
+    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="8" Margin="0,0,0,12">
+      <Button Content="Add source…" Command="{Binding AddCommand}" />
+      <Button Content="Refresh all" Command="{Binding RefreshAllCommand}" />
+    </StackPanel>
+    <TextBlock Text="No sources yet. Add one to see its calendars and tasks." IsVisible="{Binding IsEmpty}" Opacity="0.7" />
+    <ScrollViewer>
+      <ItemsControl ItemsSource="{Binding Sources}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="vm:SourceItemViewModel">
+            <Border Padding="12" Margin="0,0,0,8" CornerRadius="6" Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
+                    AutomationProperties.Name="{Binding Name}">
+              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                <StackPanel Spacing="4">
+                  <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Border Width="10" Height="10" CornerRadius="5" Background="{Binding StatusBrush}" VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+                    <TextBlock Text="{Binding KindName}" Opacity="0.6" />
+                    <TextBlock Text="{Binding StatusText}" Foreground="{Binding StatusBrush}" />
+                  </StackPanel>
+                  <TextBlock Text="{Binding Detail}" TextWrapping="Wrap" Opacity="0.8" FontSize="12" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                  <Button Content="Refresh" Command="{Binding RefreshCommand}" IsEnabled="{Binding !IsBusy}" />
+                  <Button Content="Edit…" Command="{Binding EditCommand}" />
+                  <Button Content="Remove" Command="{Binding RemoveCommand}" />
+                </StackPanel>
+              </Grid>
+            </Border>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </ScrollViewer>
+  </DockPanel>
+</Window>

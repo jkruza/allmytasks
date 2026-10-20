@@ -1,5 +1,6 @@
 using AllMyTasks.Core.Model;
 using AllMyTasks.Core.Providers;
+using AllMyTasks.Core.Sync;
 
 namespace AllMyTasks.Core.Storage;
 
@@ -34,6 +35,11 @@ public interface ISourceRepository
 
     /// <summary>Stores the sync state of a collection; null forgets it so the next sync is a full one.</summary>
     Task SaveSyncStateAsync(string sourceId, string collectionId, SyncState? state, CancellationToken cancellationToken = default);
+
+    /// <summary>The persisted status of every source, so the UI shows the last known state at startup.</summary>
+    Task<IReadOnlyList<SourceStatus>> GetSourceStatusesAsync(CancellationToken cancellationToken = default);
+
+    Task SaveSourceStatusAsync(SourceStatus status, CancellationToken cancellationToken = default);
 
     /// <summary>"Reset cache": drops all cached items and sync state but keeps sources, collections and preferences.</summary>
     Task ResetCacheAsync(CancellationToken cancellationToken = default);
