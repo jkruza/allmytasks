@@ -162,6 +162,28 @@ the licence and current version at that time.
 - Never follow a redirect to a different scheme or send credentials to a different host
   than configured.
 
+## Implementation notes (M5)
+
+- Implemented: kind `ical` only (`IcalFeedFactory`, `IcalFeedSource`, `IcalFeedClient`, `IcalMapper`,
+  `IcalRecurrenceExpander`). CalDAV is M6.
+- The feed address is a **secret field** (it is stored in the secret store, not config). `webcal://` and
+  `webcals://` become `https://`; plain `http://` addresses are accepted for feeds.
+- Redirects are followed by hand (max 5), never from https to http; credentials are not involved for `ical`.
+  Body cap 20 MB, 30 s timeout, gzip/deflate handled by the handler. Errors never include the address.
+- A body that is not an iCalendar document (an HTML error page) is a `SourceDataException`, never an empty
+  snapshot. A real calendar with no events is a `ConfirmedEmpty` snapshot, so it can legitimately clear the cache.
+- State token = JSON `{etag, lastModified, hash}`. 304 and identical bytes give an empty delta.
+- Windows zone names are mapped with `TimeZoneInfo.TryConvertWindowsIdToIanaId` (so `W. Europe Standard Time`
+  becomes `Europe/Berlin`, which has the same rules); unknown zones become UTC with a warning.
+- Events without a `UID` get `noid-<hash of the component text>` so ids are stable across syncs (Ical.Net would
+  otherwise invent a random one each parse).
+- Overrides are separate rows with `RecurrenceId` (all-day: midnight UTC of the date). A broken component is skipped
+  with a warning; the parse retries event by event when the whole-file parse throws.
+- Expansion is bounded to 2000 occurrences per series per query. `RecurrenceExpanderBase` holds the shared
+  exclusion/override/cancellation/range rules, also used by `FakeRecurrenceExpander`, and de-duplicates RDATEs that
+  repeat a rule date.
+- Not done: `X-WR-TIMEZONE` for floating times, `VTIMEZONE` that disagrees with IANA (IANA wins, no warning).
+
 ## Open questions
 
 - Time-range limited sync: needed for very large calendars?

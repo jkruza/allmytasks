@@ -25,6 +25,7 @@
   <ItemGroup>
     <ProjectReference Include="..\AllMyTasks.Core\AllMyTasks.Core.csproj" />
     <ProjectReference Include="..\AllMyTasks.Storage.Sqlite\AllMyTasks.Storage.Sqlite.csproj" />
+    <ProjectReference Include="..\AllMyTasks.Providers.ICal\AllMyTasks.Providers.ICal.csproj" />
     <ProjectReference Include="..\AllMyTasks.Secrets\AllMyTasks.Secrets.csproj" />
   </ItemGroup>
 </Project>

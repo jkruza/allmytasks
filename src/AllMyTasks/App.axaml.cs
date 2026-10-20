@@ -1,8 +1,8 @@
-using AllMyTasks.Core.Calendar;
 using AllMyTasks.Core.Samples;
 using AllMyTasks.Core.Storage;
 using AllMyTasks.Core.Sync;
 using AllMyTasks.Core.Views;
+using AllMyTasks.Providers.ICal;
 using AllMyTasks.Secrets;
 using AllMyTasks.Services;
 using AllMyTasks.Storage.Sqlite;
@@ -53,7 +53,8 @@ public sealed partial class App : Application
         // Secrets are not needed by the sample provider; the store is created lazily and only asks the user when
         // something first needs it.
         var secrets = new SecretStoreFactory(dataDirectory, new DialogSecretPrompt(desktop));
-        var registry = new SourceRegistry([new SampleSourceFactory(clock, zone)], sources, secrets);
+        var feedFactory = new IcalFeedFactory();
+        var registry = new SourceRegistry([feedFactory, new SampleSourceFactory(clock, zone)], sources, secrets);
         var engine = new SyncEngine(items, sources, registry, clock);
         var scheduler = new SyncScheduler(engine, sources, clock);
         var dialogs = new DialogService(desktop);
@@ -66,7 +67,7 @@ public sealed partial class App : Application
             registry.AddAsync(SampleSourceFactory.KindName, "Sample data", new Dictionary<string, string>()).GetAwaiter().GetResult();
         }
 
-        var agenda = new AgendaService(items, sources, new FakeRecurrenceExpander(), clock);
+        var agenda = new AgendaService(items, sources, new IcalRecurrenceExpander(), clock);
         var shell = new CalendarShellViewModel(
             agenda,
             new TaskListService(items, sources, clock),
@@ -82,6 +83,7 @@ public sealed partial class App : Application
         desktop.Exit += (_, _) =>
         {
             scheduler.Dispose();
+            feedFactory.Dispose();
             shell.Dispose();
             engine.Dispose();
             secrets.Dispose();

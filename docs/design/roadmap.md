@@ -6,12 +6,13 @@ rough: S ≈ a few days, M ≈ 1-2 weeks, L ≈ several weeks of part-time work.
 
 ## Where we are
 
-M1 to M4 are implemented: the domain model, provider interfaces, in-memory sources, a fake
+M1 to M5 are implemented: the domain model, provider interfaces, in-memory sources, a fake
 recurrence expander, the Core view logic (`AgendaService`, day/week/month/upcoming layouts,
 `TaskListService`), `InMemoryStore`, and the Avalonia shell with four calendar views and All
 tasks over sample data, backed by the SQLite store with settings and secret stores. The sync engine, scheduler,
-source registry and the Sources / Add source UI are in; the sample provider is the only provider.
-Everything from M5 on is still to do.
+source registry and the Sources / Add source UI are in; the `ical` feed provider
+(`AllMyTasks.Providers.ICal`) and the real recurrence expander (Ical.Net) are in, next to the sample provider.
+Everything from M6 on is still to do.
 
 ## Milestones
 
