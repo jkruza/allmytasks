@@ -1,6 +1,6 @@
-using AllMyTasks.Core.Model;
-using AllMyTasks.Core.Providers;
-using AllMyTasks.Core.Tasks;
+using AllMyTasks.Core.Calendar;
+using AllMyTasks.Core.Samples;
+using AllMyTasks.Core.Views;
 using AllMyTasks.ViewModels;
 using AllMyTasks.Views;
 using Avalonia;
@@ -17,34 +17,20 @@ public sealed partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
+            var clock = TimeProvider.System;
             var zone = TimeZoneInfo.Local;
-            var today = DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, zone).DateTime);
-            var aggregator = new TaskAggregator([CreateSampleSource(today)], zone);
-            var viewModel = new MainWindowViewModel(aggregator, zone);
-            desktop.MainWindow = new MainWindow { DataContext = viewModel };
-            _ = viewModel.LoadCommand.ExecuteAsync(null);
+            var today = DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(clock.GetUtcNow(), zone).DateTime);
+
+            // Sample data until real providers and the local store exist (M3+).
+            var store = SampleData.CreateStoreAsync(today, zone).GetAwaiter().GetResult();
+            var agenda = new AgendaService(store, store, new FakeRecurrenceExpander(), clock);
+            var shell = new CalendarShellViewModel(agenda, new TaskListService(store, store, clock), store, clock, zone);
+
+            desktop.MainWindow = new MainWindow { DataContext = shell };
+            desktop.Exit += (_, _) => shell.Dispose();
+            _ = shell.InitializeAsync();
         }
 
         base.OnFrameworkInitializationCompleted();
-    }
-
-    // Placeholder until real providers (Todoist, Google, Microsoft, CalDAV...) are added.
-    private static InMemoryTaskSource CreateSampleSource(DateOnly today)
-    {
-        const string SourceId = "sample";
-        const string ListId = "inbox";
-        var list = new CollectionInfo(SourceId, ListId, "Sample list", CollectionKind.TaskList);
-
-        return new InMemoryTaskSource(SourceId, "Sample tasks", [list],
-        [
-            new TaskItem(new ItemKey(SourceId, ListId, "1"), "Connect your first calendar", Due: new DueDate(today)),
-            new TaskItem(new ItemKey(SourceId, ListId, "2"), "Connect your first task list", Due: new DueDate(today.AddDays(1))),
-            new TaskItem(new ItemKey(SourceId, ListId, "3"), "Read CONTRIBUTING.md"),
-            new TaskItem(
-                new ItemKey(SourceId, ListId, "4"),
-                "Install All My Tasks",
-                Due: new DueDate(today.AddDays(-1)),
-                Status: TaskItemStatus.Completed),
-        ]);
     }
 }

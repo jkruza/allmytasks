@@ -220,6 +220,22 @@ Core layout code is the bulk of the logic, and all of it is deterministic given 
 - overdue placement rules, "now" cut-off in upcoming,
 - recurrence occurrences appearing in range, overrides replacing occurrences.
 
+## Implementation notes (M2)
+
+- `IItemStore` and `ISourceRepository` have in-memory implementations (`InMemoryStore`);
+  `SampleData` fills it through the normal sync path with deliberately awkward data.
+- `ViewQuery.IncludeOverdue` makes the service return open overdue tasks from before the
+  range; day agenda and upcoming set it, week and month do not.
+- `DueBucket` has an extra `Earlier` bucket for closed tasks whose due day is past.
+- `TaskFilter` collections use `CollectionRef(SourceId, CollectionId)`; the All tasks UI
+  follows the shared collection visibility instead of offering a second collection picker.
+- Month cells show a fixed number of items (3, minus bar lanes) plus "+N more"; sizing by
+  available height is not done.
+- Filter, sort and grouping state is not yet remembered between sessions (needs the settings
+  table from M3).
+- `TimelinePanel` and `SpanBarPanel` read placement from child view models (`ITimelinePlacement`,
+  `ISpanPlacement`); they do no layout decisions.
+
 ## Open questions
 
 - Do tasks show in week/month by default, or behind a toggle? Proposal: shown, with the

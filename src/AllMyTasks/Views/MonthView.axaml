@@ -1,0 +1,72 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:AllMyTasks.ViewModels"
+             xmlns:views="using:AllMyTasks.Views"
+             xmlns:c="using:AllMyTasks.Controls"
+             x:Class="AllMyTasks.Views.MonthView"
+             x:DataType="vm:MonthViewModel">
+  <DockPanel Margin="8">
+    <ItemsControl DockPanel.Dock="Top" ItemsSource="{Binding WeekdayHeaders}">
+      <ItemsControl.ItemsPanel>
+        <ItemsPanelTemplate><UniformGrid Rows="1" /></ItemsPanelTemplate>
+      </ItemsControl.ItemsPanel>
+      <ItemsControl.ItemTemplate>
+        <DataTemplate x:DataType="x:String">
+          <TextBlock Text="{Binding}" HorizontalAlignment="Center" FontWeight="SemiBold" Margin="0,4" />
+        </DataTemplate>
+      </ItemsControl.ItemTemplate>
+    </ItemsControl>
+    <ItemsControl ItemsSource="{Binding Rows}">
+      <ItemsControl.ItemsPanel>
+        <ItemsPanelTemplate><UniformGrid Columns="1" /></ItemsPanelTemplate>
+      </ItemsControl.ItemsPanel>
+      <ItemsControl.ItemTemplate>
+        <DataTemplate x:DataType="vm:MonthRowViewModel">
+          <Grid>
+            <ItemsControl ItemsSource="{Binding Days}">
+              <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate><UniformGrid Rows="1" /></ItemsPanelTemplate>
+              </ItemsControl.ItemsPanel>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:MonthCellViewModel">
+                  <Border BorderThickness="1" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" Padding="2"
+                          Opacity="{Binding Opacity}">
+                    <DockPanel>
+                      <Button DockPanel.Dock="Top" Command="{Binding OpenDayCommand}" Padding="4,0" Background="Transparent" BorderThickness="0"
+                              HorizontalAlignment="Left" AutomationProperties.Name="Open day">
+                        <TextBlock Text="{Binding DayNumber}" FontWeight="SemiBold" />
+                      </Button>
+                      <Button DockPanel.Dock="Bottom" Command="{Binding OpenDayCommand}" Content="{Binding MoreText}" IsVisible="{Binding HasMore}"
+                              Padding="4,0" Background="Transparent" BorderThickness="0" FontSize="11" />
+                      <ItemsControl ItemsSource="{Binding Items}" Margin="{Binding ItemsMargin}">
+                        <ItemsControl.ItemTemplate>
+                          <DataTemplate x:DataType="vm:EntryItem">
+                            <views:EntryChip Margin="0,1" />
+                          </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                      </ItemsControl>
+                    </DockPanel>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <!-- All-day and multi-day bars float over the cells, below the day numbers. -->
+            <ItemsControl ItemsSource="{Binding Bars}" Margin="0,26,0,0" VerticalAlignment="Top" IsHitTestVisible="True">
+              <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate><c:SpanBarPanel ColumnCount="7" LaneHeight="20" /></ItemsPanelTemplate>
+              </ItemsControl.ItemsPanel>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:SpanBarItem">
+                  <Border Background="{Binding ChipBackground}" CornerRadius="3" Padding="4,0" ToolTip.Tip="{Binding Spoken}"
+                          AutomationProperties.Name="{Binding Spoken}">
+                    <TextBlock Text="{Binding BarText}" Foreground="{Binding ChipForeground}" FontSize="12" TextTrimming="CharacterEllipsis" />
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </Grid>
+        </DataTemplate>
+      </ItemsControl.ItemTemplate>
+    </ItemsControl>
+  </DockPanel>
+</UserControl>

@@ -1,0 +1,65 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:AllMyTasks.ViewModels"
+             x:Class="AllMyTasks.Views.TasksView"
+             x:DataType="vm:TasksViewModel">
+  <DockPanel Margin="12">
+    <!-- Filter bar -->
+    <Border DockPanel.Dock="Top" Padding="0,0,0,8">
+      <WrapPanel Orientation="Horizontal">
+        <TextBox Text="{Binding SearchText}" PlaceholderText="Search title and notes" Width="220" Margin="0,0,8,6" />
+        <ComboBox ItemsSource="{x:Static vm:TasksViewModel.StatusChoices}" SelectedItem="{Binding Status}" Width="120" Margin="0,0,8,6" />
+        <ComboBox ItemsSource="{x:Static vm:TasksViewModel.DueChoices}" SelectedItem="{Binding Due}" Width="150" Margin="0,0,8,6" />
+        <StackPanel Orientation="Horizontal" Spacing="2" Margin="0,0,8,6" VerticalAlignment="Center">
+          <TextBlock Text="Priority:" VerticalAlignment="Center" Margin="0,0,4,0" />
+          <ToggleButton Content="High" IsChecked="{Binding High}" />
+          <ToggleButton Content="Medium" IsChecked="{Binding Medium}" />
+          <ToggleButton Content="Low" IsChecked="{Binding Low}" />
+          <ToggleButton Content="None" IsChecked="{Binding NoPriority}" />
+        </StackPanel>
+        <TextBox Text="{Binding LabelsText}" PlaceholderText="Labels, comma-separated" Width="190" Margin="0,0,4,6" />
+        <CheckBox Content="All labels" IsChecked="{Binding AllLabels}" Margin="0,0,12,6" />
+        <ComboBox ItemsSource="{x:Static vm:TasksViewModel.SortChoices}" SelectedItem="{Binding Sort}" Width="140" Margin="0,0,4,6" />
+        <ToggleButton Content="↓ Desc" IsChecked="{Binding Descending}" Margin="0,0,8,6" />
+        <ComboBox ItemsSource="{x:Static vm:TasksViewModel.GroupChoices}" SelectedItem="{Binding Grouping}" Width="140" Margin="0,0,8,6" />
+        <TextBlock Text="{Binding Summary}" VerticalAlignment="Center" Opacity="0.7" Margin="0,0,0,6" />
+      </WrapPanel>
+    </Border>
+    <ListBox ItemsSource="{Binding Items}" SelectionMode="Single">
+      <ListBox.DataTemplates>
+        <DataTemplate DataType="vm:TaskGroupHeader">
+          <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,10,0,2">
+            <TextBlock Text="{Binding Text}" FontSize="15" FontWeight="SemiBold" />
+            <TextBlock Text="{Binding CountText}" Opacity="0.6" VerticalAlignment="Center" />
+          </StackPanel>
+        </DataTemplate>
+        <DataTemplate DataType="vm:TaskRowItem">
+          <Grid ColumnDefinitions="Auto,4,*,Auto,Auto,Auto,Auto" ColumnSpacing="10" Margin="{Binding Indent}" Opacity="{Binding Opacity}"
+                AutomationProperties.Name="{Binding Spoken}">
+            <TextBlock Grid.Column="0" Text="{Binding Glyph}" VerticalAlignment="Center" />
+            <Border Grid.Column="1" Background="{Binding Accent}" CornerRadius="2" />
+            <StackPanel Grid.Column="2" VerticalAlignment="Center">
+              <TextBlock Text="{Binding Title}" TextTrimming="CharacterEllipsis" />
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <TextBlock Text="{Binding LabelsText}" FontSize="11" Opacity="0.7" />
+                <TextBlock Text="{Binding SubtaskText}" FontSize="11" Opacity="0.7" />
+              </StackPanel>
+            </StackPanel>
+            <TextBlock Grid.Column="3" Text="{Binding PriorityText}" Foreground="DarkOrange" FontWeight="Bold" VerticalAlignment="Center" />
+            <TextBlock Grid.Column="4" Text="{Binding DueText}" VerticalAlignment="Center" Classes.overdue="{Binding IsOverdue}" />
+            <Border Grid.Column="5" Padding="6,1" CornerRadius="8" Background="{DynamicResource SystemControlBackgroundBaseLowBrush}" VerticalAlignment="Center">
+              <TextBlock Text="{Binding CollectionName}" FontSize="11" />
+            </Border>
+            <TextBlock Grid.Column="6" Text="{Binding SourceName}" FontSize="11" Opacity="0.6" VerticalAlignment="Center" />
+          </Grid>
+        </DataTemplate>
+      </ListBox.DataTemplates>
+      <ListBox.Styles>
+        <Style Selector="TextBlock.overdue">
+          <Setter Property="Foreground" Value="IndianRed" />
+          <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+      </ListBox.Styles>
+    </ListBox>
+  </DockPanel>
+</UserControl>

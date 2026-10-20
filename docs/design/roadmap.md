@@ -6,9 +6,10 @@ rough: S ≈ a few days, M ≈ 1-2 weeks, L ≈ several weeks of part-time work.
 
 ## Where we are
 
-M1 is implemented: the domain model, provider interfaces, in-memory sources, a fake
-recurrence expander and `TaskAggregator` on the new types, with sample tasks in the main
-window. Everything from M2 on is still to do.
+M1 and M2 are implemented: the domain model, provider interfaces, in-memory sources, a fake
+recurrence expander, the Core view logic (`AgendaService`, day/week/month/upcoming layouts,
+`TaskListService`), `InMemoryStore`, and the Avalonia shell with four calendar views and All
+tasks over sample data. Everything from M3 on is still to do.
 
 ## Milestones
 
