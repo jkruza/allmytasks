@@ -17,6 +17,7 @@ fix whichever is wrong in the same pull request.
 | [ical-caldav-provider.md](ical-caldav-provider.md) | First provider: iCalendar feeds and CalDAV, read-only |
 | [views.md](views.md) | Day agenda, week, month and upcoming views and the Core logic behind them |
 | [storage-and-sync.md](storage-and-sync.md) | Local database, credentials, cache and refresh behaviour |
+| [settings.md](settings.md) | Settings dialog, persistence of app preferences, week start |
 | [roadmap.md](roadmap.md) | Milestones and open questions |
 
 ## Goals
@@ -58,3 +59,4 @@ and the doc it points to.
 | 8 | Tasks get their own "All tasks" view (list + filters); the four calendar views show dated items only | Undated tasks have no place on a calendar; a list suits triage | [views.md](views.md#all-tasks) |
 | 9 | Linux secrets: Secret Service (GNOME Keyring / KWallet) first, else app-level encryption keyed from a 6-digit PIN | Matches the other OSes when a keyring exists; an explicit, honest fallback when it does not | [storage-and-sync.md](storage-and-sync.md#credentials) |
 | 10 | First provider handles both plain `.ics` URLs and CalDAV | `.ics` is the simplest useful thing; CalDAV reuses the same parsing | [ical-caldav-provider.md](ical-caldav-provider.md) |
+| 11 | Week start is Sunday or Monday, default follows the OS culture (Monday when the culture starts elsewhere) | Right for most users on first run; two options is all that was asked for | [settings.md](settings.md#week-start) |

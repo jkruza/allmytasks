@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Globalization;
+using AllMyTasks.Core.Settings;
 using AllMyTasks.Core.Storage;
 using AllMyTasks.Core.Sync;
 using AllMyTasks.Core.Views;
@@ -28,6 +29,8 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
     private readonly ViewStateStore? _state;
     private readonly SyncEngine? _engine;
     private readonly Action? _openSources;
+    private readonly Action? _openSettings;
+    private readonly SettingsService? _settings;
     private readonly Dictionary<string, SourceStatus> _statuses = [];
     private int _reloadScheduled;
     private bool _restoring;
@@ -42,11 +45,20 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
         TimeZoneInfo zone,
         ViewStateStore? state = null,
         SyncEngine? engine = null,
-        Action? openSources = null)
+        Action? openSources = null,
+        SettingsService? settings = null,
+        Action? openSettings = null)
     {
         _state = state;
         _engine = engine;
         _openSources = openSources;
+        _openSettings = openSettings;
+        _settings = settings;
+        if (settings is not null)
+        {
+            settings.Changed += OnSettingsChanged;
+        }
+
         if (engine is not null)
         {
             engine.SourceSynced += OnSourceSynced;
@@ -133,7 +145,7 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
         }
     }
 
-    private static DayOfWeek FirstDayOfWeek => CultureInfo.CurrentCulture.DateTimeFormat.FirstDayOfWeek;
+    private DayOfWeek FirstDayOfWeek => _settings?.FirstDayOfWeek ?? WeekStart.Resolve(WeekStartSetting.System, CultureInfo.CurrentCulture);
 
     partial void OnModeChanged(ViewMode value)
     {
@@ -209,6 +221,9 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
     [RelayCommand]
     private void OpenSources() => _openSources?.Invoke();
 
+    [RelayCommand]
+    private void OpenSettings() => _openSettings?.Invoke();
+
     /// <summary>Loads collections and the first view. Call once after the window is shown.</summary>
     public async Task InitializeAsync()
     {
@@ -229,6 +244,11 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
 
     public void Dispose()
     {
+        if (_settings is not null)
+        {
+            _settings.Changed -= OnSettingsChanged;
+        }
+
         if (_engine is not null)
         {
             _engine.SourceSynced -= OnSourceSynced;
@@ -304,6 +324,8 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
             await ReloadAsync();
         });
     }
+
+    private void OnSettingsChanged(object? sender, EventArgs e) => Dispatcher.UIThread.Post(() => _ = ReloadAsync());
 
     private void OnStatusChanged(object? sender, SourceStatus status) =>
         Dispatcher.UIThread.Post(() =>

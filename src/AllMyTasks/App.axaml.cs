@@ -70,6 +70,10 @@ public sealed partial class App : Application
             registry.AddAsync(SampleSourceFactory.KindName, "Sample data", new Dictionary<string, string>()).GetAwaiter().GetResult();
         }
 
+        var viewState = new ViewStateStore(settings);
+        var appSettings = new SettingsService(viewState);
+        appSettings.LoadAsync().GetAwaiter().GetResult();
+
         var agenda = new AgendaService(items, sources, new IcalRecurrenceExpander(), clock);
         CalendarShellViewModel? shell = null;
         shell = new CalendarShellViewModel(
@@ -78,9 +82,11 @@ public sealed partial class App : Application
             sources,
             clock,
             zone,
-            new ViewStateStore(settings),
+            viewState,
             engine,
-            () => dialogs.ShowSources(new SourcesViewModel(engine, registry, sources, clock, dialogs, () => shell!.OnCollectionsChangedAsync())));
+            () => dialogs.ShowSources(new SourcesViewModel(engine, registry, sources, clock, dialogs, () => shell!.OnCollectionsChangedAsync())),
+            appSettings,
+            () => _ = dialogs.ShowSettingsAsync(new SettingsViewModel(appSettings)));
 
         desktop.MainWindow = new MainWindow { DataContext = shell };
         desktop.MainWindow.Activated += (_, _) => _ = scheduler.OnWindowActivatedAsync();

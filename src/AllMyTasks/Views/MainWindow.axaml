@@ -64,6 +64,7 @@
               <TextBlock Text="{Binding SyncSummary}" FontSize="12" />
             </StackPanel>
           </Button>
+          <Button Content="⚙" Command="{Binding OpenSettingsCommand}" ToolTip.Tip="Settings" AutomationProperties.Name="Settings" />
           <Button Content="Refresh" Command="{Binding RefreshCommand}" ToolTip.Tip="Refresh (R)" />
         </StackPanel>
       </Grid>
