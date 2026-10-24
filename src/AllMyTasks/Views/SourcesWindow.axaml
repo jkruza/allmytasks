@@ -26,6 +26,10 @@
                     <TextBlock Text="{Binding StatusText}" Foreground="{Binding StatusBrush}" />
                   </StackPanel>
                   <TextBlock Text="{Binding Detail}" TextWrapping="Wrap" Opacity="0.8" FontSize="12" />
+                  <Expander Header="Technical details" Margin="0,6,0,0" IsVisible="{Binding HasErrorDetail}">
+                    <TextBox Text="{Binding ErrorDetail, Mode=OneWay}" IsReadOnly="True" TextWrapping="Wrap" AcceptsReturn="True"
+                             FontFamily="Cascadia Mono, Consolas, Menlo, monospace" FontSize="12" AutomationProperties.Name="Technical details" />
+                  </Expander>
                   <Expander Header="Calendars and lists" Margin="0,6,0,0" IsVisible="{Binding HasCollections}">
                     <ItemsControl ItemsSource="{Binding Collections}">
                       <ItemsControl.ItemTemplate>

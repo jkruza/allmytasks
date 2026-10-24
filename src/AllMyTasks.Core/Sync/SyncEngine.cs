@@ -3,6 +3,8 @@ using AllMyTasks.Core.Model;
 using AllMyTasks.Core.Providers;
 using AllMyTasks.Core.Storage;
 using AllMyTasks.Core.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace AllMyTasks.Core.Sync;
 
@@ -17,13 +19,15 @@ public sealed record SyncOptions(int MaxParallelSources = 4, int EmptySnapshotGu
 /// Pulls changes from every source into the local store and keeps per-source status. Providers never see the
 /// store; the engine never sees provider wire formats.
 /// </summary>
-public sealed class SyncEngine(
+public sealed partial class SyncEngine(
     IItemStore store,
     ISourceRepository repository,
     ISourceProvider sources,
     TimeProvider clock,
-    SyncOptions? options = null) : IDisposable
+    SyncOptions? options = null,
+    ILogger? logger = null) : IDisposable
 {
+    private readonly ILogger _logger = logger ?? NullLogger.Instance;
     private readonly SyncOptions _options = options ?? new SyncOptions();
     private readonly Lock _gate = new();
     private readonly Dictionary<string, Task> _running = [];
@@ -100,7 +104,7 @@ public sealed class SyncEngine(
         lock (_gate)
         {
             var current = _statuses.TryGetValue(sourceId, out var s) ? s : SourceStatus.NewFor(sourceId);
-            updated = current with { Kind = current.LastSyncedAt is null ? SourceStatusKind.New : SourceStatusKind.Ok, ConsecutiveFailures = 0, NextRetryAt = null, LastError = null };
+            updated = current with { Kind = current.LastSyncedAt is null ? SourceStatusKind.New : SourceStatusKind.Ok, ConsecutiveFailures = 0, NextRetryAt = null, LastError = null, LastErrorDetail = null };
             _statuses[sourceId] = updated;
         }
 
@@ -202,27 +206,37 @@ public sealed class SyncEngine(
             await SetStatusAsync(previous, persist: false, CancellationToken.None).ConfigureAwait(false);
             throw;
         }
-        catch (SourceAuthException)
+        catch (SourceAuthException ex)
         {
             // Retrying with the same credentials would only get the account locked. Wait for the user.
+            const string Error = "The server rejected the credentials.";
+            var detail = DetailFor(ex);
+            LogSyncFailed(_logger, sourceId, info.Kind, Error, DiagnosticText.Describe(ex, includeMessage: true), detail);
             await SetStatusAsync(
-                previous with { Kind = SourceStatusKind.NeedsAttention, LastError = "The server rejected the credentials.", NextRetryAt = null },
+                previous with { Kind = SourceStatusKind.NeedsAttention, LastError = Error, LastErrorDetail = detail, NextRetryAt = null },
                 persist: true,
                 CancellationToken.None).ConfigureAwait(false);
         }
-        catch (SourceUnavailableException)
+        catch (SourceUnavailableException ex)
         {
-            await FailAsync(previous, SourceStatusKind.Offline, "The server could not be reached.").ConfigureAwait(false);
+            const string Error = "The server could not be reached.";
+            LogSyncFailed(_logger, sourceId, info.Kind, Error, DiagnosticText.Describe(ex, includeMessage: true), DetailFor(ex));
+            await FailAsync(previous, SourceStatusKind.Offline, Error, DetailFor(ex)).ConfigureAwait(false);
         }
         catch (SourceException ex)
         {
-            await FailAsync(previous, SourceStatusKind.Error, Describe(ex)).ConfigureAwait(false);
+            var error = Describe(ex);
+            LogSyncFailed(_logger, sourceId, info.Kind, error, DiagnosticText.Describe(ex, includeMessage: true), DetailFor(ex));
+            await FailAsync(previous, SourceStatusKind.Error, error, DetailFor(ex)).ConfigureAwait(false);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
             // A provider that breaks its contract (throws something else) must not take the app down or stop the
-            // other sources. The exception text is dropped: it may contain private details.
-            await FailAsync(previous, SourceStatusKind.Error, "The sync failed unexpectedly.").ConfigureAwait(false);
+            // other sources. The message is kept out of the status (it may contain private details); the type and
+            // the first stack frames are shown, and the local log gets the message with addresses removed.
+            const string Error = "The sync failed unexpectedly.";
+            LogSyncFailed(_logger, sourceId, info.Kind, Error, DiagnosticText.Describe(ex, includeMessage: true), string.Empty);
+            await FailAsync(previous, SourceStatusKind.Error, Error, DiagnosticText.Describe(ex, includeMessage: false)).ConfigureAwait(false);
         }
         finally
         {
@@ -296,6 +310,11 @@ public sealed class SyncEngine(
             }
         }
 
+        foreach (var warning in result.Warnings)
+        {
+            LogItemWarning(_logger, collection.SourceId, collection.Id, warning.ItemId, warning.Message);
+        }
+
         // The cache and the new state are written one after the other: a crash in between only means the next sync
         // repeats the same idempotent changes.
         await apply(result, cancellationToken).ConfigureAwait(false);
@@ -304,13 +323,14 @@ public sealed class SyncEngine(
         return (result.Warnings.Count, null, changed);
     }
 
-    private async Task FailAsync(SourceStatus previous, SourceStatusKind kind, string message)
+    private async Task FailAsync(SourceStatus previous, SourceStatusKind kind, string message, string? detail)
     {
         var failures = previous.ConsecutiveFailures + 1;
         var failed = previous with
         {
             Kind = kind,
             LastError = message,
+            LastErrorDetail = detail,
             ConsecutiveFailures = failures,
             NextRetryAt = clock.GetUtcNow() + Backoff.Delay(failures),
         };
@@ -323,6 +343,29 @@ public sealed class SyncEngine(
         SourceDataException => "The server's response could not be understood.",
         _ => "The sync failed.",
     };
+
+    // What the provider chose to disclose, plus the types of whatever it wrapped. Messages are left out here.
+    private static string? DetailFor(SourceException ex)
+    {
+        var parts = new List<string>();
+        if (!string.IsNullOrWhiteSpace(ex.Diagnostics))
+        {
+            parts.Add(ex.Diagnostics);
+        }
+
+        for (var inner = ex.InnerException; inner is not null; inner = inner.InnerException)
+        {
+            parts.Add("Caused by: " + inner.GetType().FullName);
+        }
+
+        return parts.Count == 0 ? null : string.Join('\n', parts);
+    }
+
+    [LoggerMessage(Level = LogLevel.Warning, Message = "Sync of source {SourceId} ({Kind}) failed: {Error}\n{Cause}\n{Detail}")]
+    private static partial void LogSyncFailed(ILogger logger, string sourceId, string kind, string error, string cause, string? detail);
+
+    [LoggerMessage(Level = LogLevel.Warning, Message = "Source {SourceId}, collection {CollectionId}, item {ItemId}: {Problem}")]
+    private static partial void LogItemWarning(ILogger logger, string sourceId, string collectionId, string? itemId, string problem);
 
     private SourceStatus Current(string sourceId)
     {

@@ -30,6 +30,7 @@ public enum SourceStatusKind
 /// <param name="SkippedItems">Items skipped in the last sync because they could not be read.</param>
 /// <param name="ConsecutiveFailures">Failures since the last success, for backoff.</param>
 /// <param name="NextRetryAt">When the next automatic attempt is due after a failure.</param>
+/// <param name="LastErrorDetail">Technical details of the last failure, for troubleshooting. Never contains credentials or addresses.</param>
 public sealed record SourceStatus(
     string SourceId,
     SourceStatusKind Kind,
@@ -38,7 +39,8 @@ public sealed record SourceStatus(
     string? Warning = null,
     int SkippedItems = 0,
     int ConsecutiveFailures = 0,
-    DateTimeOffset? NextRetryAt = null)
+    DateTimeOffset? NextRetryAt = null,
+    string? LastErrorDetail = null)
 {
     public string SourceId { get; init => field = Guard.NotBlank(value); } = Guard.NotBlank(SourceId);
 

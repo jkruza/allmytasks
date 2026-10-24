@@ -12,7 +12,28 @@ namespace AllMyTasks.Providers.ICal;
 /// <param name="ETag">The <c>ETag</c> header, if any.</param>
 /// <param name="LastModified">The <c>Last-Modified</c> header, if any.</param>
 /// <param name="Hash">A hash of the body bytes, to skip no-op writes when the server sends no validators.</param>
-public sealed record FeedResponse(bool NotModified, string Text, string? ETag, string? LastModified, string Hash);
+/// <param name="Info">How the response arrived, for troubleshooting.</param>
+public sealed record FeedResponse(bool NotModified, string Text, string? ETag, string? LastModified, string Hash, FeedResponseInfo? Info = null);
+
+/// <summary>Facts about an HTTP response that help explain a failure. Holds the host only, never the full address.</summary>
+/// <param name="Status">The HTTP status code.</param>
+/// <param name="Reason">The reason phrase, if any.</param>
+/// <param name="ContentType">The <c>Content-Type</c> header, if any.</param>
+/// <param name="Bytes">Body size in bytes after decompression, or null if the body was not read.</param>
+/// <param name="Host">The host that answered (after any redirects).</param>
+/// <param name="Redirects">How many redirects were followed.</param>
+public sealed record FeedResponseInfo(int Status, string? Reason, string? ContentType, long? Bytes, string Host, int Redirects)
+{
+    public override string ToString() => string.Join(
+        '\n',
+        new[]
+        {
+            $"HTTP {Status}{(string.IsNullOrEmpty(Reason) ? string.Empty : " " + DiagnosticText.Scrub(Reason, 60))}",
+            $"Content-Type: {(string.IsNullOrEmpty(ContentType) ? "(none)" : DiagnosticText.Scrub(ContentType, 100))}",
+            Bytes is { } bytes ? $"Body: {bytes} bytes" : null,
+            $"Host: {DiagnosticText.Scrub(Host, 100)}{(Redirects > 0 ? $" (after {Redirects} redirect{(Redirects == 1 ? string.Empty : "s")})" : string.Empty)}",
+        }.OfType<string>());
+}
 
 /// <summary>Validators from the previous fetch, sent back as <c>If-None-Match</c> / <c>If-Modified-Since</c>.</summary>
 public sealed record FeedValidators(string? ETag, string? LastModified);
@@ -20,7 +41,8 @@ public sealed record FeedValidators(string? ETag, string? LastModified);
 /// <summary>
 /// Fetches an <c>.ics</c> feed. Redirects are followed by hand so that one is never followed from https to http and
 /// the request never leaves the redirect chain's own scheme rules; the body is size-capped and the request times out.
-/// Exceptions are <see cref="SourceException"/> subtypes with messages that never include the URL.
+/// Exceptions are <see cref="SourceException"/> subtypes with messages that never include the URL; their
+/// <see cref="SourceException.Diagnostics"/> carry the HTTP status, content type and host (never the path or query).
 /// </summary>
 public sealed class IcalFeedClient(HttpMessageHandler handler, long maxBytes = IcalFeedClient.DefaultMaxBytes, TimeSpan? timeout = null) : IDisposable
 {
@@ -50,12 +72,21 @@ public sealed class IcalFeedClient(HttpMessageHandler handler, long maxBytes = I
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
-            throw new SourceUnavailableException("The feed took too long to respond.");
+            throw new SourceUnavailableException("The feed took too long to respond.")
+            {
+                Diagnostics = $"No complete response within {_timeout.TotalSeconds:0} seconds.",
+            };
         }
         catch (HttpRequestException ex)
         {
             // The framework message can contain the host and sometimes more; only the kind is kept.
-            throw new SourceUnavailableException($"The feed could not be reached ({ex.HttpRequestError}).");
+            // The exception itself is not attached: its message can hold the address. Only the kinds are kept.
+            throw new SourceUnavailableException($"The feed could not be reached ({ex.HttpRequestError}).")
+            {
+                Diagnostics = $"HttpRequestError: {ex.HttpRequestError}"
+                    + (ex.StatusCode is { } code ? $"\nHTTP {(int)code}" : string.Empty)
+                    + (ex.InnerException is { } inner ? $"\nCaused by: {inner.GetType().FullName}" : string.Empty),
+            };
         }
     }
 
@@ -91,25 +122,27 @@ public sealed class IcalFeedClient(HttpMessageHandler handler, long maxBytes = I
                 return new FeedResponse(true, string.Empty, validators?.ETag, validators?.LastModified, string.Empty);
             }
 
+            var info = Describe(response, current, hop, bytes: null);
             if (response.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
             {
-                throw new SourceAuthException("The server refused access to the feed.");
+                throw new SourceAuthException("The server refused access to the feed.") { Diagnostics = info.ToString() };
             }
 
             if (status >= 500 || response.StatusCode is HttpStatusCode.RequestTimeout or HttpStatusCode.TooManyRequests)
             {
-                throw new SourceUnavailableException($"The feed server answered with an error (HTTP {status}).");
+                throw new SourceUnavailableException($"The feed server answered with an error (HTTP {status}).") { Diagnostics = info.ToString() };
             }
 
             if (!response.IsSuccessStatusCode)
             {
-                throw new SourceException($"The feed server answered HTTP {status}.");
+                var hint = status == 404 ? "\nThe address does not exist. A private feed address stops working when it is reset." : string.Empty;
+                throw new SourceException($"The feed server answered HTTP {status}.") { Diagnostics = info + hint };
             }
 
-            return await ReadAsync(response, cancellationToken).ConfigureAwait(false);
+            return await ReadAsync(response, current, hop, cancellationToken).ConfigureAwait(false);
         }
 
-        throw new SourceDataException("The feed redirected too many times.");
+        throw new SourceDataException("The feed redirected too many times.") { Diagnostics = $"More than {MaxRedirects} redirects; last host: {DiagnosticText.Scrub(current.Host, 100)}" };
     }
 
     /// <summary>Resolves a redirect, refusing to downgrade from https to http.</summary>
@@ -134,11 +167,17 @@ public sealed class IcalFeedClient(HttpMessageHandler handler, long maxBytes = I
         return next;
     }
 
-    private async Task<FeedResponse> ReadAsync(HttpResponseMessage response, CancellationToken cancellationToken)
+    private static FeedResponseInfo Describe(HttpResponseMessage response, Uri current, int redirects, long? bytes) =>
+        new((int)response.StatusCode, response.ReasonPhrase, response.Content.Headers.ContentType?.ToString(), bytes, current.Host, redirects);
+
+    private async Task<FeedResponse> ReadAsync(HttpResponseMessage response, Uri current, int redirects, CancellationToken cancellationToken)
     {
         if (response.Content.Headers.ContentLength is { } length && length > maxBytes)
         {
-            throw new SourceDataException("The feed is larger than the allowed size.");
+            throw new SourceDataException("The feed is larger than the allowed size.")
+            {
+                Diagnostics = Describe(response, current, redirects, length) + $"\nLimit: {maxBytes} bytes",
+            };
         }
 
         await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
@@ -149,7 +188,10 @@ public sealed class IcalFeedClient(HttpMessageHandler handler, long maxBytes = I
         {
             if (buffer.Length + read > maxBytes)
             {
-                throw new SourceDataException("The feed is larger than the allowed size.");
+                throw new SourceDataException("The feed is larger than the allowed size.")
+                {
+                    Diagnostics = Describe(response, current, redirects, null) + $"\nLimit: {maxBytes} bytes",
+                };
             }
 
             buffer.Write(chunk, 0, read);
@@ -159,7 +201,7 @@ public sealed class IcalFeedClient(HttpMessageHandler handler, long maxBytes = I
         var text = Decode(bytes, response.Content.Headers.ContentType);
         var etag = response.Headers.ETag?.ToString();
         var lastModified = response.Content.Headers.LastModified?.ToString("R", System.Globalization.CultureInfo.InvariantCulture);
-        return new FeedResponse(false, text, etag, lastModified, Convert.ToHexString(SHA256.HashData(bytes)));
+        return new FeedResponse(false, text, etag, lastModified, Convert.ToHexString(SHA256.HashData(bytes)), Describe(response, current, redirects, bytes.Length));
     }
 
     /// <summary>Decodes with a BOM if present, else the declared charset, else UTF-8 (falling back to Latin-1 for invalid UTF-8).</summary>
