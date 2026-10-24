@@ -16,6 +16,7 @@ fix whichever is wrong in the same pull request.
 | [providers.md](providers.md) | Provider abstraction, capabilities, sync contract, errors |
 | [ical-caldav-provider.md](ical-caldav-provider.md) | First provider: iCalendar feeds and CalDAV, read-only |
 | [views.md](views.md) | Day agenda, week, month and upcoming views and the Core logic behind them |
+| [details-pane.md](details-pane.md) | Right-hand details pane and the calendar entry details shown in it |
 | [storage-and-sync.md](storage-and-sync.md) | Local database, credentials, cache and refresh behaviour |
 | [settings.md](settings.md) | Settings dialog, persistence of app preferences, week start |
 | [roadmap.md](roadmap.md) | Milestones and open questions |
