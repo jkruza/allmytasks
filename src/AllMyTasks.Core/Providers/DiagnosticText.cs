@@ -6,7 +6,7 @@ namespace AllMyTasks.Core.Providers;
 /// <summary>Helpers for building troubleshooting text that is safe to show and log: no addresses, no control characters, bounded size.</summary>
 public static partial class DiagnosticText
 {
-    private const int MaxFrames = 4;
+    private static readonly int MaxFrames = 4;
 
     /// <summary>Replaces anything that looks like an address with <c>&lt;url&gt;</c>, flattens whitespace and control characters, and truncates.</summary>
     public static string Scrub(string? text, int maxLength = 300)

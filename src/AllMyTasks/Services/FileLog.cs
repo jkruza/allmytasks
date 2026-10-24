@@ -11,7 +11,7 @@ namespace AllMyTasks.Services;
 /// </summary>
 public sealed class FileLog : ILogger
 {
-    private const long MaxBytes = 1024 * 1024;
+    private static readonly long MaxBytes = 1024 * 1024;
 
     private readonly Lock _gate = new();
     private readonly TimeProvider _clock;
