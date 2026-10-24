@@ -56,17 +56,13 @@ depends on nobody else being able to sign in as you.
 
 1. Make sure `main` is green.
 2. Tag and push: `git tag -s v0.1.0 -m "v0.1.0" && git push origin v0.1.0`
-3. The Release workflow tests and publishes self-contained single-file **Linux** builds
-   (linux-x64, linux-arm64), then waits. Windows and macOS are not built automatically.
+3. The Release workflow tests, publishes self-contained single-file builds for
+   win-x64, win-arm64, linux-x64, linux-arm64, osx-x64 and osx-arm64, then waits.
 4. Approve the `release` environment deployment in the Actions run.
-5. To add Windows and/or macOS builds: Actions → Release → Run workflow, choose the
-   `v*` tag under "Use workflow from" (not a branch), tick Windows and/or macOS, and run.
-   Approve the `release` deployment again. The binaries are added to the same draft release.
-6. Review the draft release, then publish it. Each archive has a `.sha256` file next to it.
+5. Review the draft release it creates, then publish it.
 
 Binaries are not code-signed yet, so Windows SmartScreen and macOS Gatekeeper will warn.
-macOS builds are plain executables, not `.app` bundles. CI (build, test, format) still
-runs on Windows, Linux and macOS for every pull request; only the release binaries are on demand.
+macOS builds are plain executables, not `.app` bundles.
 
 ## Dependencies
 
