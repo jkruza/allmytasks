@@ -11,7 +11,7 @@ namespace AllMyTasks.Providers.ICal;
 /// body is parsed into a full snapshot. The feed address is a credential, so it is read from the secret store at
 /// sync time through <paramref name="getUrl"/> and never logged beyond scheme and host.
 /// </summary>
-public sealed class IcalFeedSource : SourceBase, ICalendarSource
+public sealed partial class IcalFeedSource : SourceBase, ICalendarSource
 {
     public const string KindName = "ical";
     public const string CollectionId = "feed";
@@ -50,6 +50,11 @@ public sealed class IcalFeedSource : SourceBase, ICalendarSource
             ct => _client.FetchAsync(url, known is null ? null : new FeedValidators(known.ETag, known.LastModified), ct),
             cancellationToken: cancellationToken).ConfigureAwait(false);
 
+        if (response.Info is { } info)
+        {
+            LogFetched(Logger, Id, info.Host, info.Status, info.ContentType ?? "(none)", info.Bytes ?? -1, info.Redirects);
+        }
+
         if (response.NotModified && known is not null)
         {
             return SyncResult.Delta<CalendarEvent>([], [], previous!);
@@ -62,25 +67,44 @@ public sealed class IcalFeedSource : SourceBase, ICalendarSource
             return SyncResult.Delta<CalendarEvent>([], [], state.ToSyncState());
         }
 
+        if (!IcalMapper.LooksLikeCalendar(response.Text))
+        {
+            throw new SourceDataException("The response is not an iCalendar document.") { Diagnostics = NotCalendarDiagnostics(response) };
+        }
+
         IcalParseResult parsed;
         try
         {
             parsed = IcalMapper.Parse(response.Text, collection.SourceId, collection.Id);
         }
-        catch (SourceException)
-        {
-            throw;
-        }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            // The parser's own messages can quote feed content.
-            throw new SourceDataException("The feed could not be read.", ex);
+            // The parser's own messages can quote a few characters of the feed; they are kept for troubleshooting but
+            // scrubbed of addresses, and only ever shown in the app and written to the local log.
+            throw new SourceDataException(ex is SourceException ? ex.Message : "The feed could not be read.", ex)
+            {
+                Diagnostics = $"{response.Info}\nParser error: {DiagnosticText.Describe(ex, includeMessage: true)}",
+            };
         }
 
         _calendarName = parsed.CalendarName;
         // A valid calendar with no events is genuinely empty; error pages never get this far (not iCalendar).
         return SyncResult.Snapshot(parsed.Events, state.ToSyncState(), parsed.Warnings, confirmedEmpty: true);
     }
+
+    private static string NotCalendarDiagnostics(FeedResponse response)
+    {
+        var text = response.Text;
+        var hint = text.TrimStart().StartsWith('<')
+            ? "The body looks like a web page (a sign-in, consent or error page), not a calendar. For Google Calendar use the \"Secret address in iCal format\" from the calendar's settings under \"Integrate calendar\"."
+            : text.Length == 0
+                ? "The body is empty."
+                : "The body does not start with BEGIN:VCALENDAR.";
+        return $"{response.Info}\nBody starts with: \"{DiagnosticText.Snippet(text)}\"\n{hint}";
+    }
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "Source {SourceId} fetched from {Host}: HTTP {Status}, {ContentType}, {Bytes} bytes, {Redirects} redirects")]
+    private static partial void LogFetched(ILogger logger, string sourceId, string host, int status, string contentType, long bytes, int redirects);
 
     private sealed record FeedState(string? ETag, string? LastModified, string Hash)
     {

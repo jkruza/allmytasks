@@ -10,6 +10,13 @@ public class SourceException : Exception
     {
     }
 
+    /// <summary>
+    /// Technical details for troubleshooting, such as the HTTP status, the content type and where parsing failed.
+    /// The provider vets this text: it must not contain credentials or feed addresses (see <see cref="DiagnosticText"/>),
+    /// but it may quote a short piece of the response. It is shown only in the app's own source details and local log.
+    /// </summary>
+    public string? Diagnostics { get; init; }
+
     public SourceException(string message)
         : base(message)
     {

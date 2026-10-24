@@ -14,7 +14,7 @@ namespace AllMyTasks.Providers.ICal;
 
 /// <summary>What parsing a feed produced.</summary>
 /// <param name="Events">Events (masters and overrides) in the common model.</param>
-/// <param name="Warnings">Per-item problems that did not stop the parse. Never contain item content.</param>
+/// <param name="Warnings">Per-item problems that did not stop the parse. Never contain item content (they may name an exception type).</param>
 /// <param name="CalendarName">The <c>X-WR-CALNAME</c>, if any.</param>
 public sealed record IcalParseResult(IReadOnlyList<CoreEvent> Events, IReadOnlyList<SyncWarning> Warnings, string? CalendarName);
 
@@ -65,9 +65,9 @@ public static class IcalMapper
             {
                 events.Add(Map(component, sourceId, collectionId, warnings));
             }
-            catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or FormatException or OverflowException)
+            catch (Exception ex) when (ex is not OperationCanceledException)
             {
-                warnings.Add(new SyncWarning(component.Uid, "An event could not be read and was skipped."));
+                warnings.Add(new SyncWarning(component.Uid, $"An event could not be read and was skipped ({ex.GetType().Name})."));
             }
         }
 
@@ -143,7 +143,7 @@ public static class IcalMapper
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
-                warnings.Add(new SyncWarning(null, "An event could not be read and was skipped."));
+                warnings.Add(new SyncWarning(null, $"An event could not be read and was skipped ({ex.GetType().Name})."));
             }
         }
 

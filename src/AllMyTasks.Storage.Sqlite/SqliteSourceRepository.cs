@@ -180,7 +180,7 @@ public sealed class SqliteSourceRepository(SqliteDatabase database) : ISourceRep
     {
         await using var connection = await database.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
         await using var command = connection.CreateCommand();
-        command.CommandText = "SELECT id, status, last_synced_at, last_error, warning, skipped_items, consecutive_failures, next_retry_at FROM sources;";
+        command.CommandText = "SELECT id, status, last_synced_at, last_error, warning, skipped_items, consecutive_failures, next_retry_at, last_error_detail FROM sources;";
         var result = new List<SourceStatus>();
         await using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
@@ -194,7 +194,8 @@ public sealed class SqliteSourceRepository(SqliteDatabase database) : ISourceRep
                 reader.IsDBNull(4) ? null : reader.GetString(4),
                 reader.GetInt32(5),
                 reader.GetInt32(6),
-                ReadDate(reader, 7)));
+                ReadDate(reader, 7),
+                reader.IsDBNull(8) ? null : reader.GetString(8)));
         }
 
         return result;
@@ -207,7 +208,8 @@ public sealed class SqliteSourceRepository(SqliteDatabase database) : ISourceRep
         await using var command = connection.CreateCommand();
         command.CommandText = """
             UPDATE sources SET status = $status, last_synced_at = $synced, last_error = $error, warning = $warning,
-                               skipped_items = $skipped, consecutive_failures = $failures, next_retry_at = $retry
+                               skipped_items = $skipped, consecutive_failures = $failures, next_retry_at = $retry,
+                               last_error_detail = $detail
             WHERE id = $id;
             """;
         command.Parameters.AddWithValue("$id", status.SourceId);
@@ -215,6 +217,7 @@ public sealed class SqliteSourceRepository(SqliteDatabase database) : ISourceRep
         command.Parameters.AddWithValue("$synced", status.LastSyncedAt?.ToString("O", CultureInfo.InvariantCulture) ?? (object)DBNull.Value);
         command.Parameters.AddWithValue("$error", (object?)status.LastError ?? DBNull.Value);
         command.Parameters.AddWithValue("$warning", (object?)status.Warning ?? DBNull.Value);
+        command.Parameters.AddWithValue("$detail", (object?)status.LastErrorDetail ?? DBNull.Value);
         command.Parameters.AddWithValue("$skipped", status.SkippedItems);
         command.Parameters.AddWithValue("$failures", status.ConsecutiveFailures);
         command.Parameters.AddWithValue("$retry", status.NextRetryAt?.ToString("O", CultureInfo.InvariantCulture) ?? (object)DBNull.Value);
@@ -230,7 +233,7 @@ public sealed class SqliteSourceRepository(SqliteDatabase database) : ISourceRep
         await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
         await using var command = connection.CreateCommand();
         command.Transaction = transaction;
-        command.CommandText = "DELETE FROM events; DELETE FROM tasks; UPDATE collections SET sync_token = NULL; UPDATE sources SET last_synced_at = NULL, last_error = NULL, status = NULL, warning = NULL, skipped_items = 0, consecutive_failures = 0, next_retry_at = NULL;";
+        command.CommandText = "DELETE FROM events; DELETE FROM tasks; UPDATE collections SET sync_token = NULL; UPDATE sources SET last_synced_at = NULL, last_error = NULL, last_error_detail = NULL, status = NULL, warning = NULL, skipped_items = 0, consecutive_failures = 0, next_retry_at = NULL;";
         await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
         await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
     }

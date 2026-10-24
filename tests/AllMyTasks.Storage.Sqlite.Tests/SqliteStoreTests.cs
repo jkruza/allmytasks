@@ -3,6 +3,7 @@ using AllMyTasks.Core.Model;
 using AllMyTasks.Core.Providers;
 using AllMyTasks.Core.Samples;
 using AllMyTasks.Core.Storage;
+using AllMyTasks.Core.Sync;
 using AllMyTasks.Core.Tasks;
 using AllMyTasks.Core.Views;
 
@@ -212,6 +213,23 @@ public class SqliteStoreTests
         var c = Assert.Single(await reopened.GetCollectionsAsync(Ct));
         Assert.Equal((false, "#abcdef", true), (c.IsVisible, c.Color, c.IsReadOnly));
         Assert.Equal("tok", (await reopened.GetSyncStateAsync("s", "c", Ct))!.Token);
+    }
+
+    [Fact]
+    public async Task The_last_error_detail_persists_and_is_cleared_with_the_cache()
+    {
+        var (temp, db) = await TempDatabase.CreateAsync();
+        using var _ = temp;
+        var repo = new SqliteSourceRepository(db);
+        await repo.SaveSourceAsync(new SourceInfo("s", "ical", "My feed"), new SourceConfig(new Dictionary<string, string>()), Ct);
+        await repo.SaveSourceStatusAsync(new SourceStatus("s", SourceStatusKind.Error, LastError: "The sync failed.", LastErrorDetail: "HTTP 404"), Ct);
+
+        var reopened = new SqliteSourceRepository(await SqliteDatabase.OpenAsync(temp.FilePath, Ct));
+
+        var status = Assert.Single(await reopened.GetSourceStatusesAsync(Ct));
+        Assert.Equal(("The sync failed.", "HTTP 404"), (status.LastError, status.LastErrorDetail));
+        await reopened.ResetCacheAsync(Ct);
+        Assert.Null(Assert.Single(await reopened.GetSourceStatusesAsync(Ct)).LastErrorDetail);
     }
 
     [Fact]

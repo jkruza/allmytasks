@@ -39,6 +39,12 @@ public sealed partial class SourceItemViewModel : ObservableObject
     public partial string Detail { get; set; } = string.Empty;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasErrorDetail))]
+    public partial string ErrorDetail { get; set; } = string.Empty;
+
+    public bool HasErrorDetail => ErrorDetail.Length > 0;
+
+    [ObservableProperty]
     public partial IBrush StatusBrush { get; set; } = Brushes.Gray;
 
     public ObservableCollection<CollectionRowViewModel> Collections { get; } = [];
@@ -97,6 +103,7 @@ public sealed partial class SourceItemViewModel : ObservableObject
         }
 
         Detail = string.Join(" · ", parts);
+        ErrorDetail = status.LastErrorDetail ?? string.Empty;
     }
 }
 

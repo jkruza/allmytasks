@@ -305,6 +305,49 @@ public class SourceTests
     }
 
     [Fact]
+    public async Task An_error_page_reports_status_content_type_host_and_start_of_body_but_not_the_address()
+    {
+        var (source, handler, collection) = Create();
+        handler.Respond = _ => new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent("<!doctype html><html><title>Sign in</title> see https://example.com/private/TOP-SECRET-TOKEN/cal.ics", Encoding.UTF8, "text/html"),
+        };
+
+        var ex = await Assert.ThrowsAsync<SourceDataException>(() => source.SyncEventsAsync(collection, null, Ct));
+
+        var text = ex.Diagnostics!;
+        Assert.Contains("HTTP 200", text, StringComparison.Ordinal);
+        Assert.Contains("text/html", text, StringComparison.Ordinal);
+        Assert.Contains("Host: example.com", text, StringComparison.Ordinal);
+        Assert.Contains("<!doctype html>", text, StringComparison.Ordinal);
+        Assert.Contains("web page", text, StringComparison.Ordinal);
+        Assert.DoesNotContain("TOP-SECRET-TOKEN", text, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task A_missing_feed_explains_the_status_without_the_address()
+    {
+        var (source, handler, collection) = Create();
+        handler.Respond = _ => new HttpResponseMessage(HttpStatusCode.NotFound) { Content = new StringContent("gone", Encoding.UTF8, "text/plain") };
+
+        var ex = await Assert.ThrowsAsync<SourceException>(() => source.SyncEventsAsync(collection, null, Ct));
+
+        Assert.Contains("HTTP 404", ex.Diagnostics, StringComparison.Ordinal);
+        Assert.DoesNotContain("TOP-SECRET-TOKEN", ex.Diagnostics, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task A_refused_feed_carries_the_status_in_its_diagnostics()
+    {
+        var (source, handler, collection) = Create();
+        handler.Respond = _ => new HttpResponseMessage(HttpStatusCode.Forbidden);
+
+        var ex = await Assert.ThrowsAsync<SourceAuthException>(() => source.SyncEventsAsync(collection, null, Ct));
+
+        Assert.Contains("HTTP 403", ex.Diagnostics, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task A_real_empty_calendar_is_a_confirmed_empty_snapshot()
     {
         var (source, handler, collection) = Create();

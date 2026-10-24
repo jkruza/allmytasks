@@ -54,10 +54,11 @@ public sealed partial class App : Application
         // Secrets are not needed by the sample provider; the store is created lazily and only asks the user when
         // something first needs it.
         var secrets = new SecretStoreFactory(dataDirectory, new DialogSecretPrompt(desktop));
-        var feedFactory = new IcalFeedFactory();
-        var davFactory = new CalDavFactory();
+        var log = new FileLog(dataDirectory, clock);
+        var feedFactory = new IcalFeedFactory(logger: log);
+        var davFactory = new CalDavFactory(logger: log);
         var registry = new SourceRegistry([feedFactory, davFactory, new SampleSourceFactory(clock, zone)], sources, secrets);
-        var engine = new SyncEngine(items, sources, registry, clock);
+        var engine = new SyncEngine(items, sources, registry, clock, logger: log);
         var scheduler = new SyncScheduler(engine, sources, clock);
         var dialogs = new DialogService(desktop);
 

@@ -172,6 +172,54 @@ public class SyncEngineTests
     }
 
     [Fact]
+    public async Task A_data_error_keeps_the_generic_text_and_exposes_only_what_the_provider_disclosed()
+    {
+        using var rig = new SyncRig();
+        var source = await rig.AddAsync();
+        source.OnTasks = (_, _) => throw new SourceDataException("secret=abc in body", new FormatException("token=xyz")) { Diagnostics = "HTTP 200\nContent-Type: text/html" };
+
+        await rig.Engine.SyncSourceAsync("src", Ct);
+
+        var status = await rig.StatusAsync("src");
+        Assert.Equal("The server's response could not be understood.", status.LastError);
+        Assert.Equal("HTTP 200\nContent-Type: text/html\nCaused by: System.FormatException", status.LastErrorDetail);
+    }
+
+    [Fact]
+    public async Task A_contract_breach_shows_the_exception_type_but_not_its_message_and_success_clears_the_detail()
+    {
+        using var rig = new SyncRig();
+        var source = await rig.AddAsync();
+        source.OnTasks = (_, _) => throw new InvalidOperationException("token=xyz");
+        await rig.Engine.SyncSourceAsync("src", Ct);
+
+        var failed = await rig.StatusAsync("src");
+        Assert.Contains("System.InvalidOperationException", failed.LastErrorDetail, StringComparison.Ordinal);
+        Assert.DoesNotContain("token=xyz", failed.LastErrorDetail, StringComparison.Ordinal);
+
+        source.OnTasks = (_, _) => Snapshot("src", "1");
+        await rig.Engine.SyncSourceAsync("src", Ct);
+
+        Assert.Null((await rig.StatusAsync("src")).LastErrorDetail);
+    }
+
+    [Fact]
+    public async Task Failures_are_logged_with_their_details()
+    {
+        using var rig = new SyncRig();
+        var log = new ListLogger();
+        using var engine = new SyncEngine(rig.Store, rig.Store, rig.Provider, rig.Clock, logger: log);
+        var source = await rig.AddAsync();
+        source.OnTasks = (_, _) => throw new SourceDataException("bad") { Diagnostics = "HTTP 200 text/html" };
+
+        await engine.SyncSourceAsync("src", Ct);
+
+        var entry = Assert.Single(log.Entries);
+        Assert.Contains("HTTP 200 text/html", entry, StringComparison.Ordinal);
+        Assert.Contains("SourceDataException", entry, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task Unknown_provider_kind_is_an_error_status()
     {
         using var rig = new SyncRig();
