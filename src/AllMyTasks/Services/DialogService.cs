@@ -5,10 +5,13 @@ using Avalonia.Controls.ApplicationLifetimes;
 
 namespace AllMyTasks.Services;
 
-/// <summary>Opens the app's modal windows over the main window.</summary>
+/// <summary>Opens the app's modal windows over the window the user is working in.</summary>
 public sealed class DialogService(IClassicDesktopStyleApplicationLifetime lifetime)
 {
-    private Window? Owner => lifetime.MainWindow;
+    // The Sources window is non-modal, so dialogs opened from it must be owned by it. Owning them by
+    // the main window leaves them behind the Sources window, and some Linux window managers answer
+    // with an "is ready" notification instead of raising them.
+    private Window? Owner => lifetime.Windows.FirstOrDefault(w => w.IsActive && w.IsVisible) ?? lifetime.MainWindow;
 
     /// <summary>Shows the source editor. Returns true if the source was saved.</summary>
     public async Task<bool> ShowSourceEditorAsync(SourceEditorViewModel editor)
