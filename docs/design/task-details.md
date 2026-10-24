@@ -13,19 +13,19 @@ Whatever the provider supplied; empty fields are left out rather than shown as b
 
 | Field | Source | Notes |
 | --- | --- | --- |
-| Title | `TaskItem.Title` | "(no title)" placeholder for empty titles, as in the lists |
-| Status | `TaskItem.Status` | Open, In progress, Completed (with completion time), Cancelled; "Overdue" badge when open and past due |
+| Title | `TaskItem.Title` | "(no title)" placeholder for empty titles, as in the lists; status glyph beside it |
+| Status | `TaskItem.Status` | Open, In progress, Completed (with completion time), Cancelled; ", overdue" added when open and past due |
 | Due | `TaskItem.Due` | Date only ("Fri 24 Oct") or date and time in the display zone |
-| Start | `TaskItem.Start` | "Do not show before"; shown only when set |
+| Starts | `TaskItem.Start` | "Do not show before"; shown only when set |
 | Priority | `TaskItem.Priority` | High, Medium, Low; hidden for None |
-| Notes | `TaskItem.Notes` | Plain text, selectable, wraps |
+| Notes | `TaskItem.Notes` | Plain text, selectable, wraps; capped at 20 000 characters like event descriptions |
 | List and source | collection and source display names, collection colour | e.g. "Groceries · Todoist" |
 | Labels | `TaskItem.Labels` | Comma-separated |
-| Repeats | `TaskItem.Recurrence` | The rule text, shown as provided |
-| Parent | `TaskItem.ParentKey` | Parent's title, when it is in the cache |
+| Repeats | `TaskItem.Recurrence` | Plain-language summary from `RecurrenceDescriber`, shared with events |
+| Subtask of | `TaskItem.ParentKey` | Parent's title as a button that opens the parent; shown when the parent is in the cache |
 | Subtasks | tasks whose `ParentKey` is this task | Status glyph and title; a subtask can be clicked to open its details |
-| Last modified | `TaskItem.LastModified` | Local date and time |
-| Link | `TaskItem.Url` | Shown as text with a copy button; not opened automatically (no link-launching in v1) |
+| Last changed | `TaskItem.LastModified` | Local date and time |
+| Link | `TaskItem.Url` | An "Open link" button; only `http` and `https` links are offered |
 
 ## Where the data comes from
 
@@ -47,30 +47,38 @@ public sealed record TaskDetails(
 `TaskDetailsService` (Core, `AllMyTasks.Core.Views`) reads tasks from `IItemStore`,
 collections and sources from `ISourceRepository`, and finds the parent and direct children
 by `ParentKey`. It returns `null` when the task no longer exists, for example after a sync
-removed it; the pane then closes. Subtasks are sorted like the All tasks list (open first,
-then by due date, then title) and cycles in `ParentKey` are ignored, as in the list.
+removed it; the pane then closes. Subtasks are open first, then by due date (undated
+last), then by title. A task that is its own parent has no parent, and a parent is never
+listed as its own subtask, so cycles in `ParentKey` cannot loop.
 
-Formatting (dates, glyphs, empty-field hiding) lives in `TaskDetailsViewModel`, which stays
-thin and is tested through a Core-level `TaskDetailsText` helper where logic is involved.
+`TaskDetailsBuilder` (Core) turns `TaskDetails` into `TaskDetailsContent`: the title,
+status glyph, accent colour, `DetailRow`s (the same type the calendar entry details use,
+empty ones left out), a safe link, capped notes, and `TaskRef`s for the parent and
+subtasks. `TaskDetailsViewModel` only exposes that, so the wording and the field rules are
+unit-tested without a UI.
 
 ## Opening details
 
 | View | Gesture |
 | --- | --- |
-| All tasks | Select a row (click, or Enter on the focused row) |
+| All tasks | Click a row, or focus it and press Enter or Space |
 | Day, Upcoming | Click an entry row that is a task |
-| Week, Month | Click a task chip |
+| Week, Month | Click a task chip or bar |
 
-All entries open the same pane; events go to the calendar entry details, tasks to this
-view model. Clicking a subtask in the pane replaces the pane content with that subtask.
-The pane stays open across a refresh and re-reads the task; if the task disappeared it
-closes.
+All of them go through the `EntryActivation` attached behaviour described in
+[details-pane.md](details-pane.md#the-pane-host); `CalendarShellViewModel.ShowDetailsAsync`
+sends task entries to `ShowTaskDetailsAsync`, and events to the calendar entry details.
+Clicking the parent or a subtask in the pane replaces the content with that task. If the
+task is gone (`TaskDetailsService` returns `null`) the pane closes. A click that is still
+loading when the user clicks something else or closes the pane is dropped, so a slow load
+cannot reopen the pane. Like the rest of the pane, the content is a snapshot taken when it
+was opened and is not refreshed by background syncs.
 
 ## Accessibility
 
-Rows and chips are focusable and activate with Enter and Space. The pane has an
-automation name ("Task details") and takes focus when opened; Esc closes it and returns
-focus to the row that opened it.
+Rows, chips and bars are focusable and activate with Enter and Space. The pane has an
+automation name ("Details for task <title>"); opening moves focus to the Close button and
+Esc closes it, as for every details view.
 
 ## Out of scope
 
@@ -80,7 +88,10 @@ reminders. The pane is the natural home for those once write support exists
 
 ## Testing
 
-- `TaskDetailsService` against the in-memory store: found, missing, parent, subtasks,
-  parent cycle, collection and source names.
-- `TaskDetailsViewModel`: which fields are present for a sparse task and a full one,
-  overdue badge, completed task, subtask navigation.
+- `TaskDetailsService` against the in-memory store: found, missing, collection and source
+  names, parent, subtask order, self-parent, parent cycle, overdue by status and date.
+- `TaskDetailsBuilder`: sparse and full tasks, empty title, glyph per status, completion
+  time and due time in a non-UTC display zone, list text with unknown list or source,
+  non-http links, notes cap, default colour, parent and subtask references.
+- Pane wiring (click in each view, subtask navigation, Esc) is checked by hand; see the
+  manual checklist in the pull request.

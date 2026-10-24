@@ -81,6 +81,7 @@
         <ContentControl Content="{Binding SelectedDetails}">
           <ContentControl.DataTemplates>
             <DataTemplate DataType="vm:CalendarEntryDetailsViewModel"><views:CalendarEntryDetailsView /></DataTemplate>
+            <DataTemplate DataType="vm:TaskDetailsViewModel"><views:TaskDetailsView /></DataTemplate>
           </ContentControl.DataTemplates>
         </ContentControl>
       </DockPanel>

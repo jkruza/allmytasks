@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:AllMyTasks.ViewModels"
+             xmlns:c="using:AllMyTasks.Controls"
              x:Class="AllMyTasks.Views.TasksView"
              x:DataType="vm:TasksViewModel">
   <DockPanel Margin="12">
@@ -35,7 +36,7 @@
         </DataTemplate>
         <DataTemplate DataType="vm:TaskRowItem">
           <Grid ColumnDefinitions="Auto,4,*,Auto,Auto,Auto,Auto" ColumnSpacing="10" Margin="{Binding Indent}" Opacity="{Binding Opacity}"
-                AutomationProperties.Name="{Binding Spoken}">
+                AutomationProperties.Name="{Binding Spoken}" Background="Transparent" c:EntryActivation.Enabled="True">
             <TextBlock Grid.Column="0" Text="{Binding Glyph}" VerticalAlignment="Center" />
             <Border Grid.Column="1" Background="{Binding Accent}" CornerRadius="2" />
             <StackPanel Grid.Column="2" VerticalAlignment="Center">

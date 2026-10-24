@@ -76,9 +76,10 @@ model only exposes it. Rows that have no value are not shown.
 | Description | `Description` | Plain text, selectable, scrolls. Capped at 20 000 characters with a "…" so a huge feed value cannot stall the UI |
 | Last changed | `LastModified` | Small print, when the provider supplies it |
 
-Dated tasks that appear in the calendar views open the same pane with the fields that
-exist for tasks (title, due, list, status, priority, labels, notes, link). The dedicated
-task details view model replaces this once it lands; the host does not change.
+Dated tasks that appear in the calendar views, and rows of the All tasks view, open the
+task details instead, which also show subtasks and the parent: see
+[task-details.md](task-details.md). The host did not change for that; it is one more view
+model, view and `DataTemplate`.
 
 ### Text safety
 

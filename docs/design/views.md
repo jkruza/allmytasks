@@ -128,7 +128,8 @@ live and where the user triages everything.
 Rows: checkbox glyph (display only in read-only v1), title, due (date or date+time,
 overdue highlighted), collection badge and colour, priority marker, labels, and a
 subtask indicator. Subtasks nest under their parent (`ParentKey`); a subtask whose parent
-is filtered out is shown at top level so it never disappears.
+is filtered out is shown at top level so it never disappears. Clicking a row (or Enter or
+Space on it) opens its [details](task-details.md) in the pane.
 
 ### Filtering
 
@@ -200,7 +201,8 @@ Keyboard (proposed): `T` today, `D/W/M/U` switch view, `←/→` previous/next, 
 Clicking an entry in any calendar view (or focusing it and pressing Enter or Space) opens a
 read-only details pane on the right; Esc closes it. The text is built in Core
 (`EntryDetailsBuilder`, `RecurrenceDescriber`), the pane is a shared host in the main window.
-See [details-pane.md](details-pane.md).
+See [details-pane.md](details-pane.md). Tasks (dated ones in the calendar views and every
+row of All tasks) open [task details](task-details.md) instead.
 
 ## Rendering notes (Avalonia)
 

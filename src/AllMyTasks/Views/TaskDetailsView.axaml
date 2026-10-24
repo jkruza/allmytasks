@@ -1,0 +1,54 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:AllMyTasks.ViewModels"
+             xmlns:core="using:AllMyTasks.Core.Views"
+             x:Class="AllMyTasks.Views.TaskDetailsView"
+             x:DataType="vm:TaskDetailsViewModel"
+             AutomationProperties.Name="{Binding AutomationName}">
+  <ScrollViewer>
+    <StackPanel Spacing="12">
+      <Grid ColumnDefinitions="4,Auto,*" ColumnSpacing="10">
+        <Border Background="{Binding Accent}" CornerRadius="2" />
+        <TextBlock Grid.Column="1" Text="{Binding Glyph}" FontSize="18" VerticalAlignment="Top" />
+        <SelectableTextBlock Grid.Column="2" Text="{Binding Title}" FontSize="18" FontWeight="SemiBold" TextWrapping="Wrap" />
+      </Grid>
+      <ItemsControl ItemsSource="{Binding Rows}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="core:DetailRow">
+            <StackPanel Margin="0,0,0,8">
+              <TextBlock Text="{Binding Label}" FontSize="11" Opacity="0.7" />
+              <SelectableTextBlock Text="{Binding Value}" TextWrapping="Wrap" />
+            </StackPanel>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+      <Button x:Name="OpenLink" Content="Open link" IsVisible="{Binding HasLink}" HorizontalAlignment="Left" Click="OnOpenLink" />
+      <StackPanel IsVisible="{Binding HasNotes}">
+        <TextBlock Text="Notes" FontSize="11" Opacity="0.7" />
+        <SelectableTextBlock Text="{Binding Notes}" TextWrapping="Wrap" />
+      </StackPanel>
+      <StackPanel IsVisible="{Binding HasParent}">
+        <TextBlock Text="Subtask of" FontSize="11" Opacity="0.7" />
+        <Button Command="{Binding Parent.OpenCommand}" HorizontalAlignment="Left">
+          <TextBlock Text="{Binding Parent.Title}" TextWrapping="Wrap" />
+        </Button>
+      </StackPanel>
+      <StackPanel IsVisible="{Binding HasSubtasks}">
+        <TextBlock Text="Subtasks" FontSize="11" Opacity="0.7" />
+        <ItemsControl ItemsSource="{Binding Subtasks}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:TaskLink">
+              <Button Command="{Binding OpenCommand}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                      Background="Transparent" AutomationProperties.Name="{Binding Title}">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <TextBlock Text="{Binding Glyph}" />
+                  <TextBlock Text="{Binding Title}" TextWrapping="Wrap" />
+                </StackPanel>
+              </Button>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </StackPanel>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>
