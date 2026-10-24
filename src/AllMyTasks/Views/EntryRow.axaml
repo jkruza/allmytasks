@@ -1,10 +1,11 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:AllMyTasks.ViewModels"
+             xmlns:c="using:AllMyTasks.Controls"
              x:Class="AllMyTasks.Views.EntryRow"
              x:DataType="vm:EntryItem">
   <Grid ColumnDefinitions="4,150,*,Auto" ColumnSpacing="10" Margin="0,3" Opacity="{Binding Opacity}"
-        AutomationProperties.Name="{Binding Spoken}">
+        AutomationProperties.Name="{Binding Spoken}" c:EntryActivation.Enabled="True" Background="Transparent">
     <Border Grid.Column="0" Background="{Binding Accent}" CornerRadius="2" />
     <TextBlock Grid.Column="1" Text="{Binding TimeText}" VerticalAlignment="Center" Opacity="0.8" />
     <StackPanel Grid.Column="2" VerticalAlignment="Center">

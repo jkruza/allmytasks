@@ -58,7 +58,7 @@
               <ItemsControl.ItemTemplate>
                 <DataTemplate x:DataType="vm:SpanBarItem">
                   <Border Background="{Binding ChipBackground}" CornerRadius="3" Padding="4,0" ToolTip.Tip="{Binding Spoken}"
-                          AutomationProperties.Name="{Binding Spoken}">
+                          AutomationProperties.Name="{Binding Spoken}" c:EntryActivation.Enabled="True">
                     <TextBlock Text="{Binding BarText}" Foreground="{Binding ChipForeground}" FontSize="12" TextTrimming="CharacterEllipsis" />
                   </Border>
                 </DataTemplate>

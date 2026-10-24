@@ -1,0 +1,31 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:AllMyTasks.ViewModels"
+             xmlns:core="using:AllMyTasks.Core.Views"
+             x:Class="AllMyTasks.Views.CalendarEntryDetailsView"
+             x:DataType="vm:CalendarEntryDetailsViewModel"
+             AutomationProperties.Name="{Binding AutomationName}">
+  <ScrollViewer>
+    <StackPanel Spacing="12">
+      <Grid ColumnDefinitions="4,*" ColumnSpacing="10">
+        <Border Background="{Binding Accent}" CornerRadius="2" />
+        <SelectableTextBlock Grid.Column="1" Text="{Binding Title}" FontSize="18" FontWeight="SemiBold" TextWrapping="Wrap" />
+      </Grid>
+      <ItemsControl ItemsSource="{Binding Rows}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="core:DetailRow">
+            <StackPanel Margin="0,0,0,8">
+              <TextBlock Text="{Binding Label}" FontSize="11" Opacity="0.7" />
+              <SelectableTextBlock Text="{Binding Value}" TextWrapping="Wrap" />
+            </StackPanel>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+      <Button x:Name="OpenLink" Content="Open link" IsVisible="{Binding HasLink}" HorizontalAlignment="Left" Click="OnOpenLink" />
+      <StackPanel IsVisible="{Binding HasDescription}">
+        <TextBlock Text="Description" FontSize="11" Opacity="0.7" />
+        <SelectableTextBlock Text="{Binding Description}" TextWrapping="Wrap" />
+      </StackPanel>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

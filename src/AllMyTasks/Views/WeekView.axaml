@@ -29,7 +29,7 @@
         <ItemsControl.ItemTemplate>
           <DataTemplate x:DataType="vm:SpanBarItem">
             <Border Background="{Binding ChipBackground}" CornerRadius="3" Padding="4,1" ToolTip.Tip="{Binding Spoken}"
-                    AutomationProperties.Name="{Binding Spoken}">
+                    AutomationProperties.Name="{Binding Spoken}" c:EntryActivation.Enabled="True">
               <TextBlock Text="{Binding BarText}" Foreground="{Binding ChipForeground}" FontSize="12" TextTrimming="CharacterEllipsis" />
             </Border>
           </DataTemplate>
@@ -64,7 +64,8 @@
                   <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="vm:TimedEntryItem">
                       <Border Background="{Binding ChipBackground}" CornerRadius="3" Padding="3,1" Opacity="{Binding Opacity}"
-                              ToolTip.Tip="{Binding Spoken}" AutomationProperties.Name="{Binding Spoken}" ClipToBounds="True">
+                              ToolTip.Tip="{Binding Spoken}" AutomationProperties.Name="{Binding Spoken}" ClipToBounds="True"
+                              c:EntryActivation.Enabled="True">
                         <StackPanel>
                           <TextBlock Text="{Binding Title}" Foreground="{Binding ChipForeground}" FontSize="11" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
                           <TextBlock Text="{Binding TimeText}" Foreground="{Binding ChipForeground}" FontSize="10" Opacity="0.85" />
