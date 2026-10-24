@@ -79,6 +79,7 @@ public sealed partial class App : Application
         shell = new CalendarShellViewModel(
             agenda,
             new TaskListService(items, sources, clock),
+            new TaskDetailsService(items, sources, clock),
             sources,
             clock,
             zone,
