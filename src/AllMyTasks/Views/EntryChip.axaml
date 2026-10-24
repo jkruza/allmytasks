@@ -1,10 +1,11 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:AllMyTasks.ViewModels"
+             xmlns:c="using:AllMyTasks.Controls"
              x:Class="AllMyTasks.Views.EntryChip"
              x:DataType="vm:EntryItem">
   <Border Background="{Binding ChipBackground}" CornerRadius="3" Padding="4,1" Opacity="{Binding Opacity}"
-          AutomationProperties.Name="{Binding Spoken}" ToolTip.Tip="{Binding Spoken}">
+          AutomationProperties.Name="{Binding Spoken}" ToolTip.Tip="{Binding Spoken}" c:EntryActivation.Enabled="True">
     <TextBlock Foreground="{Binding ChipForeground}" FontSize="12" TextTrimming="CharacterEllipsis">
       <Run Text="{Binding Glyph}" /><Run Text="{Binding Title}" />
     </TextBlock>

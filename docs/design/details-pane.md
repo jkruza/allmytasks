@@ -66,7 +66,7 @@ model only exposes it. Rows that have no value are not shown.
 | --- | --- | --- |
 | Title | `Title` | Empty title shows "(no title)" like the other views |
 | When | `Start`/`End`/`IsAllDay` of the **occurrence** | Display time zone. All-day: date or date range with day count. Multi-day timed: both dates. Never the series' first start |
-| Repeats | `Recurrence` | Plain-language summary such as "Every 2 weeks on Monday, Wednesday, 10 times". Rules the summariser does not understand show "Repeats (custom rule)". Overrides add "This occurrence was changed" |
+| Repeats | `Recurrence` | Plain-language summary such as "Every 2 weeks on Monday, Wednesday, 10 times". Monday to Friday reads "Every weekday". Rules the summariser does not understand show "Repeats (custom rule)". Overrides add "This occurrence was changed" |
 | Where | `Location` | Plain text |
 | Calendar | collection name + colour | Plus the source name, e.g. "Work, from Fastmail" |
 | Status | `Status` | Only shown when Tentative or Cancelled |
@@ -114,7 +114,8 @@ public static class RecurrenceDescriber
 
 - Entries are focusable and announce their existing spoken text; Enter or Space opens
   details.
-- Opening moves focus to the pane's Close button; closing returns focus to the view.
+- Opening moves focus to the pane's Close button. Closing leaves focus on the window, so the
+  keyboard shortcuts keep working.
 - The pane has an automation name ("Details for <title>").
 
 ## Testing

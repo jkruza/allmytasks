@@ -61,3 +61,4 @@ and the doc it points to.
 | 9 | Linux secrets: Secret Service (GNOME Keyring / KWallet) first, else app-level encryption keyed from a 6-digit PIN | Matches the other OSes when a keyring exists; an explicit, honest fallback when it does not | [storage-and-sync.md](storage-and-sync.md#credentials) |
 | 10 | First provider handles both plain `.ics` URLs and CalDAV | `.ics` is the simplest useful thing; CalDAV reuses the same parsing | [ical-caldav-provider.md](ical-caldav-provider.md) |
 | 11 | Week start is Sunday or Monday, default follows the OS culture (Monday when the culture starts elsewhere) | Right for most users on first run; two options is all that was asked for | [settings.md](settings.md#week-start) |
+| 12 | Details of a clicked entry open in a docked right pane, not a popover or dialog; one host shows any kind of details | Same behaviour in every view, no window ownership issues, room for long text | [details-pane.md](details-pane.md) |

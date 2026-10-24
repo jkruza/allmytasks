@@ -120,6 +120,16 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
     [ObservableProperty]
     public partial bool IsSyncing { get; set; }
 
+    /// <summary>
+    /// What the details pane shows, or null when it is closed. Any view model with a <c>DataTemplate</c> in
+    /// <c>MainWindow.axaml</c> can be shown; see docs/design/details-pane.md.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsDetailsOpen))]
+    public partial object? SelectedDetails { get; set; }
+
+    public bool IsDetailsOpen => SelectedDetails is not null;
+
     public bool IsDay => Mode == ViewMode.Day;
 
     public bool IsWeek => Mode == ViewMode.Week;
@@ -150,6 +160,7 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
     partial void OnModeChanged(ViewMode value)
     {
         SaveState();
+        SelectedDetails = null;
         Content = value switch
         {
             ViewMode.Day => _day,
@@ -167,7 +178,11 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
         _ = ReloadAsync();
     }
 
-    partial void OnCurrentDateChanged(DateOnly value) => _ = ReloadAsync();
+    partial void OnCurrentDateChanged(DateOnly value)
+    {
+        SelectedDetails = null;
+        _ = ReloadAsync();
+    }
 
     partial void OnShowEventsChanged(bool value)
     {
@@ -223,6 +238,17 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
 
     [RelayCommand]
     private void OpenSettings() => _openSettings?.Invoke();
+
+    [RelayCommand]
+    private void CloseDetails() => SelectedDetails = null;
+
+    /// <summary>Shows the details pane for a calendar entry as it is now. Read-only.</summary>
+    public async Task ShowDetailsAsync(AgendaEntry entry)
+    {
+        var sources = await _sources.GetSourcesAsync();
+        var sourceName = sources.FirstOrDefault(s => s.Id == entry.Key.SourceId)?.DisplayName;
+        SelectedDetails = new CalendarEntryDetailsViewModel(EntryDetailsBuilder.Create(entry, _zone, sourceName));
+    }
 
     /// <summary>Loads collections and the first view. Call once after the window is shown.</summary>
     public async Task InitializeAsync()

@@ -195,6 +195,13 @@ sync engine, and midnight rollover (timer in the shell using `TimeProvider`).
 
 Keyboard (proposed): `T` today, `D/W/M/U` switch view, `←/→` previous/next, `R` refresh.
 
+## Entry details
+
+Clicking an entry in any calendar view (or focusing it and pressing Enter or Space) opens a
+read-only details pane on the right; Esc closes it. The text is built in Core
+(`EntryDetailsBuilder`, `RecurrenceDescriber`), the pane is a shared host in the main window.
+See [details-pane.md](details-pane.md).
+
 ## Rendering notes (Avalonia)
 
 - Compiled bindings everywhere, so every view and `DataTemplate` needs `x:DataType`.
@@ -204,7 +211,7 @@ Keyboard (proposed): `T` today, `D/W/M/U` switch view, `←/→` previous/next, 
 - Colours come from the collection colour with a contrast-safe text colour computed in
   Core; high-contrast and dark themes must not produce unreadable chips.
 - Accessibility: each entry exposes a single spoken string ("Team sync, 10:00 to 10:30,
-  Work calendar"); the grids are navigable by keyboard.
+  Work calendar"); entries are focusable and open the details pane with Enter or Space.
 
 ## Testing
 
