@@ -5,10 +5,10 @@ using Avalonia.Controls.ApplicationLifetimes;
 
 namespace AllMyTasks.Services;
 
-/// <summary>Opens the app's modal windows over the main window.</summary>
+/// <summary>Opens the app's modal windows over the window the user is working in.</summary>
 public sealed class DialogService(IClassicDesktopStyleApplicationLifetime lifetime)
 {
-    private Window? Owner => lifetime.MainWindow;
+    private Window? Owner => lifetime.GetDialogOwner();
 
     /// <summary>Shows the source editor. Returns true if the source was saved.</summary>
     public async Task<bool> ShowSourceEditorAsync(SourceEditorViewModel editor)

@@ -27,7 +27,7 @@ public sealed class DialogSecretPrompt(IClassicDesktopStyleApplicationLifetime l
 
     private async Task<T?> Show<T>(Window dialog)
     {
-        var owner = lifetime.MainWindow;
+        var owner = lifetime.GetDialogOwner();
         return owner is { IsVisible: true } ? await dialog.ShowDialog<T?>(owner) : await ShowStandalone<T>(dialog);
     }
 
