@@ -80,9 +80,12 @@ public sealed class IcalFeedClient(HttpMessageHandler handler, long maxBytes = I
         catch (HttpRequestException ex)
         {
             // The framework message can contain the host and sometimes more; only the kind is kept.
-            throw new SourceUnavailableException($"The feed could not be reached ({ex.HttpRequestError}).", ex)
+            // The exception itself is not attached: its message can hold the address. Only the kinds are kept.
+            throw new SourceUnavailableException($"The feed could not be reached ({ex.HttpRequestError}).")
             {
-                Diagnostics = $"HttpRequestError: {ex.HttpRequestError}" + (ex.StatusCode is { } code ? $"\nHTTP {(int)code}" : string.Empty),
+                Diagnostics = $"HttpRequestError: {ex.HttpRequestError}"
+                    + (ex.StatusCode is { } code ? $"\nHTTP {(int)code}" : string.Empty)
+                    + (ex.InnerException is { } inner ? $"\nCaused by: {inner.GetType().FullName}" : string.Empty),
             };
         }
     }
