@@ -68,5 +68,5 @@ public class TaskDetailsTextTests
     [InlineData(Priority.Low, "Low")]
     [InlineData(Priority.Medium, "Medium")]
     [InlineData(Priority.High, "High")]
-    public void Priority_name(Priority priority, string expected) => Assert.Equal(expected, TaskDetailsText.Priority(priority));
+    public void Priority_name(Priority priority, string expected) => Assert.Equal(expected, TaskDetailsText.PriorityName(priority));
 }
