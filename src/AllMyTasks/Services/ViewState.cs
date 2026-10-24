@@ -38,6 +38,32 @@ public sealed class ViewStateStore(ISettingsStore settings)
         }
     }
 
+    /// <summary>The stored text for a key, or null when missing or unreadable.</summary>
+    public async Task<string?> LoadRawAsync(string key)
+    {
+        try
+        {
+            return await settings.GetAsync(key).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is IOException or InvalidOperationException)
+        {
+            System.Diagnostics.Trace.TraceWarning("Could not load setting {0}: {1}", key, ex.GetType().Name);
+            return null;
+        }
+    }
+
+    public async Task SaveRawAsync(string key, string value)
+    {
+        try
+        {
+            await settings.SetAsync(key, value).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is IOException or InvalidOperationException)
+        {
+            System.Diagnostics.Trace.TraceWarning("Could not save setting {0}: {1}", key, ex.GetType().Name);
+        }
+    }
+
     public async Task SaveAsync<T>(string key, T value)
     {
         try

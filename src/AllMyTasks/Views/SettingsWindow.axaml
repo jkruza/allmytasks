@@ -1,0 +1,23 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:AllMyTasks.ViewModels"
+        x:Class="AllMyTasks.Views.SettingsWindow"
+        x:DataType="vm:SettingsViewModel"
+        Title="Settings" Width="440" SizeToContent="Height" CanResize="False"
+        WindowStartupLocation="CenterOwner">
+  <StackPanel Margin="20" Spacing="16">
+    <TextBlock Text="Settings" FontSize="18" FontWeight="SemiBold" />
+    <StackPanel Spacing="8">
+      <TextBlock Text="Calendar" FontWeight="SemiBold" />
+      <StackPanel Spacing="4">
+        <TextBlock Text="Week starts on" />
+        <ComboBox ItemsSource="{Binding WeekStartOptions}" SelectedItem="{Binding SelectedWeekStart}" HorizontalAlignment="Stretch">
+          <ComboBox.ItemTemplate>
+            <DataTemplate x:DataType="vm:WeekStartOption"><TextBlock Text="{Binding Label}" /></DataTemplate>
+          </ComboBox.ItemTemplate>
+        </ComboBox>
+      </StackPanel>
+    </StackPanel>
+    <Button Content="Close" IsDefault="True" IsCancel="True" HorizontalAlignment="Right" Click="OnClose" />
+  </StackPanel>
+</Window>

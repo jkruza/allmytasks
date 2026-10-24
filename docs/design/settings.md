@@ -90,3 +90,14 @@ window included). Opened from a toolbar button next to Sources.
 ## Rollout
 
 Single PR. No migration (new key in an existing table).
+
+## Implementation notes
+
+- Core: `Settings/WeekStartSetting.cs` (`WeekStartSetting`, `WeekStart.Resolve`) and `Settings/AppSettings.cs`
+  (record, tolerant `Parse`, `ToJson`). Tests in `AppSettingsTests`.
+- App: `SettingsService` (current value, save, `Changed`), `SettingsViewModel`, `SettingsWindow`,
+  `DialogService.ShowSettingsAsync`, a gear button in the toolbar.
+- `CalendarShellViewModel` no longer reads `CultureInfo` for the first day; it asks `SettingsService`
+  and reloads on `Changed`.
+- To add a setting: a property on `AppSettings` (and its `Parse`/`ToJson`), a property on
+  `SettingsViewModel`, a row in `SettingsWindow.axaml`.
