@@ -7,7 +7,7 @@ using Avalonia.Interactivity;
 namespace AllMyTasks.Controls;
 
 /// <summary>
-/// Makes an entry (a row, chip or bar bound to an <see cref="EntryItem"/>) open the details pane on click and on
+/// Makes an entry (a row, chip or bar bound to an <see cref="EntryItem"/>, or a row of the All tasks list bound to a <see cref="TaskRowItem"/>) open the details pane on click and on
 /// Enter or Space. Lives here so the entry view models do not need a reference to the shell.
 /// </summary>
 public static class EntryActivation
@@ -47,11 +47,22 @@ public static class EntryActivation
 
     private static void Open(object? sender, RoutedEventArgs e)
     {
-        if (sender is Control { DataContext: EntryItem item } control
-            && TopLevel.GetTopLevel(control)?.DataContext is CalendarShellViewModel shell)
+        if (sender is not Control { DataContext: { } context } control
+            || TopLevel.GetTopLevel(control)?.DataContext is not CalendarShellViewModel shell)
         {
-            _ = shell.ShowDetailsAsync(item.Entry);
-            e.Handled = true;
+            return;
+        }
+
+        switch (context)
+        {
+            case EntryItem item:
+                _ = shell.ShowDetailsAsync(item.Entry);
+                e.Handled = true;
+                break;
+            case TaskRowItem row:
+                _ = shell.ShowTaskDetailsAsync(row.Key);
+                e.Handled = true;
+                break;
         }
     }
 }

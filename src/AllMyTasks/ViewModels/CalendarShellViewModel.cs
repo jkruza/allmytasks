@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Globalization;
+using AllMyTasks.Core.Model;
 using AllMyTasks.Core.Settings;
 using AllMyTasks.Core.Storage;
 using AllMyTasks.Core.Sync;
@@ -18,6 +19,7 @@ namespace AllMyTasks.ViewModels;
 public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
 {
     private readonly ISourceRepository _sources;
+    private readonly ITaskDetailsService _taskDetails;
     private readonly TimeProvider _clock;
     private readonly TimeZoneInfo _zone;
     private readonly DayViewModel _day;
@@ -36,10 +38,12 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
     private bool _restoring;
     private CancellationTokenSource? _loading;
     private DateOnly _today;
+    private int _detailsRequest;
 
     public CalendarShellViewModel(
         IAgendaService agenda,
         ITaskListService taskList,
+        ITaskDetailsService taskDetails,
         ISourceRepository sources,
         TimeProvider clock,
         TimeZoneInfo zone,
@@ -66,6 +70,7 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
         }
 
         _sources = sources;
+        _taskDetails = taskDetails;
         _clock = clock;
         _zone = zone;
         _today = Today();
@@ -160,7 +165,7 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
     partial void OnModeChanged(ViewMode value)
     {
         SaveState();
-        SelectedDetails = null;
+        CloseDetailsPane();
         Content = value switch
         {
             ViewMode.Day => _day,
@@ -180,7 +185,7 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
 
     partial void OnCurrentDateChanged(DateOnly value)
     {
-        SelectedDetails = null;
+        CloseDetailsPane();
         _ = ReloadAsync();
     }
 
@@ -240,14 +245,43 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
     private void OpenSettings() => _openSettings?.Invoke();
 
     [RelayCommand]
-    private void CloseDetails() => SelectedDetails = null;
+    private void CloseDetails() => CloseDetailsPane();
+
+    private void CloseDetailsPane()
+    {
+        // Also cancels a task details load that is still in flight, so it cannot reopen the pane.
+        _detailsRequest++;
+        SelectedDetails = null;
+    }
 
     /// <summary>Shows the details pane for a calendar entry as it is now. Read-only.</summary>
     public async Task ShowDetailsAsync(AgendaEntry entry)
     {
+        if (entry is TaskEntry)
+        {
+            await ShowTaskDetailsAsync(entry.Key);
+            return;
+        }
+
         var sources = await _sources.GetSourcesAsync();
         var sourceName = sources.FirstOrDefault(s => s.Id == entry.Key.SourceId)?.DisplayName;
         SelectedDetails = new CalendarEntryDetailsViewModel(EntryDetailsBuilder.Create(entry, _zone, sourceName));
+    }
+
+    /// <summary>Shows the details pane for a task as it is now, or closes it if the task is no longer cached. Read-only.</summary>
+    public async Task ShowTaskDetailsAsync(ItemKey key)
+    {
+        var request = ++_detailsRequest;
+        var details = await _taskDetails.GetAsync(key, _zone);
+        if (request != _detailsRequest)
+        {
+            // A newer click superseded this one while it was loading.
+            return;
+        }
+
+        SelectedDetails = details is null
+            ? null
+            : new TaskDetailsViewModel(TaskDetailsBuilder.Create(details, _zone), ShowTaskDetailsAsync);
     }
 
     /// <summary>Loads collections and the first view. Call once after the window is shown.</summary>

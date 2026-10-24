@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Globalization;
+using AllMyTasks.Core.Model;
 using AllMyTasks.Core.Tasks;
 using AllMyTasks.Core.Views;
 using AllMyTasks.Services;
@@ -19,6 +20,7 @@ public sealed class TaskRowItem
     public TaskRowItem(TaskRow row, int depth, DateTimeOffset now, TimeZoneInfo zone)
     {
         var task = row.Task;
+        Key = task.Key;
         Title = string.IsNullOrWhiteSpace(task.Title) ? "(no title)" : task.Title;
         Depth = depth;
         Indent = new Avalonia.Thickness(depth * 24, 0, 0, 0);
@@ -44,6 +46,8 @@ public sealed class TaskRowItem
 
     private static string FormatDateTime(DateTimeOffset value) =>
         value.ToString("ddd d MMM", CultureInfo.CurrentCulture) + ", " + value.ToString("t", CultureInfo.CurrentCulture);
+
+    public ItemKey Key { get; }
 
     public string Title { get; }
 

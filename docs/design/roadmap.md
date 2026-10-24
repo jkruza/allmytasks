@@ -13,6 +13,7 @@ tasks over sample data, backed by the SQLite store with settings and secret stor
 source registry and the Sources / Add source UI are in; the `ical` feed provider
 (`AllMyTasks.Providers.ICal`) and the real recurrence expander (Ical.Net) are in, next to the sample provider.
 Clicking a calendar entry opens a read-only details pane ([details-pane.md](details-pane.md)); attendees are not shown because the model has none yet.
+Clicking a task, in any view, opens its read-only details with subtasks ([task-details.md](task-details.md)).
 CalDAV (read-only, events) is in as kind `caldav`. Verified by hand against a local Radicale 3.8
 only; Nextcloud and a hosted service (Fastmail/iCloud) still need a manual check with throwaway accounts.
 
