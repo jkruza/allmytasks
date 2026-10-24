@@ -77,8 +77,8 @@ Core type: `DayAgenda(DateOnly Date, IReadOnlyList<AgendaEntry> AllDay, IReadOnl
 
 Seven columns (or five with a "hide weekends" setting) with an hour grid.
 
-- **First day of week**: from the OS culture by default, overridable (Monday/Sunday/
-  Saturday).
+- **First day of week**: from the OS culture by default, overridable in Settings
+  (Sunday/Monday), see [settings.md](settings.md#week-start).
 - All-day events and date-only tasks in a header strip above the grid; multi-day events
   span columns.
 - Timed events positioned by start/end on the time axis. Overlaps are resolved by the
