@@ -85,7 +85,8 @@ incrementally.
 ### Later (unordered, not committed)
 
 - `VTODO` tasks over CalDAV.
-- Todoist provider (first task-only provider; proves the model is not calendar-shaped).
+- Todoist provider (first task-only provider; proves the model is not calendar-shaped). Designed in
+  [todoist-provider.md](todoist-provider.md), tracked in [#27](https://github.com/jkruza/allmytasks/issues/27).
 - Google and Microsoft providers (OAuth).
 - Write support: complete tasks first (smallest, most valuable), then edit/create.
 - Reminders and notifications; tray / compact upcoming widget.
