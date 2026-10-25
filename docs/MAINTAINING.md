@@ -49,6 +49,7 @@ account for Claude's PRs:
 2. Use that account's credentials for Claude's pushes and PRs, never your own.
 3. Review and approve those PRs as `@jkruza`. This is a real approval, no bypass needed.
 
+Claude's PRs are authored by `jkruza-ai-bot` (Write access, not a code owner).
 Admin bypass-through-PR stays as a fallback for PRs you author yourself.
 - **protect-release-tags**: only admins can create, move or delete `v*` tags.
 
