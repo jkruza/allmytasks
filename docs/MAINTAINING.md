@@ -36,6 +36,20 @@ file in Settings → Rules → Rulesets → New ruleset → Import.
 - Repository admins can bypass **through a pull request** only. GitHub doesn't let you
   approve your own PR, so this is how you merge your own work once checks pass.
   Contributors have no bypass.
+
+#### Who approves what
+
+Every PR needs an approval from `@jkruza` (CODEOWNERS `*` plus code-owner review), and
+no one else's approval can replace it. GitHub never lets an author approve their own PR,
+so PRs opened by Claude under your identity can't be approved by you. Use a separate
+account for Claude's PRs:
+
+1. Create a second GitHub account (e.g. a machine user) and give it **Write** access.
+   Don't make it an admin and don't add it to CODEOWNERS.
+2. Use that account's credentials for Claude's pushes and PRs, never your own.
+3. Review and approve those PRs as `@jkruza`. This is a real approval, no bypass needed.
+
+Admin bypass-through-PR stays as a fallback for PRs you author yourself.
 - **protect-release-tags**: only admins can create, move or delete `v*` tags.
 
 ### Your account
