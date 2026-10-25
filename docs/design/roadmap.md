@@ -86,7 +86,7 @@ incrementally.
 
 - `VTODO` tasks over CalDAV.
 - Todoist provider (first task-only provider; proves the model is not calendar-shaped).
-- Google and Microsoft providers (OAuth).
+- Google and Microsoft providers (OAuth). Google Tasks is designed in [google-tasks-provider.md](google-tasks-provider.md).
 - Write support: complete tasks first (smallest, most valuable), then edit/create.
 - Reminders and notifications; tray / compact upcoming widget.
 - Saved filters for All tasks; global search.
