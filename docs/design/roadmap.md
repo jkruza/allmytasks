@@ -87,6 +87,7 @@ incrementally.
 - `VTODO` tasks over CalDAV.
 - Todoist provider (first task-only provider; proves the model is not calendar-shaped).
 - Google and Microsoft providers (OAuth).
+  Outlook calendar (Microsoft Graph, personal and work accounts) is designed in [outlook-calendar-provider.md](outlook-calendar-provider.md); the shared Microsoft sign-in is described there.
 - Write support: complete tasks first (smallest, most valuable), then edit/create.
 - Reminders and notifications; tray / compact upcoming widget.
 - Saved filters for All tasks; global search.
