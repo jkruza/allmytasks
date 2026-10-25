@@ -15,6 +15,7 @@ fix whichever is wrong in the same pull request.
 | [domain-model.md](domain-model.md) | Provider-neutral `CalendarEvent` and `TaskItem`, time handling, recurrence |
 | [providers.md](providers.md) | Provider abstraction, capabilities, sync contract, errors |
 | [ical-caldav-provider.md](ical-caldav-provider.md) | First provider: iCalendar feeds and CalDAV, read-only |
+| [microsoft-todo-provider.md](microsoft-todo-provider.md) | Microsoft To Do tasks via Microsoft Graph, personal and work/school accounts, read-only |
 | [todoist-provider.md](todoist-provider.md) | Todoist task provider: API token auth, Sync API delta, mapping, read-only |
 | [outlook-calendar-provider.md](outlook-calendar-provider.md) | Outlook calendar via Microsoft Graph (personal and work/school accounts), and the Microsoft sign-in shared with To Do |
 | [views.md](views.md) | Day agenda, week, month and upcoming views and the Core logic behind them |
