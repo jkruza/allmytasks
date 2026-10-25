@@ -85,8 +85,10 @@ incrementally.
 ### Later (unordered, not committed)
 
 - `VTODO` tasks over CalDAV.
-- Todoist provider (first task-only provider; proves the model is not calendar-shaped).
-- Google and Microsoft providers (OAuth). Microsoft To Do is designed in [microsoft-todo-provider.md](microsoft-todo-provider.md).
+- Todoist provider (first task-only provider; proves the model is not calendar-shaped). Designed in
+  [todoist-provider.md](todoist-provider.md), tracked in [#27](https://github.com/jkruza/allmytasks/issues/27).
+- Google and Microsoft providers (OAuth).
+  Outlook calendar (Microsoft Graph, personal and work accounts) is designed in [outlook-calendar-provider.md](outlook-calendar-provider.md); the shared Microsoft sign-in is described there.
 - Write support: complete tasks first (smallest, most valuable), then edit/create.
 - Reminders and notifications; tray / compact upcoming widget.
 - Saved filters for All tasks; global search.
