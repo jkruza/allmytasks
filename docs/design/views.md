@@ -17,6 +17,12 @@ month grid, week-start rules, "today" boundaries, time zone conversion.
 View (axaml) → ViewModel (thin) → Core query → DayAgenda / WeekLayout / MonthGrid / UpcomingList
 ```
 
+## Toolbar layout
+
+The main window toolbar (navigation and title, view-mode toggles, filter, sync/settings/refresh)
+is a `WrapPanel`. On a narrow window whole groups wrap onto a second row instead of
+overlapping, down to the window's minimum width.
+
 ## Shared query
 
 ```csharp
