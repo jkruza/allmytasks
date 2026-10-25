@@ -55,7 +55,7 @@ later write scope adds to the grant instead of replacing it.
 
 | Scope | Why |
 | --- | --- |
-| `openid email` | Name the source after the account's address and spot the same account being added twice (via `sub`). Not sensitive. |
+| `openid email profile` | Name the source after the account and spot the same account being added twice (via `sub`). Not sensitive. Same scopes as the [Google Tasks design](google-tasks-provider.md#scopes). |
 | `https://www.googleapis.com/auth/calendar.calendarlist.readonly` | `calendarList.list` |
 | `https://www.googleapis.com/auth/calendar.events.readonly` | `events.list` |
 
@@ -71,10 +71,12 @@ Per source, in `ISecretStore` under `(sourceId, field)`:
 | Field | Content |
 | --- | --- |
 | `refresh_token` | The long-lived credential. Secret. |
+| `granted_scopes` | Space-separated scopes the user actually granted; tells the source which capabilities (calendar, tasks) are on. |
 
-Everything else (access token, expiry) lives in memory in a per-source `GoogleTokenProvider`, which refreshes
-60 s before expiry, serialises concurrent refreshes, and never writes the access token anywhere.
-Non-secret config (`SourceConfig`): `account_email`, `account_sub`, `client_id` (only when overridden, see below).
+The field names are shared with Google Tasks, because both services use one `google` source per account (see
+[Sharing with Google Tasks](#sharing-with-google-tasks)). The access token and its expiry live in memory in a per-source
+`GoogleTokenProvider`, which refreshes 60 s before expiry, serialises concurrent refreshes, and is never written anywhere.
+Non-secret config (`SourceConfig`): `account_email`, `account_sub`.
 
 ### Failure behaviour
 
@@ -93,11 +95,13 @@ Non-secret config (`SourceConfig`): `account_email`, `account_sub`, `client_id` 
   test users, and **expires refresh tokens after 7 days** while the consent screen is in "Testing". Development
   and early alpha builds will hit this; the doc for testers must say so.
 - For installed apps the client "secret" is not confidential (Google's own wording), but it is still a string
-  GitHub secret scanning and push protection may flag. Proposal: the client id and secret are MSBuild properties
-  supplied by the release workflow, with a development default read from an environment variable. They are not
-  committed as literals. Needs the maintainer to confirm; see [Open questions](#open-questions).
-- Forks and self-built copies cannot use the project's client id. A **bring your own client** option
-  (advanced: client id, client secret as a secret field) is part of the design from the start, so they can sign in.
+  GitHub secret scanning and push protection may flag. The project's production client id and secret are build-time
+  properties supplied by the release workflow, not literals in the repo (as in the Google Tasks design). Needs the
+  maintainer to confirm; see [Open questions](#open-questions).
+- Forks and self-built copies cannot use the project's client id. They register their own client and supply it as
+  configuration (`Google:ClientId` / `Google:ClientSecret`, or `ALLMYTASKS_GOOGLE_CLIENT_ID` /
+  `ALLMYTASKS_GOOGLE_CLIENT_SECRET`), the same names the Google Tasks design uses. The README documents this until the
+  app is verified.
 
 ## Calendars
 
@@ -219,8 +223,8 @@ An entry with no usable `start` that is not cancelled is a `SourceDataException`
 
 | Type | Role |
 | --- | --- |
-| `GoogleSourceFactory : ISourceFactory` | Kind `google`. Schema: sign-in is a button, not a field; an "Advanced" group with `client_id`, `client_secret` (secret). Bespoke view model for the browser hand-off, as `providers.md` anticipates. |
-| `GoogleSource : SourceBase, ICalendarSource` | `GetCollectionsAsync`, `SyncEventsAsync`. Uses `RetryAsync`. |
+| `GoogleSourceFactory : ISourceFactory` | Kind `google`, shared with Google Tasks. Sign-in is a button, not a schema field, so it supplies its own add-account view model for the browser hand-off, as `providers.md` anticipates. |
+| `GoogleSource : SourceBase, ICalendarSource` | `GetCollectionsAsync` returns calendars when the calendar scopes are granted (and task lists when Tasks is). `SyncEventsAsync`. Uses `RetryAsync`. When Tasks lands the class also implements `ITaskSource`. |
 | `GoogleCalendarClient` | Typed `HttpClient` wrapper: `ListCalendarsAsync`, `ListEventsAsync(syncToken/pageToken)`, status-code → exception mapping. |
 | `GoogleEventMapper` | JSON → `CalendarEvent`, all the mapping above. Pure, no I/O, heavily tested. |
 | `GoogleAuthFlow` | PKCE, loopback listener, code exchange. Takes an `IBrowserLauncher` so tests and headless CI can drive it. |
@@ -236,15 +240,17 @@ worth its weight.
 
 ## Sharing with Google Tasks
 
-Google Calendar and Google Tasks use the same account, the same OAuth client and the same token endpoint. Proposal, to be
-agreed with the Google Tasks design before either is built:
+Agreed with the [Google Tasks design](google-tasks-provider.md#one-account-two-capabilities); the two docs describe one
+project, `AllMyTasks.Providers.Google`:
 
-- One source **kind `google`** per account, implementing both `ICalendarSource` and `ITaskSource` (the interfaces
-  exist precisely so one source can do both). The user signs in once.
-- The scopes a source holds track what the user enabled: calendar scopes now, plus `https://www.googleapis.com/auth/tasks.readonly`
-  when they turn Tasks on, using incremental authorization (`include_granted_scopes`). A calendar-only user never
-  sees a Tasks permission.
-- `GoogleAuthFlow` and `GoogleTokenProvider` live in the same project and are reused as they are.
+- One source **kind `google`** per Google account, implementing `ICalendarSource`, `ITaskSource` or both depending on the
+  granted scopes. The user signs in once and picks which services to enable.
+- Scopes are requested per service and added later by incremental authorization (`include_granted_scopes`): calendar scopes
+  here, `tasks.readonly` there. A calendar-only user never sees a Tasks permission. Whichever service is enabled first
+  decides the first consent screen; `granted_scopes` records the result.
+- `GoogleAuthFlow` and `GoogleTokenProvider` are written once, with the Tasks design's `IGoogleAccessTokenProvider` as the
+  seam the Calendar and Tasks clients take, so neither knows about OAuth.
+- Whichever of the two PRs is implemented first builds the shared auth; the other reuses it.
 
 ## Shared with other OAuth providers (Outlook, MS To Do)
 
@@ -304,8 +310,8 @@ Each step is its own PR; the provider is usable by step 3.
 | --- | --- | --- |
 | 1 | Who owns the Google Cloud project and OAuth consent screen, and when do we submit for verification? | The maintainer, before the first public release; alpha testers are added as test users and warned about 7-day refresh tokens |
 | 2 | How do the client id/secret get into builds without tripping secret scanning? | Release-workflow build properties, never committed literals |
-| 3 | Ship the "bring your own client" option in v1? | Yes; forks cannot work without it |
-| 4 | One `google` source for calendar and tasks, or two kinds? | One, with incremental scopes (agree with the Google Tasks design) |
+| 3 | Per-source "bring your own client" fields in the UI? | No. Configuration and environment variables only, as in the Google Tasks design |
+| 4 | One `google` source for calendar and tasks? | Yes, settled together with the Google Tasks design; maintainer to confirm when approving both |
 | 5 | Declined invitations: hide, or show greyed out? | Hide (map to `Cancelled`) in v1; revisit with an attendee model |
 | 6 | Very large calendars (Holidays, long-lived work calendars) make the first sync slow, and sync tokens forbid `timeMin`. Limit history at all? | No in v1. If needed: a first sync with `timeMin` and no sync token, polling with `updatedMin`, trading delete detection for size |
 | 7 | Add `MeetingUrl` to `CalendarEvent`? | Yes, in a small PR agreed with the Outlook design |
