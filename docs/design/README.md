@@ -15,6 +15,7 @@ fix whichever is wrong in the same pull request.
 | [domain-model.md](domain-model.md) | Provider-neutral `CalendarEvent` and `TaskItem`, time handling, recurrence |
 | [providers.md](providers.md) | Provider abstraction, capabilities, sync contract, errors |
 | [ical-caldav-provider.md](ical-caldav-provider.md) | First provider: iCalendar feeds and CalDAV, read-only |
+| [outlook-calendar-provider.md](outlook-calendar-provider.md) | Outlook calendar via Microsoft Graph (personal and work/school accounts), and the Microsoft sign-in shared with To Do |
 | [views.md](views.md) | Day agenda, week, month and upcoming views and the Core logic behind them |
 | [details-pane.md](details-pane.md) | Right-hand details pane and the calendar entry details shown in it |
 | [storage-and-sync.md](storage-and-sync.md) | Local database, credentials, cache and refresh behaviour |
