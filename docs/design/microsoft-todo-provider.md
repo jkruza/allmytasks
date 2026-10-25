@@ -11,7 +11,7 @@ It lives in the shared Microsoft project, `AllMyTasks.Providers.Microsoft`, next
 Outlook calendar provider. A source of kind `microsoft` implements `ITaskSource`,
 `ICalendarSource`, or both. This doc covers only the To Do half. Sign-in, token handling and
 the Graph HTTP client are designed once in
-[outlook-calendar-provider.md](outlook-calendar-provider.md#microsoft-identity-and-graph-client)
+[outlook-calendar-provider.md](outlook-calendar-provider.md#microsoft-identity-and-graph-client-shared-with-to-do)
 and are summarised here only where To Do depends on them.
 
 Read-only in v1: no `POST`, `PATCH` or `DELETE`, and `CollectionInfo.IsReadOnly = true`.
