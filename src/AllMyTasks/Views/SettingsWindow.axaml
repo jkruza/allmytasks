@@ -18,6 +18,12 @@
         </ComboBox>
       </StackPanel>
     </StackPanel>
+    <StackPanel Spacing="8">
+      <TextBlock Text="Window" FontWeight="SemiBold" />
+      <CheckBox IsChecked="{Binding CloseToTray}">
+        <TextBlock Text="Keep running in the system tray when the window is closed" TextWrapping="Wrap" />
+      </CheckBox>
+    </StackPanel>
     <Button Content="Close" IsDefault="True" IsCancel="True" HorizontalAlignment="Right" Click="OnClose" />
   </StackPanel>
 </Window>

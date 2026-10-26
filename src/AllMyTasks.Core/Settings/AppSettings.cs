@@ -10,6 +10,9 @@ public sealed record AppSettings
 
     public WeekStartSetting WeekStart { get; init; } = WeekStartSetting.System;
 
+    /// <summary>Closing the main window hides it to the system tray instead of quitting.</summary>
+    public bool CloseToTray { get; init; } = true;
+
     /// <summary>Reads settings from JSON. Missing, unknown or corrupt values give the defaults.</summary>
     public static AppSettings Parse(string? json)
     {
@@ -22,13 +25,23 @@ public sealed record AppSettings
         {
             using var doc = JsonDocument.Parse(json);
             var result = new AppSettings();
-            if (doc.RootElement.ValueKind == JsonValueKind.Object
-                && doc.RootElement.TryGetProperty("weekStart", out var week)
+            var root = doc.RootElement;
+            if (root.ValueKind != JsonValueKind.Object)
+            {
+                return result;
+            }
+
+            if (root.TryGetProperty("weekStart", out var week)
                 && week.ValueKind == JsonValueKind.String
                 && Enum.TryParse<WeekStartSetting>(week.GetString(), ignoreCase: true, out var parsed)
                 && Enum.IsDefined(parsed))
             {
                 result = result with { WeekStart = parsed };
+            }
+
+            if (root.TryGetProperty("closeToTray", out var tray) && tray.ValueKind is JsonValueKind.True or JsonValueKind.False)
+            {
+                result = result with { CloseToTray = tray.GetBoolean() };
             }
 
             return result;
@@ -40,5 +53,5 @@ public sealed record AppSettings
     }
 
     public string ToJson() => JsonSerializer.Serialize(
-        new Dictionary<string, string> { ["weekStart"] = WeekStart.ToString() });
+        new Dictionary<string, object> { ["weekStart"] = WeekStart.ToString(), ["closeToTray"] = CloseToTray });
 }

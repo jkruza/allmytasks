@@ -93,7 +93,8 @@ incrementally.
   - Outlook calendar (Microsoft Graph, personal and work accounts): [outlook-calendar-provider.md](outlook-calendar-provider.md), [#32](https://github.com/jkruza/allmytasks/issues/32); the shared Microsoft sign-in is described there.
   - Microsoft To Do: [microsoft-todo-provider.md](microsoft-todo-provider.md), [#24](https://github.com/jkruza/allmytasks/issues/24).
 - Write support: complete tasks first (smallest, most valuable), then edit/create.
-- Reminders and notifications; tray / compact upcoming widget.
+- System tray icon with menu, `--tray` start and close-to-tray: [system-tray.md](system-tray.md), [#39](https://github.com/jkruza/allmytasks/issues/39). Implemented.
+- Reminders and notifications; compact upcoming widget.
 - Saved filters for All tasks; global search.
 - Database encryption.
 
