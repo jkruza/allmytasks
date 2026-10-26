@@ -405,6 +405,8 @@ A candidate for the "Later" part of the [roadmap](roadmap.md):
 
 ## Open questions
 
+**Decided 2026-10-26 (maintainer):** all proposals below are accepted. Notably: Jarek owns the Entra app registration and publisher verification is pursued before work-account support is announced (#1); v1 stores expanded occurrences without `Recurrence` (#2); window -3/+13 months (#3); declined meetings are shown as `Cancelled` (#4); `retryAfter` on `SourceUnavailableException` goes into the implementing PR (#8). Shared calendars and the Windows broker stay out of v1.
+
 | # | Question | Proposal |
 | --- | --- | --- |
 | 1 | Who owns the Entra app registration, and is publisher verification worth doing? Unverified multi-tenant apps are blocked from user consent in many tenants, which would make "work accounts" fail for those users | Jarek creates it in a tenant he controls; pursue verification before announcing work-account support. Needs a decision before implementation |

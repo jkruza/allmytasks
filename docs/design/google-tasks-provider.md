@@ -386,6 +386,8 @@ release of this provider.
 
 ## Open questions
 
+**Decided 2026-10-26 (maintainer):** the leanings below are accepted: one `google` source per account for Tasks and Calendar, shared `GoogleAuth` classes in `AllMyTasks.Providers.Google`, and all completed tasks synced in v1. Jarek owns the Google Cloud project and verification (see the Google Calendar design).
+
 | Question | Leaning |
 | --- | --- |
 | One `google` source per account for Tasks and Calendar, or two separate source kinds? | One source (above). Needs agreement with the Google Calendar design. |

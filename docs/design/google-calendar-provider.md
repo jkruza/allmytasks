@@ -306,6 +306,8 @@ Each step is its own PR; the provider is usable by step 3.
 
 ## Open questions
 
+**Decided 2026-10-26 (maintainer):** all proposals below are accepted. Jarek owns the Google Cloud project, consent screen and verification, submitted before the first public release (#1); client id/secret reach builds as release-workflow build properties (#2); one `google` source for Calendar and Tasks (#4); declined invitations map to `Cancelled` (#5); no history limit in v1 (#6); `MeetingUrl` is added to `CalendarEvent` in a small PR agreed with the Outlook design (#7).
+
 | # | Question | Proposal |
 | --- | --- | --- |
 | 1 | Who owns the Google Cloud project and OAuth consent screen, and when do we submit for verification? | The maintainer, before the first public release; alpha testers are added as test users and warned about 7-day refresh tokens |
