@@ -33,6 +33,12 @@ file in Settings → Rules → Rulesets → New ruleset → Import.
   latest push, resolved conversations, linear history, no force-push or deletion, and
   `build (windows-latest)`, `build (ubuntu-latest)`, `build (macos-latest)` must pass.
   If you rename the CI job, update the required checks or every PR will be blocked.
+- **Docs-only changes skip build and test.** A `changes` job in `ci.yml` detects PRs and
+  pushes that touch only `docs/**`, `*.md`, `LICENSE` or `.github/ISSUE_TEMPLATE/**`. The
+  `build` jobs still run so the required checks report, but all real steps are skipped.
+  Don't add `paths-ignore` to the workflow or an `if:` on the `build` job: either leaves
+  the required checks pending and blocks merging. See
+  [docs/design/ci-docs-only-changes.md](design/ci-docs-only-changes.md).
 - Repository admins can bypass **through a pull request** only. GitHub doesn't let you
   approve your own PR, so this is how you merge your own work once checks pass.
   Contributors have no bypass.

@@ -25,6 +25,7 @@ fix whichever is wrong in the same pull request.
 | [storage-and-sync.md](storage-and-sync.md) | Local database, credentials, cache and refresh behaviour |
 | [task-details.md](task-details.md) | Read-only details of a clicked task: fields, subtasks, where the data comes from |
 | [settings.md](settings.md) | Settings dialog, persistence of app preferences, week start |
+| [ci-docs-only-changes.md](ci-docs-only-changes.md) | How CI skips build and test for docs-only changes while required checks still report |
 | [roadmap.md](roadmap.md) | Milestones and open questions |
 
 ## Goals
