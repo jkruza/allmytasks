@@ -227,6 +227,8 @@ Written so the Google and Microsoft designs can lean on the same decisions:
 
 ## Open questions
 
+**Decided 2026-10-26 (maintainer):** v1 stays with personal API tokens only; OAuth is not pursued for now. Until the maintainer says otherwise, the other items default to out of v1: no recently completed tasks, no `RecurrenceText`, no section names, and project favourite/order does not affect sorting. Each can be reopened with its own issue.
+
 - Show recently completed tasks (for example "done today")? Needs either keeping
   completed items across full resyncs or calling Todoist's completed-tasks endpoint.
 - Add `TaskItem.RecurrenceText` (display-only) so unmapped recurrence can still be shown?

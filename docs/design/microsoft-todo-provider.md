@@ -301,6 +301,8 @@ Not designed in detail. Notes so nothing in v1 blocks it:
 
 ## Open questions
 
+**Decided 2026-10-26 (maintainer):** the proposals below are accepted. Question 1 is settled together with the Outlook design: Jarek owns the Entra app registration and publisher verification is pursued. Questions 2 to 4 are verified against real accounts during implementation.
+
 | # | Question | Proposal |
 | --- | --- | --- |
 | 1 | Who owns the Entra app registration, and do we pursue publisher verification? Unverified apps show a warning and some organisations block them outright. | Register as a multi-tenant public client under the project owner's account; verify the publisher when possible; document how an organisation can use its own client id. Shared with Outlook. |
