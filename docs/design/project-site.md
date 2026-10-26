@@ -34,8 +34,9 @@ in the same PR. A page change goes through the normal PR and approval flow, like
 
 Enabling Pages is a repository setting, so it needs an admin: **Settings → Pages → Build and
 deployment → Source: GitHub Actions**. After that, the first run of the Pages workflow publishes the
-site (run it by hand from the Actions tab, or merge any change under `site/`). The default address is
-`https://jkruza.github.io/allmytasks/`. See [MAINTAINING.md](../MAINTAINING.md#project-site).
+site (run it by hand from the Actions tab, or merge any change under `site/`). The site is served from the custom domain
+`https://allmytasks.jkruza.com/` (a CNAME record for `allmytasks` pointing at `jkruza.github.io`, set under
+Settings → Pages; the older `jkruza.github.io/allmytasks/` address redirects to it). See [MAINTAINING.md](../MAINTAINING.md#project-site).
 
 ## Not included
 

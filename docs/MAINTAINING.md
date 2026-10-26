@@ -96,7 +96,9 @@ Design: [docs/design/project-site.md](design/project-site.md).
    repository setting, so it needs an admin; Claude's bot account can't do it.
 2. Run the `Pages` workflow once from the Actions tab (or merge a change under `site/`).
    The first deployment may wait for you to approve the `github-pages` environment.
-3. The site is at `https://jkruza.github.io/allmytasks/`.
+3. The site is at `https://allmytasks.jkruza.com/`. The custom domain is set in Settings → Pages
+   (a DNS CNAME for `allmytasks` pointing at `jkruza.github.io`, with Enforce HTTPS on). A
+   workflow deployment ignores a `CNAME` file, so there is none in `site/`.
 
 When the README or roadmap changes provider status or build steps, update `site/index.html`
 in the same PR.
