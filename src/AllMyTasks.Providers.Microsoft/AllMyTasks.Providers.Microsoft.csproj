@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>AllMyTasks.Providers.Microsoft</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\AllMyTasks.Core\AllMyTasks.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="AllMyTasks.Providers.Microsoft.Tests" />
+  </ItemGroup>
+  <!-- The default application (client) id is injected at build time (AMT_MICROSOFT_CLIENT_ID) and never committed. -->
+  <ItemGroup Condition="'$(AMT_MICROSOFT_CLIENT_ID)' != ''">
+    <AssemblyMetadata Include="MicrosoftClientId" Value="$(AMT_MICROSOFT_CLIENT_ID)" />
+  </ItemGroup>
+</Project>

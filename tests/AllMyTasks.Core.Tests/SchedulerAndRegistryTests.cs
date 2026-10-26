@@ -19,6 +19,17 @@ public class BackoffTests
     [InlineData(50, 30)]
     public void Doubles_up_to_thirty_minutes(int failures, int minutes) =>
         Assert.Equal(TimeSpan.FromMinutes(minutes), Backoff.Delay(failures));
+
+    [Theory]
+    [InlineData(1, null, 1)]
+    [InlineData(1, 0, 1)]
+    [InlineData(1, 10, 10)]
+    [InlineData(6, 10, 30)]
+    [InlineData(1, 600, 60)]
+    public void A_server_wait_raises_the_delay_but_never_lowers_it_and_is_capped_at_an_hour(int failures, int? serverMinutes, int expectedMinutes) =>
+        Assert.Equal(
+            TimeSpan.FromMinutes(expectedMinutes),
+            Backoff.Delay(failures, serverMinutes is { } m ? TimeSpan.FromMinutes(m) : null));
 }
 
 public class SyncSchedulerTests
