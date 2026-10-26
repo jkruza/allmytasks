@@ -1,4 +1,5 @@
 using AllMyTasks.Core.Samples;
+using AllMyTasks.Core.Startup;
 using AllMyTasks.Core.Storage;
 using AllMyTasks.Core.Sync;
 using AllMyTasks.Core.Views;
@@ -26,7 +27,7 @@ public sealed partial class App : Application
         {
             try
             {
-                Start(desktop);
+                Start(this, desktop);
             }
             catch (StorageVersionException ex)
             {
@@ -41,7 +42,7 @@ public sealed partial class App : Application
         base.OnFrameworkInitializationCompleted();
     }
 
-    private static void Start(IClassicDesktopStyleApplicationLifetime desktop)
+    private static void Start(Application application, IClassicDesktopStyleApplicationLifetime desktop)
     {
         var clock = TimeProvider.System;
         var zone = TimeZoneInfo.Local;
@@ -91,10 +92,18 @@ public sealed partial class App : Application
             appSettings,
             () => _ = dialogs.ShowSettingsAsync(new SettingsViewModel(appSettings)));
 
-        desktop.MainWindow = new MainWindow { DataContext = shell };
-        desktop.MainWindow.Activated += (_, _) => _ = scheduler.OnWindowActivatedAsync();
+        var window = new MainWindow { DataContext = shell };
+        window.Activated += (_, _) => _ = scheduler.OnWindowActivatedAsync();
+        var tray = new TrayService(application, desktop, window, shell, appSettings);
+        if (!StartupOptions.FromArguments(desktop.Args ?? []).StartInTray)
+        {
+            // With --tray the window is left out of desktop.MainWindow, which would show it; TrayService.Show adds it on request.
+            desktop.MainWindow = window;
+        }
+
         desktop.Exit += (_, _) =>
         {
+            tray.Dispose();
             scheduler.Dispose();
             feedFactory.Dispose();
             davFactory.Dispose();

@@ -57,7 +57,7 @@ Stored as JSON under the key `settings.app` in the existing `settings` table (se
 [storage-and-sync.md](storage-and-sync.md)), through `ViewStateStore`:
 
 ```json
-{ "weekStart": "System" }
+{ "weekStart": "System", "closeToTray": true }
 ```
 
 - An unknown or missing value reads as the default. Unknown extra fields are ignored, so an older
@@ -76,7 +76,8 @@ window included). Opened from a toolbar button next to Sources.
 
 - Changes apply as they are made; one **Close** button. No Save/Cancel, so there is no
   half-applied state.
-- Rows are grouped under headings (**Calendar** now; later sections get their own heading).
+- Rows are grouped under headings (**Calendar** and **Window**; later sections get their own heading).
+- **Window** has one checkbox, *Keep running in the system tray when the window is closed* (`closeToTray`, default on). See [system-tray.md](system-tray.md).
 - `SettingsViewModel` is thin: it exposes the options and writes through `SettingsService`.
 
 ## Tests

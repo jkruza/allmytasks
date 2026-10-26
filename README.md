@@ -19,6 +19,16 @@ dotnet test --solution AllMyTasks.slnx
 dotnet run --project src/AllMyTasks
 ```
 
+### System tray
+
+The app shows a tray icon. Closing the window hides it to the tray; use **Quit** in the tray menu to exit
+(or turn off *Keep running in the system tray when the window is closed* in Settings). Start with only the tray icon using
+`--tray`, for example `dotnet run --project src/AllMyTasks -- --tray`.
+
+On Linux the tray needs a StatusNotifier/AppIndicator host. KDE, Xfce, Cinnamon and MATE have one; GNOME needs the
+*AppIndicator and KStatusNotifierItem Support* extension. Without one the icon does not show, so turn the setting off and
+do not use `--tray`. See [docs/design/system-tray.md](docs/design/system-tray.md).
+
 ## Project layout
 
 | Path | What it is |

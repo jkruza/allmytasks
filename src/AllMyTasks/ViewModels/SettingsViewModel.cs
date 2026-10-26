@@ -24,6 +24,7 @@ public sealed partial class SettingsViewModel : ViewModelBase
             new(WeekStartSetting.Monday, "Monday"),
         ];
         SelectedWeekStart = WeekStartOptions.First(o => o.Value == settings.Current.WeekStart);
+        CloseToTray = settings.Current.CloseToTray;
     }
 
     public IReadOnlyList<WeekStartOption> WeekStartOptions { get; }
@@ -33,4 +34,10 @@ public sealed partial class SettingsViewModel : ViewModelBase
 
     partial void OnSelectedWeekStartChanged(WeekStartOption value) =>
         _settings.Update(s => s with { WeekStart = value.Value });
+
+    [ObservableProperty]
+    public partial bool CloseToTray { get; set; }
+
+    partial void OnCloseToTrayChanged(bool value) =>
+        _settings.Update(s => s with { CloseToTray = value });
 }

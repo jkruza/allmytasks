@@ -47,4 +47,25 @@ public class AppSettingsTests
     [Fact]
     public void Unknown_fields_are_ignored() =>
         Assert.Equal(WeekStartSetting.Monday, AppSettings.Parse("{\"weekStart\":\"monday\",\"theme\":\"dark\"}").WeekStart);
+
+    [Fact]
+    public void Close_to_tray_defaults_to_on() => Assert.True(new AppSettings().CloseToTray);
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Close_to_tray_round_trips_with_the_week_start(bool closeToTray)
+    {
+        var parsed = AppSettings.Parse(new AppSettings { WeekStart = WeekStartSetting.Monday, CloseToTray = closeToTray }.ToJson());
+        Assert.Equal(closeToTray, parsed.CloseToTray);
+        Assert.Equal(WeekStartSetting.Monday, parsed.WeekStart);
+    }
+
+    [Theory]
+    [InlineData("{}")]
+    [InlineData("{\"closeToTray\":\"false\"}")]
+    [InlineData("{\"closeToTray\":0}")]
+    [InlineData("{\"closeToTray\":null}")]
+    public void Missing_or_non_boolean_close_to_tray_gives_the_default(string json) =>
+        Assert.True(AppSettings.Parse(json).CloseToTray);
 }
