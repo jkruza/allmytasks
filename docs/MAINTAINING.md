@@ -17,6 +17,7 @@ settings below. If a step fails, set it by hand here.
 | Allowed actions | GitHub-owned only, SHA pinning required | Settings → Actions → General |
 | Fork PR workflows | Require approval for all outside collaborators | Settings → Actions → General |
 | Workflow permissions | Read repository contents; can't approve PRs | Settings → Actions → General |
+| Pages source | GitHub Actions (site deployed by `pages.yml`) | Settings → Pages |
 | Environment `release` | Required reviewer: you; only `v*` tags | Settings → Environments |
 | Rulesets | `main-protection`, `protect-release-tags` | Settings → Rules → Rulesets |
 
@@ -84,6 +85,21 @@ depends on nobody else being able to sign in as you.
 
 Binaries are not code-signed yet, so Windows SmartScreen and macOS Gatekeeper will warn.
 macOS builds are plain executables, not `.app` bundles.
+
+## Project site
+
+`site/index.html` is the public project page, published to GitHub Pages by the `Pages`
+workflow (`.github/workflows/pages.yml`) whenever a change under `site/` lands on `main`.
+Design: [docs/design/project-site.md](design/project-site.md).
+
+1. One time: **Settings → Pages → Build and deployment → Source: GitHub Actions**. This is a
+   repository setting, so it needs an admin; Claude's bot account can't do it.
+2. Run the `Pages` workflow once from the Actions tab (or merge a change under `site/`).
+   The first deployment may wait for you to approve the `github-pages` environment.
+3. The site is at `https://jkruza.github.io/allmytasks/`.
+
+When the README or roadmap changes provider status or build steps, update `site/index.html`
+in the same PR.
 
 ## Dependencies
 
