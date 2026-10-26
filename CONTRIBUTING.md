@@ -34,6 +34,8 @@ dotnet run --project src/AllMyTasks
 CI for pull requests from forks runs after a maintainer approves it. All checks
 (Windows, Linux, macOS) must pass and a code owner must approve before merging.
 PRs are squash- or rebase-merged; `main` has a linear history.
+PRs that only change documentation (`docs/`, `*.md`) skip the build and test steps,
+but the three checks still report, so they merge the same way.
 
 Changes to `.github/`, `.claude/`, `CLAUDE.md`, `scripts/` or build files get extra
 scrutiny. Please explain why they're needed.
