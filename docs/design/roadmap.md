@@ -85,8 +85,8 @@ incrementally.
 ### Later (unordered, not committed)
 
 - `VTODO` tasks over CalDAV.
-- Todoist provider (first task-only provider; proves the model is not calendar-shaped). Designed in
-  [todoist-provider.md](todoist-provider.md), tracked in [#27](https://github.com/jkruza/allmytasks/issues/27).
+- Todoist provider (first task-only provider; proves the model is not calendar-shaped). Implemented read-only with an API
+  token; see [todoist-provider.md](todoist-provider.md), tracked in [#27](https://github.com/jkruza/allmytasks/issues/27).
 - Google and Microsoft providers (OAuth), all read-only in v1:
   - Google Calendar: [google-calendar-provider.md](google-calendar-provider.md), [#28](https://github.com/jkruza/allmytasks/issues/28).
   - Google Tasks: [google-tasks-provider.md](google-tasks-provider.md), [#26](https://github.com/jkruza/allmytasks/issues/26).

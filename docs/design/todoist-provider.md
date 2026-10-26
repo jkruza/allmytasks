@@ -8,6 +8,10 @@ model and sync engine work for a provider that has no calendar at all. Tracking 
 Read-only in v1, like the rest of the app: no create, edit or complete, and every
 collection has `IsReadOnly = true`.
 
+**Status: implemented** in `src/AllMyTasks.Providers.Todoist` (`TodoistFactory`, `TodoistSource`,
+`TodoistClient`, `TodoistMapper`), with tests in `tests/AllMyTasks.Providers.Todoist.Tests`. Where the
+implementation differs from the original design, the text below says so under "Implementation notes".
+
 ## Scope
 
 In v1:
@@ -80,8 +84,10 @@ POST /sync   sync_token=<token or *>   resource_types=["projects","items"]
 -> { sync_token, full_sync, projects[], items[] }   (incremental: only what changed)
 ```
 
-- `GetCollectionsAsync` runs the same call with the stored account token (or `*`) and
-  returns the project list. Projects with `is_deleted` or `is_archived` are dropped.
+- `GetCollectionsAsync` runs a projects-only full sync (`sync_token=*`,
+  `resource_types=["projects"]`) and returns the project list. Projects with `is_deleted` or
+  `is_archived` are dropped. (An incremental reply only lists changed projects, so it could not
+  produce the complete list; the projects-only reply is small.)
 - `SyncTasksAsync(collection, previous)`:
   - `previous == null`: full sync (`sync_token=*`), return the collection's tasks as a
     **snapshot** (`IsFullSnapshot = true`).
@@ -117,9 +123,10 @@ reliably is an [open question](#open-questions).
 | Condition | Exception | Engine behaviour |
 | --- | --- | --- |
 | 401, 403 | `SourceAuthException` | Needs attention |
-| 429 | `SourceUnavailableException`, honours `Retry-After` | Backoff, keep cache |
+| 429 | `SourceUnavailableException`, `Retry-After` reported in the diagnostics | Backoff, keep cache |
 | 5xx, timeout, DNS, TLS | `SourceUnavailableException` | Backoff, keep cache |
-| Invalid sync token | `SyncStateExpiredException` | Re-sync once |
+| Invalid sync token (a `full_sync: true` reply, or HTTP 400, to an incremental request) | `SyncStateExpiredException` | Re-sync once |
+| Redirect (3xx) | `SourceDataException`, not followed | Fail the sync |
 | Malformed JSON for the whole response | `SourceDataException` | Fail the sync |
 | One item that cannot be mapped | warning on the result | Skip the item |
 
@@ -156,8 +163,8 @@ the new offset after the next refresh, which matches how Todoist itself behaves.
 
 Mapping quirks to handle and test:
 
-- Items whose `project_id` is not in the project list (archived or inaccessible) are
-  skipped with a warning.
+- Items are only read for collections the engine asks about, so an item of an archived or
+  inaccessible project is simply never requested.
 - `parent_id` pointing at a parent in another collection or not present: `ParentKey` is
   set anyway; the details pane already handles a missing parent.
 - A `parent_id` cycle cannot loop the details pane (existing rule), but the mapper does
@@ -196,7 +203,7 @@ the provider references Core and nothing else.
   stored config; the token is not sent to a different host after a redirect.
 - All fixtures use made-up data. Never commit a real Todoist export or token.
 - Optional integration test against a throwaway account, gated by `AMT_TODOIST_TOKEN`, off
-  by default and never run in CI (same approach as the CalDAV one).
+  by default and never run in CI (same approach as the CalDAV one). Not written yet.
 
 ## Security
 
@@ -225,6 +232,38 @@ Written so the Google and Microsoft designs can lean on the same decisions:
 - **Recurrence text** that cannot be mapped to an RRULE needs one shared answer in the
   model; Microsoft To Do recurrence maps cleanly, Todoist does not.
 
+## Implementation notes
+
+Differences from the original design, and what was checked against the live documentation on
+2026-10-26. No live Todoist account was available, so the points marked *assumed* are untested
+against the real service.
+
+- **Fields confirmed** against Todoist's official Python SDK models and the Sync API reference:
+  project `id`, `name`, `color`, `is_archived`, `is_deleted`; item `id`, `project_id`, `parent_id`,
+  `content`, `description`, `due` (`date`, `string`, `timezone`, `is_recurring`), `priority`, `labels`,
+  `completed_at`, `updated_at`; `sync_token` and `full_sync` on the reply. Due `date` is a plain date,
+  a UTC time ending in `Z`, or a floating time with no suffix, as designed. Timestamps are ISO 8601 in
+  UTC with fractional seconds, which the mapper accepts with or without the fraction. Ids are strings;
+  numbers are accepted defensively.
+- **Task link:** `https://app.todoist.com/app/task/<id>` (the app also accepts a title slug in front of
+  the id, which the provider does not need).
+- **Rate limits are not published** as numbers in the public reference (it points to a separate
+  "Request limits" page). The provider does not rely on any figure: it makes one request per distinct
+  token per refresh round, treats 429 as "back off" and reports a `Retry-After` header in the
+  diagnostics when one is sent. The engine's own backoff decides when to try again.
+- **No retry inside the provider.** `SourceBase.RetryAsync` is not used, because retrying a 429
+  after a second would add to the load; the engine already backs off.
+- **Invalid sync token** *assumed*: an unknown token either yields `full_sync: true` or HTTP 400;
+  both start over once. A first sync (`*`) that gets 400 is a plain failure.
+- **The `checked` flag and `completed_at`** on completed items in an incremental reply are
+  *assumed* from the SDK models and the Sync API item description; either one marks the task
+  `Completed`.
+- **Redirects** are never followed; any 3xx fails the sync.
+- **Palette:** the colour names map to Todoist's published hex values (an unknown name gives no colour).
+- **Memo:** at most four replies are kept for two minutes; a failed request is dropped at once so
+  the next attempt asks again.
+- **Display zone:** floating times use the zone the factory is given (the OS zone in the app).
+
 ## Open questions
 
 **Decided 2026-10-26 (maintainer):** v1 stays with personal API tokens only; OAuth is not pursued for now. Until the maintainer says otherwise, the other items default to out of v1: no recently completed tasks, no `RecurrenceText`, no section names, and project favourite/order does not affect sorting. Each can be reopened with its own issue.
@@ -235,6 +274,5 @@ Written so the Google and Microsoft designs can lean on the same decisions:
 - Show section names (a prefix or a group in All tasks)?
 - Should a project's Todoist favourite flag or order influence sort order?
 - OAuth: acceptable to ship a public client id/secret, or stay with tokens only?
-- Confirm at implementation time against the live API: exact rate limits, the shape of
-  incremental `checked` items, and the `Retry-After` header on 429. This design was written
-  from the public Sync API v1 documentation without a live account.
+- Verify the *assumed* points above and the real rate limits with a throwaway account (the optional
+  `AMT_TODOIST_TOKEN` integration test described under Testing is not written yet).
