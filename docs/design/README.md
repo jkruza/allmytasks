@@ -27,6 +27,7 @@ fix whichever is wrong in the same pull request.
 | [task-details.md](task-details.md) | Read-only details of a clicked task: fields, subtasks, where the data comes from |
 | [settings.md](settings.md) | Settings dialog, persistence of app preferences, week start |
 | [ci-docs-only-changes.md](ci-docs-only-changes.md) | How CI skips build and test for docs-only changes while required checks still report |
+| [project-site.md](project-site.md) | The static project page published on GitHub Pages and how it is deployed |
 | [roadmap.md](roadmap.md) | Milestones and open questions |
 
 ## Goals

@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<meta name="description" content="All My Tasks is an open-source, cross-platform desktop app that gathers calendars and task lists from many providers into one view.">
+<title>All My Tasks</title>
+<style>
+:root{--s100:#f3f3f3;--s000:#ffffff;--s200:#e6e6e6;--bd:#d6d6d6;--ink:#1b1b1b;--mut:#5c5c5c}
+@media (prefers-color-scheme: dark){:root{--s100:#202020;--s000:#2d2d2d;--s200:#3a3a3a;--bd:#454545;--ink:#f3f3f3;--mut:#b3b3b3}}
+body{margin:0;background:var(--s100);color:var(--ink);font-family:"Segoe UI",-apple-system,BlinkMacSystemFont,"Inter",system-ui,sans-serif}
+a{color:var(--ink)}a:hover{color:var(--mut)}
+html{scroll-behavior:smooth}
+</style>
+</head>
+<body>
+<div style="background: var(--s100); color: var(--ink); font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Inter', system-ui, sans-serif; font-size: 16px; line-height: 26px; min-height: 100vh">
+
+<!-- Header -->
+<header style="border-bottom: 1px solid var(--bd)">
+<div style="max-width: 1120px; margin: 0 auto; padding: 16px 24px; box-sizing: border-box; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px">
+<a href="#top" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink)">
+<span aria-hidden="true" style="display: flex; flex-direction: column; gap: 3px">
+<span style="display: block; width: 22px; height: 5px; border-radius: 2px; background: #3b82f6"></span>
+<span style="display: block; width: 16px; height: 5px; border-radius: 2px; background: #10b981"></span>
+<span style="display: block; width: 10px; height: 5px; border-radius: 2px; background: #f59e0b"></span>
+</span>
+<span style="font-size: 18px; line-height: 24px; font-weight: 600">All My Tasks</span>
+</a>
+<nav aria-label="Page sections" style="display: flex; flex-wrap: wrap; align-items: center; gap: 4px 24px; font-size: 14px; line-height: 20px">
+<a href="#features" style="text-decoration: none; padding: 12px 0">Features</a>
+<a href="#providers" style="text-decoration: none; padding: 12px 0">Providers</a>
+<a href="#built" style="text-decoration: none; padding: 12px 0">How it's built</a>
+<a href="#roadmap" style="text-decoration: none; padding: 12px 0">Roadmap</a>
+<a href="#start" style="text-decoration: none; padding: 12px 0">Get started</a>
+<a href="https://github.com/jkruza/allmytasks" style="text-decoration: none; padding: 10px 16px; border: 1px solid var(--bd); border-radius: 6px; background: var(--s000)">GitHub</a>
+</nav>
+</div>
+</header>
+
+<main id="top">
+
+<!-- Hero -->
+<section style="max-width: 1120px; margin: 0 auto; padding: 64px 24px 16px; box-sizing: border-box; display: flex; flex-wrap: wrap; align-items: center; gap: 48px">
+<div style="flex: 1 1 460px; min-width: 0; display: flex; flex-direction: column; gap: 20px; align-items: flex-start">
+<span style="font-size: 12px; line-height: 16px; background: var(--s200); border-radius: 8px; padding: 4px 10px">Open source · MIT · Working title</span>
+<h1 style="margin: 0; font-size: 44px; line-height: 52px; font-weight: 600; letter-spacing: -0.5px">All your calendars and tasks, in one calm place.</h1>
+<p style="margin: 0; font-size: 18px; line-height: 28px; color: var(--mut)">All My Tasks is a cross-platform desktop app that gathers calendars and task lists from many providers into a single view. Built with .NET and Avalonia for Windows, macOS and Linux.</p>
+<div style="display: flex; flex-wrap: wrap; gap: 12px">
+<a href="https://github.com/jkruza/allmytasks" style="display: inline-block; padding: 12px 20px; border-radius: 6px; background: var(--ink); color: var(--s100); text-decoration: none; font-weight: 600; font-size: 14px; line-height: 20px">View on GitHub</a>
+<a href="#start" style="display: inline-block; padding: 12px 20px; border-radius: 6px; border: 1px solid var(--bd); background: var(--s000); text-decoration: none; font-weight: 600; font-size: 14px; line-height: 20px">Build from source</a>
+</div>
+<p style="margin: 0; font-size: 14px; line-height: 20px; color: var(--mut)"><strong style="color: var(--ink)">Status: early.</strong> Providers are read-only so far: iCalendar feeds, CalDAV calendars and Todoist tasks.</p>
+</div>
+
+<!-- Illustration of the app -->
+<figure style="flex: 1 1 460px; min-width: 0; margin: 0">
+<div aria-hidden="true" style="background: var(--s000); border: 1px solid var(--bd); border-radius: 6px; padding: 16px; display: flex; flex-direction: column; gap: 16px; box-sizing: border-box">
+<div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px">
+<span style="font-size: 20px; line-height: 26px; font-weight: 600">Upcoming</span>
+<span style="display: flex; gap: 4px; font-size: 12px; line-height: 16px">
+<span style="padding: 4px 10px; border-radius: 3px; color: var(--mut)">Day</span>
+<span style="padding: 4px 10px; border-radius: 3px; color: var(--mut)">Week</span>
+<span style="padding: 4px 10px; border-radius: 3px; color: var(--mut)">Month</span>
+<span style="padding: 4px 10px; border-radius: 3px; background: var(--s200); font-weight: 600">Upcoming</span>
+<span style="padding: 4px 10px; border-radius: 3px; color: var(--mut)">All tasks</span>
+</span>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 8px">
+<span style="font-size: 16px; line-height: 22px; font-weight: 600">Today</span>
+
+<div style="display: flex; gap: 10px; align-items: stretch">
+<span style="width: 3px; border-radius: 2px; background: #3b82f6; flex: none"></span>
+<span style="width: 44px; flex: none; font-size: 12px; line-height: 20px; color: var(--mut)">09:30</span>
+<span style="flex: 1; min-width: 0; display: flex; flex-direction: column">
+<span style="font-size: 14px; line-height: 20px; font-weight: 600">Design review</span>
+<span style="display: flex; align-items: center; gap: 6px; font-size: 11px; line-height: 14px; color: var(--mut)"><span style="width: 8px; height: 8px; border-radius: 9999px; background: #3b82f6"></span>Work calendar · CalDAV</span>
+</span>
+</div>
+
+<div style="display: flex; gap: 10px; align-items: stretch">
+<span style="width: 3px; border-radius: 2px; background: #14b8a6; flex: none"></span>
+<span style="width: 44px; flex: none; font-size: 12px; line-height: 20px; color: var(--mut)">Task</span>
+<span style="flex: 1; min-width: 0; display: flex; flex-direction: column">
+<span style="font-size: 14px; line-height: 20px; font-weight: 600">Review open pull requests</span>
+<span style="display: flex; align-items: center; gap: 6px; font-size: 11px; line-height: 14px; color: var(--mut)"><span style="width: 8px; height: 8px; border-radius: 9999px; background: #14b8a6"></span>Todoist · Inbox</span>
+</span>
+<span style="display: flex; align-items: center; gap: 6px; font-size: 12px; line-height: 16px"><span style="width: 10px; height: 10px; border-radius: 9999px; background: #ff8c00"></span>High</span>
+</div>
+
+<div style="display: flex; gap: 10px; align-items: stretch">
+<span style="width: 3px; border-radius: 2px; background: #10b981; flex: none"></span>
+<span style="width: 44px; flex: none; font-size: 12px; line-height: 20px; color: var(--mut)">Task</span>
+<span style="flex: 1; min-width: 0; display: flex; flex-direction: column">
+<span style="font-size: 14px; line-height: 20px; font-weight: 600">Renew library card</span>
+<span style="display: flex; align-items: center; gap: 6px; font-size: 11px; line-height: 14px; color: var(--mut)"><span style="width: 8px; height: 8px; border-radius: 9999px; background: #10b981"></span>Errands · Todoist</span>
+</span>
+<span style="display: flex; align-items: center; gap: 6px; font-size: 12px; line-height: 16px"><span style="width: 10px; height: 10px; border-radius: 9999px; background: #cd5c5c"></span>Overdue</span>
+</div>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 8px">
+<span style="font-size: 16px; line-height: 22px; font-weight: 600">Tomorrow</span>
+
+<div style="display: flex; gap: 10px; align-items: stretch">
+<span style="width: 3px; border-radius: 2px; background: #8b5cf6; flex: none"></span>
+<span style="width: 44px; flex: none; font-size: 12px; line-height: 20px; color: var(--mut)">All day</span>
+<span style="flex: 1; min-width: 0; display: flex; flex-direction: column">
+<span style="font-size: 14px; line-height: 20px; font-weight: 600">Team offsite</span>
+<span style="display: flex; align-items: center; gap: 6px; font-size: 11px; line-height: 14px; color: var(--mut)"><span style="width: 8px; height: 8px; border-radius: 9999px; background: #8b5cf6"></span>Company feed · iCalendar</span>
+</span>
+</div>
+
+<div style="display: flex; gap: 10px; align-items: stretch">
+<span style="width: 3px; border-radius: 2px; background: #f59e0b; flex: none"></span>
+<span style="width: 44px; flex: none; font-size: 12px; line-height: 20px; color: var(--mut)">14:00</span>
+<span style="flex: 1; min-width: 0; display: flex; flex-direction: column">
+<span style="font-size: 14px; line-height: 20px; font-weight: 600">Dentist</span>
+<span style="display: flex; align-items: center; gap: 6px; font-size: 11px; line-height: 14px; color: var(--mut)"><span style="width: 8px; height: 8px; border-radius: 9999px; background: #f59e0b"></span>Personal · CalDAV</span>
+</span>
+</div>
+</div>
+</div>
+<figcaption style="margin-top: 8px; font-size: 12px; line-height: 16px; color: var(--mut)">Illustration of the Upcoming view with made-up sample entries. Each calendar or list gets one colour.</figcaption>
+</figure>
+</section>
+
+<!-- Features -->
+<section id="features" style="max-width: 1120px; margin: 0 auto; padding: 80px 24px 0; box-sizing: border-box">
+<h2 style="margin: 0 0 8px; font-size: 26px; line-height: 32px; font-weight: 600">One view over everything you already use</h2>
+<p style="margin: 0 0 32px; max-width: 640px; color: var(--mut)">You keep your calendars and task lists where they are. All My Tasks reads them, stores a local copy and lays them out side by side.</p>
+<div style="display: flex; flex-wrap: wrap; gap: 16px">
+
+<div style="flex: 1 1 320px; min-width: 0; background: var(--s000); border: 1px solid var(--bd); border-radius: 6px; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; gap: 8px">
+<span aria-hidden="true" style="width: 28px; height: 4px; border-radius: 2px; background: #3b82f6"></span>
+<h3 style="margin: 0; font-size: 18px; line-height: 24px; font-weight: 600">Day, week, month and upcoming</h3>
+<p style="margin: 0; font-size: 14px; line-height: 22px; color: var(--mut)">Four calendar views with filter toggles, plus an All tasks view with filtering, sorting and grouping. Click any entry or task to open its details and subtasks.</p>
+</div>
+
+<div style="flex: 1 1 320px; min-width: 0; background: var(--s000); border: 1px solid var(--bd); border-radius: 6px; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; gap: 8px">
+<span aria-hidden="true" style="width: 28px; height: 4px; border-radius: 2px; background: #10b981"></span>
+<h3 style="margin: 0; font-size: 18px; line-height: 24px; font-weight: 600">Many providers, one model</h3>
+<p style="margin: 0; font-size: 14px; line-height: 22px; color: var(--mut)">iCalendar feeds, CalDAV and Todoist work today. Google and Microsoft providers are designed and planned. Events and tasks stay separate types, so task-only services fit naturally.</p>
+</div>
+
+<div style="flex: 1 1 320px; min-width: 0; background: var(--s000); border: 1px solid var(--bd); border-radius: 6px; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; gap: 8px">
+<span aria-hidden="true" style="width: 28px; height: 4px; border-radius: 2px; background: #f59e0b"></span>
+<h3 style="margin: 0; font-size: 18px; line-height: 24px; font-weight: 600">Works offline</h3>
+<p style="margin: 0; font-size: 14px; line-height: 22px; color: var(--mut)">Everything is synced into a local SQLite store. Restart the app without a connection and your data is still there. A sync engine handles scheduling, backoff and per-source status.</p>
+</div>
+
+<div style="flex: 1 1 320px; min-width: 0; background: var(--s000); border: 1px solid var(--bd); border-radius: 6px; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; gap: 8px">
+<span aria-hidden="true" style="width: 28px; height: 4px; border-radius: 2px; background: #8b5cf6"></span>
+<h3 style="margin: 0; font-size: 18px; line-height: 24px; font-weight: 600">Credentials stay in your keystore</h3>
+<p style="margin: 0; font-size: 14px; line-height: 22px; color: var(--mut)">Tokens and passwords go to Windows Credential Manager, the macOS Keychain or the Linux Secret Service. Without a keyring on Linux, an opt-in PIN-protected encrypted file is used, never plaintext.</p>
+</div>
+
+<div style="flex: 1 1 320px; min-width: 0; background: var(--s000); border: 1px solid var(--bd); border-radius: 6px; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; gap: 8px">
+<span aria-hidden="true" style="width: 28px; height: 4px; border-radius: 2px; background: #14b8a6"></span>
+<h3 style="margin: 0; font-size: 18px; line-height: 24px; font-weight: 600">Quiet in the system tray</h3>
+<p style="margin: 0; font-size: 14px; line-height: 22px; color: var(--mut)">Closing the window hides it to the tray so syncing carries on. Start with only the tray icon using <code style="font-family: 'Cascadia Mono', Consolas, Menlo, monospace; font-size: 13px">--tray</code>, or turn the behaviour off in Settings.</p>
+</div>
+
+<div style="flex: 1 1 320px; min-width: 0; background: var(--s000); border: 1px solid var(--bd); border-radius: 6px; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; gap: 8px">
+<span aria-hidden="true" style="width: 28px; height: 4px; border-radius: 2px; background: #ec4899"></span>
+<h3 style="margin: 0; font-size: 18px; line-height: 24px; font-weight: 600">Light, dark and cross-platform</h3>
+<p style="margin: 0; font-size: 14px; line-height: 22px; color: var(--mut)">One Avalonia codebase runs on Windows, macOS and Linux and follows the operating system's light or dark theme.</p>
+</div>
+</div>
+</section>
+
+<!-- Providers -->
+<section id="providers" style="max-width: 1120px; margin: 0 auto; padding: 80px 24px 0; box-sizing: border-box">
+<h2 style="margin: 0 0 8px; font-size: 26px; line-height: 32px; font-weight: 600">Providers</h2>
+<p style="margin: 0 0 24px; max-width: 640px; color: var(--mut)">All providers are read-only in this first stage. Write support starts with completing tasks.</p>
+<div style="background: var(--s000); border: 1px solid var(--bd); border-radius: 6px; overflow: hidden">
+
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding: 16px 20px; border-bottom: 1px solid var(--bd)">
+<span style="flex: 1 1 200px; display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 14px; line-height: 20px"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 9999px; background: #3b82f6"></span>iCalendar feeds</span>
+<span style="flex: 1 1 360px; font-size: 14px; line-height: 20px; color: var(--mut)">Paste a public .ics URL. Conditional fetching and full recurrence expansion.</span>
+<span style="display: flex; align-items: center; gap: 6px; font-size: 12px; line-height: 16px; background: var(--s200); border-radius: 8px; padding: 4px 10px"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 9999px; background: #10b981"></span>Available</span>
+</div>
+
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding: 16px 20px; border-bottom: 1px solid var(--bd)">
+<span style="flex: 1 1 200px; display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 14px; line-height: 20px"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 9999px; background: #8b5cf6"></span>CalDAV</span>
+<span style="flex: 1 1 360px; font-size: 14px; line-height: 20px; color: var(--mut)">Calendar events with incremental sync. Checked by hand against Radicale; Nextcloud and hosted services still need verifying.</span>
+<span style="display: flex; align-items: center; gap: 6px; font-size: 12px; line-height: 16px; background: var(--s200); border-radius: 8px; padding: 4px 10px"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 9999px; background: #10b981"></span>Available</span>
+</div>
+
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding: 16px 20px; border-bottom: 1px solid var(--bd)">
+<span style="flex: 1 1 200px; display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 14px; line-height: 20px"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 9999px; background: #ef4444"></span>Todoist</span>
+<span style="flex: 1 1 360px; font-size: 14px; line-height: 20px; color: var(--mut)">Tasks, using a personal API token.</span>
+<span style="display: flex; align-items: center; gap: 6px; font-size: 12px; line-height: 16px; background: var(--s200); border-radius: 8px; padding: 4px 10px"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 9999px; background: #10b981"></span>Available</span>
+</div>
+
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding: 16px 20px; border-bottom: 1px solid var(--bd)">
+<span style="flex: 1 1 200px; display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 14px; line-height: 20px"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 9999px; background: #6b7280"></span>Google Calendar and Tasks</span>
+<span style="flex: 1 1 360px; font-size: 14px; line-height: 20px; color: var(--mut)">Sign in with OAuth. Designs written, tracked in issues #28 and #26.</span>
+<span style="display: flex; align-items: center; gap: 6px; font-size: 12px; line-height: 16px; background: var(--s200); border-radius: 8px; padding: 4px 10px"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 9999px; background: #6b7280"></span>Planned</span>
+</div>
+
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding: 16px 20px">
+<span style="flex: 1 1 200px; display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 14px; line-height: 20px"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 9999px; background: #6b7280"></span>Outlook calendar and Microsoft To Do</span>
+<span style="flex: 1 1 360px; font-size: 14px; line-height: 20px; color: var(--mut)">Microsoft Graph for personal and work accounts, one shared sign-in. Tracked in issues #32 and #24.</span>
+<span style="display: flex; align-items: center; gap: 6px; font-size: 12px; line-height: 16px; background: var(--s200); border-radius: 8px; padding: 4px 10px"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 9999px; background: #6b7280"></span>Planned</span>
+</div>
+</div>
+</section>
+
+<!-- How it's built -->
+<section id="built" style="max-width: 1120px; margin: 0 auto; padding: 80px 24px 0; box-sizing: border-box">
+<h2 style="margin: 0 0 8px; font-size: 26px; line-height: 32px; font-weight: 600">How it's built</h2>
+<p style="margin: 0 0 32px; max-width: 640px; color: var(--mut)">Logic lives in a UI-free core with heavy tests. The Avalonia layer only draws what the core has already worked out.</p>
+<div style="display: flex; flex-wrap: wrap; gap: 32px">
+
+<div style="flex: 1 1 520px; min-width: 0; background: var(--s000); border: 1px solid var(--bd); border-radius: 6px; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; flex-wrap: wrap; gap: 4px 16px"><code style="flex: 0 0 240px; font-family: 'Cascadia Mono', Consolas, Menlo, monospace; font-size: 13px; line-height: 22px">AllMyTasks</code><span style="flex: 1 1 200px; font-size: 14px; line-height: 22px; color: var(--mut)">The Avalonia desktop app: views and view models.</span></div>
+<div style="display: flex; flex-wrap: wrap; gap: 4px 16px"><code style="flex: 0 0 240px; font-family: 'Cascadia Mono', Consolas, Menlo, monospace; font-size: 13px; line-height: 22px">AllMyTasks.Core</code><span style="flex: 1 1 200px; font-size: 14px; line-height: 22px; color: var(--mut)">Tasks, events, providers, sync, and the day, week, month and upcoming layout maths.</span></div>
+<div style="display: flex; flex-wrap: wrap; gap: 4px 16px"><code style="flex: 0 0 240px; font-family: 'Cascadia Mono', Consolas, Menlo, monospace; font-size: 13px; line-height: 22px">AllMyTasks.Providers.ICal</code><span style="flex: 1 1 200px; font-size: 14px; line-height: 22px; color: var(--mut)">iCalendar feed and CalDAV providers.</span></div>
+<div style="display: flex; flex-wrap: wrap; gap: 4px 16px"><code style="flex: 0 0 240px; font-family: 'Cascadia Mono', Consolas, Menlo, monospace; font-size: 13px; line-height: 22px">AllMyTasks.Providers.Todoist</code><span style="flex: 1 1 200px; font-size: 14px; line-height: 22px; color: var(--mut)">Todoist task provider.</span></div>
+<div style="display: flex; flex-wrap: wrap; gap: 4px 16px"><code style="flex: 0 0 240px; font-family: 'Cascadia Mono', Consolas, Menlo, monospace; font-size: 13px; line-height: 22px">AllMyTasks.Storage.Sqlite</code><span style="flex: 1 1 200px; font-size: 14px; line-height: 22px; color: var(--mut)">Local store, migrations, settings.</span></div>
+<div style="display: flex; flex-wrap: wrap; gap: 4px 16px"><code style="flex: 0 0 240px; font-family: 'Cascadia Mono', Consolas, Menlo, monospace; font-size: 13px; line-height: 22px">AllMyTasks.Secrets</code><span style="flex: 1 1 200px; font-size: 14px; line-height: 22px; color: var(--mut)">Per-OS secret backends.</span></div>
+<div style="display: flex; flex-wrap: wrap; gap: 4px 16px"><code style="flex: 0 0 240px; font-family: 'Cascadia Mono', Consolas, Menlo, monospace; font-size: 13px; line-height: 22px">tests/</code><span style="flex: 1 1 200px; font-size: 14px; line-height: 22px; color: var(--mut)">xUnit tests for Core and each provider.</span></div>
+</div>
+
+<div style="flex: 1 1 360px; min-width: 0; display: flex; flex-direction: column; gap: 20px">
+<div>
+<h3 style="margin: 0 0 4px; font-size: 16px; line-height: 22px; font-weight: 600">Everything comes from a provider</h3>
+<p style="margin: 0; font-size: 14px; line-height: 22px; color: var(--mut)">There are no local-only items. The app is a lens over the services you already use.</p>
+</div>
+<div>
+<h3 style="margin: 0 0 4px; font-size: 16px; line-height: 22px; font-weight: 600">Time zones and recurrence get real tests</h3>
+<p style="margin: 0; font-size: 14px; line-height: 22px; color: var(--mut)">All-day and timed values are distinct types, one shared expander built on Ical.Net, and fixtures cover DST days, overlaps and multi-day events.</p>
+</div>
+<div>
+<h3 style="margin: 0 0 4px; font-size: 16px; line-height: 22px; font-weight: 600">Calm by default</h3>
+<p style="margin: 0; font-size: 14px; line-height: 22px; color: var(--mut)">Each source gets one colour. Red is reserved for what needs attention: overdue items and sync problems.</p>
+</div>
+</div>
+</div>
+</section>
+
+<!-- Roadmap -->
+<section id="roadmap" style="max-width: 1120px; margin: 0 auto; padding: 80px 24px 0; box-sizing: border-box">
+<h2 style="margin: 0 0 8px; font-size: 26px; line-height: 32px; font-weight: 600">Roadmap</h2>
+<p style="margin: 0 0 32px; max-width: 640px; color: var(--mut)">Each milestone ships on its own with tests green and the design docs kept current.</p>
+<div style="display: flex; flex-wrap: wrap; gap: 16px">
+
+<div style="flex: 1 1 420px; min-width: 0; background: var(--s000); border: 1px solid var(--bd); border-radius: 6px; padding: 20px; box-sizing: border-box">
+<h3 style="margin: 0 0 12px; font-size: 16px; line-height: 22px; font-weight: 600; display: flex; align-items: center; gap: 8px"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 9999px; background: #10b981"></span>Done</h3>
+<ul style="margin: 0; padding: 0 0 0 20px; font-size: 14px; line-height: 24px">
+<li>Domain model and provider abstraction</li>
+<li>Calendar views and All tasks over sample data</li>
+<li>Local SQLite storage and per-OS secret stores</li>
+<li>Sync engine with scheduling, backoff and source status</li>
+<li>iCalendar feed provider with recurrence expansion</li>
+<li>Read-only CalDAV, Todoist and a system tray icon</li>
+</ul>
+</div>
+
+<div style="flex: 1 1 420px; min-width: 0; background: var(--s000); border: 1px solid var(--bd); border-radius: 6px; padding: 20px; box-sizing: border-box">
+<h3 style="margin: 0 0 12px; font-size: 16px; line-height: 22px; font-weight: 600; display: flex; align-items: center; gap: 8px"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 9999px; background: #6b7280"></span>Later, not committed</h3>
+<ul style="margin: 0; padding: 0 0 0 20px; font-size: 14px; line-height: 24px">
+<li>Google and Microsoft providers</li>
+<li>VTODO tasks over CalDAV</li>
+<li>Write support, starting with completing tasks</li>
+<li>Reminders, notifications and a compact upcoming widget</li>
+<li>Saved filters and global search</li>
+<li>Database encryption</li>
+</ul>
+</div>
+</div>
+<p style="margin: 16px 0 0; font-size: 14px; line-height: 22px"><a href="https://github.com/jkruza/allmytasks/blob/main/docs/design/roadmap.md">Read the full roadmap and design docs</a></p>
+</section>
+
+<!-- Get started -->
+<section id="start" style="max-width: 1120px; margin: 0 auto; padding: 80px 24px 0; box-sizing: border-box">
+<h2 style="margin: 0 0 8px; font-size: 26px; line-height: 32px; font-weight: 600">Get started</h2>
+<p style="margin: 0 0 24px; max-width: 640px; color: var(--mut)">There are no packaged releases to download yet, so build it from source. You need the <a href="https://dotnet.microsoft.com/download">.NET 10 SDK</a>.</p>
+<pre style="margin: 0; background: var(--s000); border: 1px solid var(--bd); border-radius: 6px; padding: 20px; overflow-x: auto; font-family: 'Cascadia Mono', Consolas, Menlo, monospace; font-size: 13px; line-height: 22px">git clone https://github.com/jkruza/allmytasks
+cd allmytasks
+dotnet build AllMyTasks.slnx
+dotnet test --solution AllMyTasks.slnx
+dotnet run --project src/AllMyTasks</pre>
+<p style="margin: 16px 0 0; max-width: 720px; font-size: 14px; line-height: 22px; color: var(--mut)">On Linux the tray icon needs a StatusNotifier or AppIndicator host. KDE, Xfce, Cinnamon and MATE include one; GNOME needs the AppIndicator extension.</p>
+</section>
+
+<!-- Contribute -->
+<section style="max-width: 1120px; margin: 0 auto; padding: 80px 24px 0; box-sizing: border-box">
+<div style="background: var(--s000); border: 1px solid var(--bd); border-radius: 6px; padding: 32px 24px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 20px 32px">
+<div style="flex: 1 1 420px; min-width: 0">
+<h2 style="margin: 0 0 4px; font-size: 20px; line-height: 26px; font-weight: 600">Contributions are welcome</h2>
+<p style="margin: 0; font-size: 14px; line-height: 22px; color: var(--mut)">Read the contributing guide first, then open an issue or a pull request. Security reports follow the policy in SECURITY.md. Released under the MIT licence.</p>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 12px">
+<a href="https://github.com/jkruza/allmytasks/blob/main/CONTRIBUTING.md" style="display: inline-block; padding: 12px 20px; border-radius: 6px; background: var(--ink); color: var(--s100); text-decoration: none; font-weight: 600; font-size: 14px; line-height: 20px">Contributing guide</a>
+<a href="https://github.com/jkruza/allmytasks/issues" style="display: inline-block; padding: 12px 20px; border-radius: 6px; border: 1px solid var(--bd); text-decoration: none; font-weight: 600; font-size: 14px; line-height: 20px">Open issues</a>
+</div>
+</div>
+</section>
+
+</main>
+
+<footer style="margin-top: 80px; border-top: 1px solid var(--bd)">
+<div style="max-width: 1120px; margin: 0 auto; padding: 24px; box-sizing: border-box; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px 24px; font-size: 14px; line-height: 20px; color: var(--mut)">
+<span>MIT licence · © 2026 Jarosław Kruza and contributors</span>
+<span style="display: flex; flex-wrap: wrap; gap: 8px 20px">
+<a href="https://github.com/jkruza/allmytasks">Repository</a>
+<a href="https://github.com/jkruza/allmytasks/blob/main/docs/design/README.md">Design docs</a>
+<a href="https://github.com/jkruza/allmytasks/blob/main/SECURITY.md">Security</a>
+<a href="https://github.com/jkruza/allmytasks/blob/main/CODE_OF_CONDUCT.md">Code of conduct</a>
+</span>
+</div>
+</footer>
+</div>
+</body>
+</html>

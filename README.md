@@ -6,6 +6,8 @@ An open-source, cross-platform desktop app that brings your calendars and tasks
 from many providers into one place. Built with .NET and [Avalonia](https://avaloniaui.net/),
 it runs on Windows, macOS and Linux.
 
+**Website:** <https://jkruza.github.io/allmytasks/>
+
 **Status:** early. Read-only providers so far: iCalendar feeds, CalDAV calendars and Todoist tasks
 (add one with a Todoist API token). More providers are planned, see the [roadmap](docs/design/roadmap.md).
 
@@ -37,6 +39,7 @@ do not use `--tray`. See [docs/design/system-tray.md](docs/design/system-tray.md
 | `src/AllMyTasks.Core` | UI-independent logic: tasks, providers, aggregation |
 | `src/AllMyTasks.Providers.ICal` | iCalendar feed and CalDAV providers |
 | `src/AllMyTasks.Providers.Todoist` | Todoist task provider (API token, read-only) |
+| `site/` | The static project page published on GitHub Pages |
 | `tests/` | xUnit tests for Core and each provider |
 
 ## Design
