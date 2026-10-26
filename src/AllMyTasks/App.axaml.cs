@@ -4,6 +4,7 @@ using AllMyTasks.Core.Sync;
 using AllMyTasks.Core.Views;
 using AllMyTasks.Providers.ICal;
 using AllMyTasks.Providers.ICal.CalDav;
+using AllMyTasks.Providers.Todoist;
 using AllMyTasks.Secrets;
 using AllMyTasks.Services;
 using AllMyTasks.Storage.Sqlite;
@@ -57,7 +58,8 @@ public sealed partial class App : Application
         var log = new FileLog(dataDirectory, clock);
         var feedFactory = new IcalFeedFactory(logger: log);
         var davFactory = new CalDavFactory(logger: log);
-        var registry = new SourceRegistry([feedFactory, davFactory, new SampleSourceFactory(clock, zone)], sources, secrets);
+        var todoistFactory = new TodoistFactory(logger: log, displayZone: zone);
+        var registry = new SourceRegistry([feedFactory, davFactory, todoistFactory, new SampleSourceFactory(clock, zone)], sources, secrets);
         var engine = new SyncEngine(items, sources, registry, clock, logger: log);
         var scheduler = new SyncScheduler(engine, sources, clock);
         var dialogs = new DialogService(desktop);
@@ -96,6 +98,7 @@ public sealed partial class App : Application
             scheduler.Dispose();
             feedFactory.Dispose();
             davFactory.Dispose();
+            todoistFactory.Dispose();
             shell.Dispose();
             engine.Dispose();
             secrets.Dispose();
