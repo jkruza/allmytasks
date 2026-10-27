@@ -221,7 +221,7 @@ public sealed partial class SyncEngine(
         {
             const string Error = "The server could not be reached.";
             LogSyncFailed(_logger, sourceId, info.Kind, Error, DiagnosticText.Describe(ex, includeMessage: true), DetailFor(ex));
-            await FailAsync(previous, SourceStatusKind.Offline, Error, DetailFor(ex)).ConfigureAwait(false);
+            await FailAsync(previous, SourceStatusKind.Offline, Error, DetailFor(ex), ex.RetryAfter).ConfigureAwait(false);
         }
         catch (SourceException ex)
         {
@@ -323,7 +323,7 @@ public sealed partial class SyncEngine(
         return (result.Warnings.Count, null, changed);
     }
 
-    private async Task FailAsync(SourceStatus previous, SourceStatusKind kind, string message, string? detail)
+    private async Task FailAsync(SourceStatus previous, SourceStatusKind kind, string message, string? detail, TimeSpan? serverWait = null)
     {
         var failures = previous.ConsecutiveFailures + 1;
         var failed = previous with
@@ -332,7 +332,7 @@ public sealed partial class SyncEngine(
             LastError = message,
             LastErrorDetail = detail,
             ConsecutiveFailures = failures,
-            NextRetryAt = clock.GetUtcNow() + Backoff.Delay(failures),
+            NextRetryAt = clock.GetUtcNow() + Backoff.Delay(failures, serverWait),
         };
         await SetStatusAsync(failed, persist: true, CancellationToken.None).ConfigureAwait(false);
     }

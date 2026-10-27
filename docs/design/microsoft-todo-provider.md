@@ -3,9 +3,12 @@
 Tracking issue: [#24](https://github.com/jkruza/allmytasks/issues/24).
 
 A task provider for [Microsoft To Do](https://learn.microsoft.com/en-us/graph/todo-concept-overview),
-for **personal Microsoft accounts** (outlook.com, hotmail, live) and **work or school accounts**
-(Entra ID / Microsoft 365). Both are reached through the same Microsoft Graph To Do API, so
-one implementation covers both.
+for **personal Microsoft accounts** (outlook.com, hotmail, live), through the Microsoft Graph To Do API.
+
+Status: implemented for personal accounts, read-only. **Work and school accounts are not supported yet**; the
+reasons and what they need are in
+[outlook-calendar-provider.md](outlook-calendar-provider.md#work-and-school-accounts-not-in-v1). The code has
+only been exercised with fixtures, not a live account (see [Testing](#testing)).
 
 It lives in the shared Microsoft project, `AllMyTasks.Providers.Microsoft`, next to the
 Outlook calendar provider. A source of kind `microsoft` implements `ITaskSource`,
@@ -20,7 +23,7 @@ Read-only in v1: no `POST`, `PATCH` or `DELETE`, and `CollectionInfo.IsReadOnly 
 
 In v1:
 
-- Sign in with a personal or a work/school account; several accounts at once, one source each.
+- Sign in with a personal Microsoft account; several accounts at once, one source each.
 - List the user's To Do lists (including the default Tasks list, Flagged email, and lists
   shared with the user) as task-list collections.
 - Sync tasks incrementally per list with Graph delta queries.
@@ -39,26 +42,25 @@ Not in v1 (documented so absence is a decision, not a bug):
 
 ## Sign-in and permissions
 
-Design is in the Outlook doc; the To Do specifics are:
+Designed once in the Outlook doc and shared: [Application (client) id](outlook-calendar-provider.md#application-client-id)
+(there is no registration-free sign-in; the id is configuration) and [Sign-in](outlook-calendar-provider.md#sign-in).
+The To Do specifics:
 
 | Topic | Decision |
 | --- | --- |
-| Authority | `https://login.microsoftonline.com/common`, so one app registration serves personal and work/school accounts. The registration's supported account types must be "any organisational directory and personal Microsoft accounts". |
-| Scopes | `Tasks.Read` and `offline_access`, plus whatever the shared sign-in needs for identity. Least privilege: not `Tasks.ReadWrite` until writing exists. `Tasks.Read` is not an admin-only permission, but a tenant can still block user consent. |
-| Flow | Interactive authorization code + PKCE in the system browser with a loopback redirect; tokens refreshed silently. |
-| Token storage | MSAL cache blob in `ISecretStore` under `(sourceId, "msal-cache")`. Never in config, the database, or logs. |
-| Account kind | Shown on the source so users can tell two accounts apart: "Personal" when the token's tenant id is the Microsoft consumer tenant (`9188040d-6c67-4c5b-b112-36a3dba5f9f2`), otherwise "Work or school" plus the tenant's domain from the sign-in name. |
+| Authority | `https://login.microsoftonline.com/consumers`: personal accounts only. |
+| Scopes | `Tasks.Read`, `User.Read`, `offline_access`, plus `Calendars.Read` when the same source also reads the calendar. Least privilege: not `Tasks.ReadWrite` until writing exists. |
+| Flow | Authorization code + PKCE in the system browser with a loopback redirect, on the first sync after the source is saved; the refresh token (the only stored credential) is redeemed silently afterwards. |
+| One source, both features | The `microsoft` source reads Outlook calendars and To Do lists with one sign-in. The form has two switches; with both off it reads both. Changing them asks for a new sign-in, because the permissions change. |
 
-Work and school accounts add failure modes personal accounts do not have. They are mapped to
-messages the user can act on:
+Failure modes:
 
-| Situation | Graph / MSAL signal | Result |
+| Situation | Graph / token signal | Result |
 | --- | --- | --- |
-| Tenant blocks user consent to the app | MSAL error `AADSTS65001`, `AADSTS90094`, `AADSTS165000` family | `SourceAuthException`: "Your organisation requires an administrator to approve this app." Shows the admin-consent hint. |
-| Conditional access / MFA needs interaction | `MsalUiRequiredException` | `SourceAuthException`; source marked "needs attention", user re-signs in. |
-| Refresh token revoked or expired | `invalid_grant` | `SourceAuthException`. |
-| Account has no To Do (no Exchange Online mailbox or licence) | HTTP 404 / `MailboxNotEnabledForRESTAPI` | `SourceException` with the message "This account has no Microsoft To Do." Not retried. |
-| `403 Forbidden` | permission or policy | `SourceAuthException`. |
+| Refresh token revoked, expired, or permissions changed | `invalid_grant`, `interaction_required`, `consent_required` | Token deleted; `SourceAuthException`; source marked "needs attention"; edit and save the source to sign in again. |
+| Wrong or unusable client id | `invalid_client`, `unauthorized_client` | `SourceAuthException` naming the client id as the thing to check. |
+| Account has no To Do mailbox | HTTP 404 `MailboxNotEnabledForRESTAPI` | `SourceException` ("no calendar or To Do mailbox that Graph can read"). Not retried. |
+| `401`, `403` from Graph | permission or policy | `SourceAuthException`. |
 
 ## Mapping lists to collections
 
@@ -123,7 +125,7 @@ to the provider error hierarchy:
 | Condition | Exception |
 | --- | --- |
 | Network, DNS, TLS, timeout, `5xx`, `429` | `SourceUnavailableException` (carries `RetryAfter` when sent) |
-| `401`, `403`, MSAL interaction required | `SourceAuthException` |
+| `401`, `403`, sign-in needed again | `SourceAuthException` |
 | `410` on a delta link | `SyncStateExpiredException` |
 | Unparseable JSON, missing `id`, wrong shape | `SourceDataException` |
 | Single task with bad data (e.g. unparseable date) | Skipped, `SyncWarning(taskId, message)` |
@@ -148,10 +150,10 @@ delta links, or `Authorization` values.
 | `categories` | `Labels` | Category names as given |
 | `recurrence` | `Recurrence` | See [Recurrence](#recurrence) |
 | `lastModifiedDateTime` | `LastModified` | |
-| `@odata.etag` | raw payload | Kept for future writes |
+| `@odata.etag` | dropped | Needed for writes later; add with the raw payload |
 | `checklistItems[]` | subtasks | See [Checklist items](#checklist-items-as-subtasks) |
 | (none) | `Url` | See [Links](#links) |
-| `isReminderOn`, `reminderDateTime`, `hasAttachments`, `createdDateTime`, `bodyLastModifiedDateTime`, `linkedResources` | raw payload only | |
+| `isReminderOn`, `reminderDateTime`, `hasAttachments`, `createdDateTime`, `bodyLastModifiedDateTime`, `linkedResources` | dropped | The model has no raw-payload field yet, so unlisted fields (and the etag) are not kept |
 
 ### Status
 
@@ -236,31 +238,27 @@ the opposite of calendar events, so the task view logic must not feed task recur
 ### Links
 
 Graph does not return a web link for a task. The provider builds one from the task id,
-`https://to-do.office.com/tasks/id/{url-encoded id}/details` for work/school accounts and
-`https://to-do.live.com/tasks/id/{url-encoded id}/details` for personal accounts. These are
-the To Do web app's deep-link forms and are not part of the documented API, so `Url` is
-best-effort: if opening one misbehaves, fall back to the list-less web app root
-(`https://to-do.office.com/tasks/` or `https://to-do.live.com/tasks/`). Never include the
-user's tenant or any token in it.
+`https://to-do.live.com/tasks/id/{url-encoded id}/details` (personal accounts). This is
+the To Do web app's deep-link form and is not part of the documented API, so `Url` is
+best-effort: if opening one misbehaves, fall back to the web app root (`https://to-do.live.com/tasks/`).
+Never include a token in it.
 
 ## Source configuration
 
 | Field | Kind | Notes |
 | --- | --- | --- |
-| Account | OAuth hand-off | Result of the sign-in; the only thing the user fills in |
-| Display name | config | Defaults to the account sign-in name ("alex@contoso.com") |
-| Account kind | config | `personal` or `work`, plus tenant id; derived at sign-in |
-| Home account id | config | MSAL account identifier, to find the right cache entry; not a secret |
-| MSAL cache | secret (`msal-cache`) | |
+| Display name | config | Whatever the user types |
+| Application (client) ID | config | Optional; falls back to the id built into the app. See the Outlook doc |
+| Outlook calendar, Microsoft To Do | config | Two switches; both off means both on |
+| Refresh token | secret (`refresh-token`) | The only credential stored |
 | Refresh interval | config | Global default 15 minutes, per-source override, as other providers |
 
-No client secret exists: the app is a public client. The application (client) id is public
-and shipped in the code; a power-user override is available for organisations that need to
-use their own registration. See [Open questions](#open-questions).
+No client secret exists: the app is a public client. The application (client) id is public by design but is not
+committed: it is entered per source or embedded at build time from `AMT_MICROSOFT_CLIENT_ID`.
 
 ## Security
 
-- Tokens and the MSAL cache: secret store only. Never log them, the `Authorization` header,
+- The refresh token: secret store only. Never log them, the `Authorization` header,
   delta links, or full request URLs (strip the query string before logging).
 - Follow `nextLink` and `deltaLink` only to the Graph host over `https`. Do not follow
   redirects to other hosts or from `https` to `http`.
@@ -289,23 +287,24 @@ Not designed in detail. Notes so nothing in v1 blocks it:
   delta link pointing at another host is refused, a response with neither link is a
   `SourceDataException`, the 24-hour full snapshot, a removed checklist item.
 - **Error tests**: `401`, `403`, `404` mailbox-missing, `429` with `Retry-After`, `503`.
-- **Secret tests**: tokens, delta links and `Authorization` never appear in logs, exception
-  messages or `ToString()`.
-- MSAL is behind the shared token-provider interface, so no test touches the network or a
-  real identity provider.
-- **Manual verification, before the provider is called done:** one throwaway personal
-  account and one work/school account in a test tenant. Check due-date round trip with the
-  To Do app (date-only, time zones around midnight), checklist-only edits appearing in the
-  next delta, recurring task completion, the default and a shared list, and consent being
-  blocked by tenant policy.
+- **Secret tests**: tokens never appear in exception messages or diagnostics; the bearer token goes only to
+  `graph.microsoft.com`.
+- No test touches the network or a real identity provider; sign-in is tested against a loopback listener in
+  the Outlook test suite.
+- **Throttling**: a short `Retry-After` is waited out in the client, a long one reaches the engine as
+  `SourceUnavailableException.RetryAfter`.
+- **Not yet done, needed before calling this finished:** a manual run against a throwaway personal account.
+  Check the due-date round trip with the To Do app (date-only, time zones around midnight), checklist-only
+  edits appearing in the next delta (open question 2), recurring task completion, the default and a shared
+  list, and that `$expand=checklistItems` is accepted by `tasks/delta`. Only fixtures have been used so far.
 
 ## Open questions
 
-**Decided 2026-10-26 (maintainer):** the proposals below are accepted. Question 1 is settled together with the Outlook design: Jarek owns the Entra app registration and publisher verification is pursued. Questions 2 to 4 are verified against real accounts during implementation.
+**Decided 2026-10-26 (maintainer):** the proposals below are accepted, except question 1, which was overtaken the same day: work accounts are dropped for now and the client id is configuration (see the Outlook doc). Questions 2 to 4 are verified against real accounts; that has not happened yet.
 
 | # | Question | Proposal |
 | --- | --- | --- |
-| 1 | Who owns the Entra app registration, and do we pursue publisher verification? Unverified apps show a warning and some organisations block them outright. | Register as a multi-tenant public client under the project owner's account; verify the publisher when possible; document how an organisation can use its own client id. Shared with Outlook. |
+| 1 | Who owns the Entra app registration, and do we pursue publisher verification? | Superseded: personal accounts only, so no verification is needed; the client id is entered per source or embedded at build time. Revisit with work accounts. |
 | 2 | Does a checklist-only edit appear in task delta? | Assume not until tested; the 24-hour full snapshot covers it. Remove it if testing shows delta is reliable. |
 | 3 | Is the "midnight means date-only" rule right for every To Do client? | Verify against real accounts; adjust with the `isReminderOn` and zone data if not. |
 | 4 | Are the To Do web deep links stable? | Best-effort; fall back to the web app root. |
@@ -315,10 +314,11 @@ Not designed in detail. Notes so nothing in v1 blocks it:
 
 ## Checklist (from [providers.md](providers.md#provider-checklist))
 
-- [ ] Implements `ISource` and `ITaskSource`
-- [ ] Maps to the common model with tests from fixtures (time zones, date-only)
-- [ ] Handles `previous == null`, a valid token, and an expired token
-- [ ] Throws only `SourceException` subtypes across its public surface
-- [ ] Keeps secrets out of config, logs and exception text (tested)
-- [ ] Per-item errors become warnings, not sync failures
-- [ ] Unsupported fields documented (this doc)
+- [x] Implements `ISource` and `ITaskSource`
+- [x] Maps to the common model with tests from fixtures (time zones, date-only)
+- [x] Handles `previous == null`, a valid token, and an expired token
+- [x] Throws only `SourceException` subtypes across its public surface
+- [x] Keeps secrets out of config, logs and exception text (tested)
+- [x] Per-item errors become warnings, not sync failures
+- [x] Unsupported fields documented (this doc)
+- [ ] Verified against a live account

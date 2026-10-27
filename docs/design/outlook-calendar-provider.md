@@ -1,26 +1,33 @@
 # Outlook calendar provider (Microsoft Graph, read-only)
 
-Calendar events from Outlook.com / Hotmail / Live (personal Microsoft accounts) **and** Microsoft 365
-work or school accounts, through the Microsoft Graph API. Project: `AllMyTasks.Providers.Microsoft`,
-shared with the Microsoft To Do provider ([microsoft-todo-provider.md](microsoft-todo-provider.md)).
+Tracking issue: [#32](https://github.com/jkruza/allmytasks/issues/32).
 
-Status: design only. Nothing here is implemented. Read-only in v1: no event is ever created, changed,
-answered or deleted, and `CollectionInfo.IsReadOnly = true`.
+Calendar events from Outlook.com / Hotmail / Live (**personal Microsoft accounts**) through the Microsoft Graph
+API. Project: `AllMyTasks.Providers.Microsoft`, shared with the Microsoft To Do provider
+([microsoft-todo-provider.md](microsoft-todo-provider.md)).
+
+Status: implemented for personal accounts. Read-only: no event is ever created, changed, answered or
+deleted, and `CollectionInfo.IsReadOnly = true`. **Work and school (Entra ID) accounts are not supported
+yet**; see [Work and school accounts](#work-and-school-accounts-not-in-v1) for why and what it would take.
+The code has been tested against recorded-shape fixtures only; it has not yet been run against a live
+account (see [Testing](#testing)).
 
 ## Scope
 
 In v1:
 
-- Sign in with a personal Microsoft account or a work/school account, using the same flow.
+- Sign in with a personal Microsoft account in the system browser.
 - List the account's calendars (own, shared with the user, subscribed holiday calendars) and let the
   user hide the ones they do not want, as for CalDAV.
 - Sync events incrementally with Graph delta queries: titles, times, all-day events, location, notes,
   online-meeting link, categories, status, free/busy, recurring series and their exceptions.
-- Several Microsoft accounts at once (a personal and a work account, or two tenants). Each is its own
-  source.
+- Several Microsoft accounts at once. Each is its own source.
 
 Not in v1 (decisions, not oversights):
 
+- Work and school accounts (see below).
+- A project-owned application registration shipped in the source. The client id is configuration; see
+  [Application (client) id](#application-client-id).
 - Writing, RSVP, creating meetings. See [providers.md](providers.md#write-support-later).
 - Attendees, organizer, reminders, attachments. The model has no place for them yet
   ([details-pane.md](details-pane.md)); the raw payload keeps them for later.
@@ -58,80 +65,87 @@ extra consent step.
 AllMyTasks.Providers.Microsoft
   MicrosoftSourceFactory     ISourceFactory, kind "microsoft", bespoke sign-in view model
   MicrosoftSource            SourceBase + ICalendarSource + ITaskSource, delegates per feature
-  Auth/MicrosoftAuth         MSAL wrapper (below)
+  MicrosoftAuth              browser sign-in (PKCE), refresh tokens in ISecretStore (below)
   Graph/GraphClient          HttpClient wrapper: auth header, paging, throttling, error mapping
   Calendar/...               this document
   Todo/...                   microsoft-todo-provider.md
 ```
 
-### App registration
+### Application (client) id
 
-One registration owned by the project, a **public client** (no client secret exists to leak):
+Microsoft only issues tokens to a registered application, and there is **no sign-in route that skips
+registration**. Researched and rejected:
 
-| Setting | Value |
+| Option | Verdict |
 | --- | --- |
-| Supported account types | Accounts in any organizational directory **and** personal Microsoft accounts |
-| Platform | "Mobile and desktop applications", redirect URI `http://localhost` (MSAL picks a free port) |
-| Delegated permissions | `User.Read`, `Calendars.Read`, `Tasks.Read` (To Do), `offline_access` |
-| Allow public client flows | Yes (needed for device code fallback) |
+| Reuse the client id of a Microsoft first-party app (Azure CLI, Graph PowerShell, Graph Explorer, Office) | Not done. These ids belong to Microsoft's own products; using them from a third-party app impersonates those products, is not covered by the Microsoft identity platform terms, and Microsoft can block or restrict them at any time. |
+| Ask the user to paste an access token from Graph Explorer | Tokens last about an hour and cannot be refreshed. Unusable for a sync app. |
+| Basic auth, IMAP/EWS, CalDAV for Outlook.com | Basic auth is gone; Outlook.com offers no CalDAV. Not an option. |
+| A published `.ics` link for the calendar | Works today with the `ical` provider and needs no registration. Read-only snapshot with a long lag; no To Do. This is the registration-free route for calendars. |
+| **Registered public client (this design)** | Registration is free, takes a few minutes, needs no secret and no publisher verification for personal accounts. |
 
-- The **client id is not a secret** and is committed (`MicrosoftApp.ClientId`). Anyone who builds from a
-  fork can override it by configuration and register their own app; the docs say how.
-- The registration must be made in a tenant the maintainer controls (a personal account cannot own a
-  multi-tenant registration). Publisher verification is recommended: without it, many work tenants
-  refuse user consent (see [Work and school accounts](#work-and-school-accounts)). This is a manual
-  maintainer task tracked in the issue, not something code can do.
-- Least privilege: `Calendars.Read`, never `ReadWrite`, until write support is designed.
+So the id is **configuration, never hard-coded**:
+
+1. If the source has an *Application (client) ID*, that is used.
+2. Otherwise the id built into the app is used. A release build embeds it from the
+   `AMT_MICROSOFT_CLIENT_ID` environment variable at build time (an assembly metadata entry, not a source
+   file). The repository holds no id.
+3. With neither, the first sync fails with `SourceAuthException` saying what to do.
+
+A client id is public by design (it is sent in every sign-in URL), so embedding it in release binaries is
+fine; keeping it out of the repository only means forks do not share the maintainer's registration.
+
+#### Register an app (once per maintainer or user)
+
+1. Sign in to the [Microsoft Entra admin center](https://entra.microsoft.com) and open
+   **App registrations → New registration**. A personal Microsoft account without a directory first needs a
+   free tenant; the portal offers to create one.
+2. **Supported account types:** *Personal Microsoft accounts only* (shown as *Any Entra ID Tenant + Personal
+   Microsoft accounts* in some portal versions; both work, because the app always signs in against the
+   `consumers` authority).
+3. **Redirect URI:** platform *Mobile and desktop applications*, value `http://localhost` (any port matches).
+4. **API permissions** (delegated, Microsoft Graph): `User.Read`, `Calendars.Read`, `Tasks.Read`,
+   `offline_access`. Personal accounts consent themselves; no admin consent exists.
+5. Copy the **Application (client) ID**. Paste it into the source's *Application (client) ID* field, or build
+   the app with `AMT_MICROSOFT_CLIENT_ID=<id> dotnet publish ...`.
+
+Least privilege: `Calendars.Read`, never `ReadWrite`, until write support is designed.
 
 ### Sign-in
 
-MSAL.NET (`Microsoft.Identity.Client`) `PublicClientApplication`, authority
-`https://login.microsoftonline.com/common`, which resolves to the right tenant, or to the consumer
-tenant, from the account typed in.
+OAuth 2.0 authorization code flow with PKCE, written directly against the token endpoint (about 300 lines,
+no MSAL dependency), authority `https://login.microsoftonline.com/consumers`.
 
-1. **Interactive, system browser** (default on all three OSes): MSAL opens the default browser and
-   listens on a loopback port. No embedded web view, so password managers, passkeys, MFA and
-   conditional access work as in the browser.
-2. **Device code** (fallback when no browser can be launched, e.g. headless or remote Linux): the
-   dialog shows a short code and `microsoft.com/devicelogin`. Some work tenants block device code via
-   conditional access; the error is shown as is.
-3. **Silent** on every sync: `AcquireTokenSilent` with the stored account; refresh happens inside MSAL.
+1. **Interactive, system browser.** Saving the source and running its first sync starts a loopback listener
+   on `127.0.0.1` (random port), opens the authorization address in the default browser (https only) and
+   waits up to 5 minutes for the redirect to `http://localhost:{port}/`. The `state` is checked; requests
+   with a different state, or none, are answered 404 and ignored. There is no embedded web view, so password
+   managers, passkeys and MFA work as in the browser.
+2. **Silent** on every later sync: the stored refresh token is redeemed for a new access token (kept in memory
+   only, reused until two minutes before expiry). Microsoft rotates refresh tokens; the new one is stored each
+   time.
+3. **Sign in again:** when the refresh token is rejected (`invalid_grant`, `interaction_required`, a changed
+   permission set) it is deleted and the sync fails with `SourceAuthException`, so the source shows *needs
+   attention*. Editing and saving the source creates a fresh source instance, whose first sync opens the browser
+   again. A background sync opens the browser **at most once per source instance**, so a 15-minute timer never
+   throws browser windows at the user.
 
-After sign-in the source stores in `SourceConfig` (not secret): `homeAccountId`, `tenantId`, the
-sign-in name (`user@contoso.com`), and an `accountType` of `personal` or `work` (tenant id
-`9188040d-6c67-4c5b-b112-36a304b66dad` is the consumer tenant). `DisplayName` defaults to
-`Outlook (user@contoso.com)`.
+Known limits of this shape, accepted for v1: there is no in-app "Sign in" button or progress dialog (the form is
+schema-driven), no device-code fallback for machines without a browser, and the account name is not shown. A
+proper sign-in view model is a follow-up.
 
-Sign-in is not a schema-driven form; per [providers.md](providers.md#configuration-and-credentials) a
-provider may supply a view model. The minimal Core abstraction, to be refined when implemented:
-
-```csharp
-public interface IInteractiveSignIn          // lives in Core; the Avalonia app shows the UI
-{
-    // Called by the provider when it needs the user to act, e.g. show a device code.
-    void ShowDeviceCode(string userCode, Uri verificationUri);
-}
-```
+Nothing about the account is stored except the refresh token (secret store). `DisplayName` is whatever the user
+typed.
 
 ### Token storage
 
-Tokens never touch the database or config files ([decision 6](README.md#decision-log)). MSAL's token
-cache is serialised in its `BeforeAccess`/`AfterAccess` callbacks into `ISecretStore` under
-`(sourceId, "msal-cache.N")`. We deliberately do **not** use `Microsoft.Identity.Client.Extensions.Msal`:
-it would add a second, parallel secret store (own Keychain/libsecret/DPAPI handling and its own
-plaintext fallback) beside ours, and the Linux PIN-file rules in
-[storage-and-sync.md](storage-and-sync.md#linux) would not apply to it.
+Tokens never touch the database or config files ([decision 6](README.md#decision-log)). Only the **refresh
+token** is stored, as one short secret field `refresh-token` per source in `ISecretStore`; it fits every backend
+(including the 2560-byte Windows credential limit), so no chunking is needed. Access tokens live in memory.
+`ISecretStore.DeleteAsync(sourceId)` removes the token when the source is removed.
 
-The cache blob is larger than some backends allow per entry (Windows Credential Manager caps a
-credential at 2560 bytes; an account's cache is several KB). The provider therefore base64-encodes the
-blob and splits it into fixed-size fields (`msal-cache.0`, `msal-cache.1`, ...) plus a count, and
-reads them back the same way. `ISecretStore.DeleteAsync(sourceId)` removes them all when the source is
-removed. Chunking sits in the Microsoft project, not in `ISecretStore`, so the store keeps its simple
-contract.
-
-Removing a source also calls `RemoveAsync` on the MSAL account. It does **not** revoke the grant at
-Microsoft; the UI says where to do that (`account.microsoft.com/privacy/app-access` for personal,
-`myapps.microsoft.com` for work).
+Removing a source does **not** revoke the grant at Microsoft; users do that at
+`account.microsoft.com/privacy/app-access`.
 
 ### Graph client
 
@@ -147,17 +161,16 @@ need five request shapes). Models are small DTOs for only the fields we read, pa
   `Prefer: IdType="ImmutableId"` (item ids survive moves between folders),
   `Prefer: outlook.timezone="UTC"`, `Prefer: outlook.body-content-type="text"`,
   `Prefer: odata.maxpagesize=100`.
-- **Throttling.** `429` and `503` with `Retry-After`: wait that long (capped, default 2 minutes) up to
-  3 attempts inside the client. If still throttled, throw `SourceUnavailableException` that **exposes
-  the server's wait** (`RetryAfter` property, added to the exception in the implementing PR) so the
-  engine schedules the next attempt no earlier than that. Without the header, exponential backoff via
+- **Throttling.** `429` and `503` with `Retry-After`: wait that long inside the client when it is 30 seconds or less (up to
+  3 attempts). If still throttled, throw `SourceUnavailableException` that **exposes
+  the server's wait** (`RetryAfter` property); the sync engine schedules the next attempt no earlier than that (capped at an hour). Without the header, exponential backoff via
   `SourceBase.RetryAsync`. Calendars are synced sequentially per source, never in parallel.
 - **Error mapping:**
 
-  | Graph / MSAL | Exception | Notes |
+  | Graph / token endpoint | Exception | Notes |
   | --- | --- | --- |
-  | `MsalUiRequiredException`, `invalid_grant`, 401 after a refresh | `SourceAuthException` | "Sign in again"; includes password change, MFA reset, token revoked, conditional access |
-  | 403 `ErrorAccessDenied`, `AADSTS65001` / `AADSTS90094` / `AADSTS650056` at sign-in | `SourceAuthException` | Consent or admin approval needed, see below |
+  | `invalid_grant`, `interaction_required`, `consent_required`, 401/403 from Graph | `SourceAuthException` | "Sign in again"; includes password change, MFA reset, token revoked, conditional access |
+  | `invalid_client`, `unauthorized_client`, `access_denied` at sign-in | `SourceAuthException` | Wrong client id, an app that does not accept personal accounts, or the user declined |
   | 404 `MailboxNotEnabledForRESTAPI`, `MailboxNotSupportedForRESTAPI` | `SourceException` | "This mailbox is not in Exchange Online" (on-premises) |
   | 404 on a known calendar | warning, collection marked missing | Not auto-deleted, same rule as CalDAV |
   | 410 `Gone`, `syncStateNotFound`, `resyncRequired` | `SyncStateExpiredException` | Engine re-syncs from scratch once |
@@ -168,34 +181,20 @@ need five request shapes). Models are small DTOs for only the fields we read, pa
   duration. Never log query strings (they carry `$deltatoken`/`$skiptoken` and date ranges), headers,
   bodies or the account name.
 
-## Personal vs work accounts
+## Work and school accounts (not in v1)
 
-The sync code is identical; only these differ.
+Dropped for now (maintainer decision, 2026-10-26). The sync code would be identical; what is missing is
+everything around it, and none of it can be tested without a work tenant:
 
-| | Personal (MSA) | Work or school |
-| --- | --- | --- |
-| Sign-in | Consumer sign-in page, optional passkey | Tenant branding, MFA, conditional access |
-| Consent | User consents themselves | Tenant policy: user consent, or **admin approval required** |
-| Calendars | Default calendar, birthdays, holidays | Plus shared calendars, delegate-visible ones |
-| Mailbox | Created with the account | May be missing, on-premises or disabled |
-| Refresh token lifetime | Long, sliding | Tenant policy; sign-in frequency and device compliance can force re-auth |
-| Sensitivity | Private events visible to the owner | Shared calendars may expose only free/busy ("limited details") |
+- The app registration must be multi-tenant and, to avoid "needs admin approval" in many tenants, publisher
+  verified. That is a manual maintainer task.
+- Failure modes needing their own handling and messages: admin consent required (`AADSTS65001`, `AADSTS90094`),
+  conditional access and compliant-device policies, mailboxes that are on-premises or unlicensed, shared
+  calendars exposing only free/busy.
+- The `common`/`organizations` authority and a tenant-aware account label.
 
-### Work and school accounts
-
-Things that will go wrong for real users, with the intended behaviour:
-
-- **Admin consent required** (`AADSTS90094`, `AADSTS65001`, "Need admin approval"). The Add source dialog
-  shows a plain explanation: the organisation requires an administrator to approve the app, with the
-  application (client) id and the permissions requested, so the user can forward it. No retry loop.
-  `Calendars.Read` and `Tasks.Read` are normally user-consentable, but tenants can restrict consent to
-  verified publishers or disable it.
-- **Conditional access** (MFA every N hours, compliant device, trusted location). Surfaces as
-  `MsalUiRequiredException` when silent sign-in is not enough; the source is marked "needs attention"
-  with a Sign in again button. An unmanaged desktop app may be blocked outright by "require compliant
-  device"; we cannot work around that and say so.
-- **Calendar shared with limited details.** Subject may read "Busy". Shown as is.
-- **Tenant switch.** Same human, different tenants: separate sources, separate caches.
+Meanwhile a work calendar can be added through its published `.ics` link with the `ical` provider, if the
+tenant allows publishing.
 
 ## Collections
 
@@ -207,7 +206,7 @@ Things that will go wrong for real users, with the intended behaviour:
 | `name` | `DisplayName` (suffix with owner when the calendar is shared and owned by someone else) |
 | `hexColor` (`#RRGGBB`) | `Color`; if empty or `auto`, none, so the app picks one |
 | `canEdit` | not used in v1; `IsReadOnly` is always `true` |
-| `isDefaultCalendar` | default calendar sorts first, and is the only one visible on first run for sources with more than 5 calendars |
+| `isDefaultCalendar` | not used; every calendar is visible on first run and the user hides the ones they do not want |
 
 Calendars that disappear from the list are removed with their events; a calendar answering 404 keeps
 its cache and adds a warning, as for CalDAV. Visibility and colour overrides are local, as for CalDAV.
@@ -322,7 +321,7 @@ calendar's events appear before the last finishes.
 | `busy`, `tentative`, `oof`, `workingElsewhere`, `unknown` | `Availability.Busy` (finer value only in the raw payload) |
 | `categories` | `Categories` |
 | `lastModifiedDateTime` | `LastModified` |
-| `type`, `seriesMasterId`, `changeKey`, `attendees`, `organizer`, `sensitivity`, ... | raw payload only |
+| `type`, `seriesMasterId`, `changeKey`, `attendees`, `organizer`, `sensitivity`, ... | dropped: the model has no raw-payload field yet |
 
 Time handling, the part that goes wrong:
 
@@ -354,34 +353,37 @@ Per-item failures (a malformed event) become `SyncWarning`s with the item id; th
 
 | Need | Choice | Notes |
 | --- | --- | --- |
-| OAuth, token cache | `Microsoft.Identity.Client` (MSAL.NET), MIT | The supported library; handles PKCE, loopback, device code, refresh. System-browser flow needs no UI package |
+| OAuth | Own code over `HttpClient` | Authorization code + PKCE + refresh is small and fully testable offline; MSAL would add a second token cache beside `ISecretStore`. Revisit MSAL if device code, broker sign-in or work accounts are added |
 | Graph HTTP | `HttpClient` via `IHttpClientFactory` + own thin client | No `Microsoft.Graph` SDK, see above |
 | JSON | `System.Text.Json` source generator | Already in the framework |
 
-Package additions follow `CLAUDE.md`: version in `Directory.Packages.props`, `dotnet restore`, commit
-lock files. Verify licence and current version at that time. MSAL and the app's trimming/AOT settings
-(if any) need a smoke test per OS.
+No new packages were needed.
 
 ## Testing
 
-- **Mapping tests** from fixture JSON (made-up data only): timed, all-day, multi-day all-day, UTC,
-  Windows zone names, unknown zone, cancelled, declined, tentative, free, no subject, no body, online
-  meeting, `@removed`, malformed item among good ones.
-- **Sync tests** with a fake `HttpMessageHandler` serving recorded pages: first sync across several
-  `nextLink` pages, empty delta, update, delete, window roll → snapshot, `410` → `SyncStateExpiredException`,
-  a `nextLink` pointing to another host is refused and **no `Authorization` header is sent**.
-- **Throttling tests:** `429` with `Retry-After`, without, repeated.
-- **Auth tests:** a fake `IPublicClientApplication` for silent success, `MsalUiRequiredException`,
-  consent errors; assert tokens and delta links never appear in logs, exceptions or `ToString()`.
-- **Secret chunking tests:** round-trip a cache blob of 1 KB, 5 KB, 50 KB; deletion removes all chunks.
-- **Opt-in manual checklist** (not CI): one personal account and one work tenant, including a calendar
-  with a recurring series with exceptions, an all-day event created in another zone, and a shared
-  calendar. Throwaway accounts only; no real data in the repo.
+Implemented in `tests/AllMyTasks.Providers.Microsoft.Tests`, all offline with a fake `HttpMessageHandler` and
+made-up data:
+
+- **Mapping:** timed, all-day (several zones, a DST change, not-at-midnight), Windows zone names, unknown zone,
+  cancelled, declined, tentative, free, no subject, malformed item among good ones, unsafe links.
+- **Sync:** first sync across `nextLink` pages, empty delta, update and `@removed`, window roll to a snapshot,
+  `410` → `SyncStateExpiredException`, a saved or returned address on another host is refused and the token is
+  not sent there, a missing calendar keeps the cache and warns, a page with neither link is an error.
+- **Throttling:** `429` with a short `Retry-After` is waited out inside the client; a long one is thrown with
+  `RetryAfter`, which the sync engine honours (`Backoff.Delay(failures, serverWait)`).
+- **Auth:** the full sign-in against a loopback listener (PKCE, state check, forged redirect ignored, declined),
+  refresh with token rotation, revoked token deleted, no client id, per-source client id wins, tokens never in
+  messages or diagnostics, bearer token only to `graph.microsoft.com`.
+
+**Not yet done, needed before calling this finished:** a manual run against a throwaway personal account
+(consent screen, a recurring series with exceptions, an all-day event created in another zone, birthday and
+holiday calendars for question 5, behaviour of `calendarView/delta` on them). No Graph response from a real
+account has been seen by the code yet; the fixtures follow the documented shapes.
 
 ## Security and privacy
 
-- Public client, no secret anywhere. Tokens only in the OS secret store.
-- Bearer token only to `graph.microsoft.com` (and MSAL's own calls to `login.microsoftonline.com`).
+- Public client, no secret anywhere. The refresh token only in the OS secret store.
+- Bearer token only to `graph.microsoft.com`; the refresh token only to `login.microsoftonline.com`. The loopback listener binds to `127.0.0.1` only, accepts one redirect with the right `state`, and closes.
 - Least-privilege scopes, read-only. The consent screen is the user's check on that; the README states
   the permissions and why.
 - Event content (titles, notes, locations) is personal data: not logged, not in exception messages,
@@ -393,27 +395,25 @@ lock files. Verify licence and current version at that time. MSAL and the app's 
 
 ## Milestone sketch
 
-A candidate for the "Later" part of the [roadmap](roadmap.md):
-
-1. `AllMyTasks.Providers.Microsoft` skeleton, MSAL sign-in (interactive + device code), cache in
-   `ISecretStore` with chunking, `GraphClient` with pinning and throttling. Add-source dialog
-   (account type shown, consent errors explained). *Done when* a personal and a work account can sign
-   in, restart the app, and stay signed in.
-2. Calendars list and `calendarView/delta` sync with the window, mapping and tests. *Done when* real
-   events appear in all four views and incremental sync is visible in the source status.
-3. Hardening from the manual checklist (zones, all-day, shared calendars, tenant policies).
+1. Done: `AllMyTasks.Providers.Microsoft` with browser sign-in, refresh token in `ISecretStore`, `GraphClient` with
+   pinning and throttling, calendars list and `calendarView/delta` sync with the window, mapping and tests.
+2. Next: manual verification on a live personal account (see Testing); fix whatever Graph does differently.
+3. Later: an in-app sign-in view (progress, account name, device code), work and school accounts, shared calendars.
 
 ## Open questions
 
-**Decided 2026-10-26 (maintainer):** all proposals below are accepted. Notably: Jarek owns the Entra app registration and publisher verification is pursued before work-account support is announced (#1); v1 stores expanded occurrences without `Recurrence` (#2); window -3/+13 months (#3); declined meetings are shown as `Cancelled` (#4); `retryAfter` on `SourceUnavailableException` goes into the implementing PR (#8). Shared calendars and the Windows broker stay out of v1.
+**Decided 2026-10-26 (maintainer):** v1 stores expanded occurrences without `Recurrence` (#2); window -3/+13 months (#3);
+declined meetings are shown as `Cancelled` (#4); `RetryAfter` on `SourceUnavailableException` (#8, done). Shared calendars
+and the Windows broker stay out of v1. **Also 2026-10-26:** work accounts dropped for now, and no registration is required by the code: the client id
+is configuration (#1 below). Microsoft still requires *some* registration; see [Application (client) id](#application-client-id).
 
-| # | Question | Proposal |
+| # | Question | Status |
 | --- | --- | --- |
-| 1 | Who owns the Entra app registration, and is publisher verification worth doing? Unverified multi-tenant apps are blocked from user consent in many tenants, which would make "work accounts" fail for those users | Jarek creates it in a tenant he controls; pursue verification before announcing work-account support. Needs a decision before implementation |
-| 2 | Accept storing expanded occurrences with no `Recurrence` (deviation from decision 4), or invest in master + RRULE mapping now? | Accept for v1, add `SeriesId` later, revisit when calendar-wide delta reaches v1.0 |
-| 3 | Window size: -3/+13 months, rolled when under 9 months remain | Start with this; make it a setting only if users ask |
-| 4 | Declined meetings: show as cancelled (Outlook hides them) or drop them from the sync? | `Cancelled`, so the view's existing cancelled handling applies and the user can see why a slot is free |
-| 5 | Birthdays calendar and holiday calendars: do they support `calendarView/delta`? | Test on a real account; if not, fall back to a full read of the window for those calendars and diff locally |
-| 6 | Shared calendars from other users (`Calendars.Read.Shared`) | Not in v1; ask for the scope only when a user needs it |
-| 7 | Windows broker (WAM) for single sign-on with the Windows account | Later, optional, Windows-only package |
-| 8 | Allow `retryAfter` on `SourceUnavailableException`? It is a small change to Core exceptions | Yes, in the implementing PR; the To Do provider needs it too |
+| 1 | Who owns the Entra app registration, and is publisher verification worth doing? | Superseded: personal accounts need no verification and the client id is configuration (see [Application (client) id](#application-client-id)). Revisit with work accounts |
+| 2 | Accept storing expanded occurrences with no `Recurrence`, or master + RRULE now? | Accepted for v1, add `SeriesId` later, revisit when calendar-wide delta reaches v1.0 |
+| 3 | Window size | -3/+13 months, rolled when under 9 months remain; a setting only if users ask |
+| 4 | Declined meetings | `Cancelled` |
+| 5 | Do birthday and holiday calendars support `calendarView/delta`? | Open; needs a live account. If not, fall back to a full read of the window and diff locally |
+| 6 | Shared calendars from other users (`Calendars.Read.Shared`) | Not in v1 |
+| 7 | Windows broker (WAM) for single sign-on | Later, optional |
+| 8 | `RetryAfter` on `SourceUnavailableException` | Done |

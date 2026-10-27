@@ -51,7 +51,7 @@ html{scroll-behavior:smooth}
 <a href="https://github.com/jkruza/allmytasks" style="display: inline-block; padding: 12px 20px; border-radius: 6px; background: var(--ink); color: var(--s100); text-decoration: none; font-weight: 600; font-size: 14px; line-height: 20px">View on GitHub</a>
 <a href="#start" style="display: inline-block; padding: 12px 20px; border-radius: 6px; border: 1px solid var(--bd); background: var(--s000); text-decoration: none; font-weight: 600; font-size: 14px; line-height: 20px">Build from source</a>
 </div>
-<p style="margin: 0; font-size: 14px; line-height: 20px; color: var(--mut)"><strong style="color: var(--ink)">Status: early.</strong> Providers are read-only so far: iCalendar feeds, CalDAV calendars and Todoist tasks.</p>
+<p style="margin: 0; font-size: 14px; line-height: 20px; color: var(--mut)"><strong style="color: var(--ink)">Status: early.</strong> Providers are read-only so far: iCalendar feeds, CalDAV calendars, Todoist tasks and personal Microsoft accounts.</p>
 </div>
 
 <!-- Illustration of the app -->
@@ -142,7 +142,7 @@ html{scroll-behavior:smooth}
 <div style="flex: 1 1 320px; min-width: 0; background: var(--s000); border: 1px solid var(--bd); border-radius: 6px; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; gap: 8px">
 <span aria-hidden="true" style="width: 28px; height: 4px; border-radius: 2px; background: #10b981"></span>
 <h3 style="margin: 0; font-size: 18px; line-height: 24px; font-weight: 600">Many providers, one model</h3>
-<p style="margin: 0; font-size: 14px; line-height: 22px; color: var(--mut)">iCalendar feeds, CalDAV and Todoist work today. Google and Microsoft providers are designed and planned. Events and tasks stay separate types, so task-only services fit naturally.</p>
+<p style="margin: 0; font-size: 14px; line-height: 22px; color: var(--mut)">iCalendar feeds, CalDAV, Todoist and personal Microsoft accounts work today. Google is designed and planned. Events and tasks stay separate types, so task-only services fit naturally.</p>
 </div>
 
 <div style="flex: 1 1 320px; min-width: 0; background: var(--s000); border: 1px solid var(--bd); border-radius: 6px; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; gap: 8px">
@@ -203,8 +203,8 @@ html{scroll-behavior:smooth}
 
 <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding: 16px 20px">
 <span style="flex: 1 1 200px; display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 14px; line-height: 20px"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 9999px; background: #6b7280"></span>Outlook calendar and Microsoft To Do</span>
-<span style="flex: 1 1 360px; font-size: 14px; line-height: 20px; color: var(--mut)">Microsoft Graph for personal and work accounts, one shared sign-in. Tracked in issues #32 and #24.</span>
-<span style="display: flex; align-items: center; gap: 6px; font-size: 12px; line-height: 16px; background: var(--s200); border-radius: 8px; padding: 4px 10px"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 9999px; background: #6b7280"></span>Planned</span>
+<span style="flex: 1 1 360px; font-size: 14px; line-height: 20px; color: var(--mut)">Outlook calendar and To Do for personal Microsoft accounts through Microsoft Graph, one shared sign-in. You register a free app and paste its client ID; not yet tried against a live account. Work accounts later.</span>
+<span style="display: flex; align-items: center; gap: 6px; font-size: 12px; line-height: 16px; background: var(--s200); border-radius: 8px; padding: 4px 10px"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 9999px; background: #f59e0b"></span>Experimental</span>
 </div>
 </div>
 </section>
@@ -220,6 +220,7 @@ html{scroll-behavior:smooth}
 <div style="display: flex; flex-wrap: wrap; gap: 4px 16px"><code style="flex: 0 0 240px; font-family: 'Cascadia Mono', Consolas, Menlo, monospace; font-size: 13px; line-height: 22px">AllMyTasks.Core</code><span style="flex: 1 1 200px; font-size: 14px; line-height: 22px; color: var(--mut)">Tasks, events, providers, sync, and the day, week, month and upcoming layout maths.</span></div>
 <div style="display: flex; flex-wrap: wrap; gap: 4px 16px"><code style="flex: 0 0 240px; font-family: 'Cascadia Mono', Consolas, Menlo, monospace; font-size: 13px; line-height: 22px">AllMyTasks.Providers.ICal</code><span style="flex: 1 1 200px; font-size: 14px; line-height: 22px; color: var(--mut)">iCalendar feed and CalDAV providers.</span></div>
 <div style="display: flex; flex-wrap: wrap; gap: 4px 16px"><code style="flex: 0 0 240px; font-family: 'Cascadia Mono', Consolas, Menlo, monospace; font-size: 13px; line-height: 22px">AllMyTasks.Providers.Todoist</code><span style="flex: 1 1 200px; font-size: 14px; line-height: 22px; color: var(--mut)">Todoist task provider.</span></div>
+<div style="display: flex; flex-wrap: wrap; gap: 4px 16px"><code style="flex: 0 0 240px; font-family: 'Cascadia Mono', Consolas, Menlo, monospace; font-size: 13px; line-height: 22px">AllMyTasks.Providers.Microsoft</code><span style="flex: 1 1 200px; font-size: 14px; line-height: 22px; color: var(--mut)">Outlook calendar and Microsoft To Do.</span></div>
 <div style="display: flex; flex-wrap: wrap; gap: 4px 16px"><code style="flex: 0 0 240px; font-family: 'Cascadia Mono', Consolas, Menlo, monospace; font-size: 13px; line-height: 22px">AllMyTasks.Storage.Sqlite</code><span style="flex: 1 1 200px; font-size: 14px; line-height: 22px; color: var(--mut)">Local store, migrations, settings.</span></div>
 <div style="display: flex; flex-wrap: wrap; gap: 4px 16px"><code style="flex: 0 0 240px; font-family: 'Cascadia Mono', Consolas, Menlo, monospace; font-size: 13px; line-height: 22px">AllMyTasks.Secrets</code><span style="flex: 1 1 200px; font-size: 14px; line-height: 22px; color: var(--mut)">Per-OS secret backends.</span></div>
 <div style="display: flex; flex-wrap: wrap; gap: 4px 16px"><code style="flex: 0 0 240px; font-family: 'Cascadia Mono', Consolas, Menlo, monospace; font-size: 13px; line-height: 22px">tests/</code><span style="flex: 1 1 200px; font-size: 14px; line-height: 22px; color: var(--mut)">xUnit tests for Core and each provider.</span></div>
@@ -256,14 +257,14 @@ html{scroll-behavior:smooth}
 <li>Local SQLite storage and per-OS secret stores</li>
 <li>Sync engine with scheduling, backoff and source status</li>
 <li>iCalendar feed provider with recurrence expansion</li>
-<li>Read-only CalDAV, Todoist and a system tray icon</li>
+<li>Read-only CalDAV, Todoist, Microsoft (personal accounts) and a system tray icon</li>
 </ul>
 </div>
 
 <div style="flex: 1 1 420px; min-width: 0; background: var(--s000); border: 1px solid var(--bd); border-radius: 6px; padding: 20px; box-sizing: border-box">
 <h3 style="margin: 0 0 12px; font-size: 16px; line-height: 22px; font-weight: 600; display: flex; align-items: center; gap: 8px"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 9999px; background: #6b7280"></span>Later, not committed</h3>
 <ul style="margin: 0; padding: 0 0 0 20px; font-size: 14px; line-height: 24px">
-<li>Google and Microsoft providers</li>
+<li>Google provider, and Microsoft work and school accounts</li>
 <li>VTODO tasks over CalDAV</li>
 <li>Write support, starting with completing tasks</li>
 <li>Reminders, notifications and a compact upcoming widget</li>

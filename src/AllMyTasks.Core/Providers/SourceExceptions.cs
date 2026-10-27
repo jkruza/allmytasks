@@ -49,6 +49,9 @@ public class SourceAuthException : SourceException
 /// <summary>Network, DNS, TLS, server error or timeout. The engine keeps the cache and retries with backoff.</summary>
 public class SourceUnavailableException : SourceException
 {
+    /// <summary>How long the server asked the app to wait (HTTP <c>Retry-After</c>). The engine does not retry sooner.</summary>
+    public TimeSpan? RetryAfter { get; init; }
+
     public SourceUnavailableException()
     {
     }

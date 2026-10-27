@@ -8,8 +8,19 @@ it runs on Windows, macOS and Linux.
 
 **Website:** <https://allmytasks.jkruza.com/>
 
-**Status:** early. Read-only providers so far: iCalendar feeds, CalDAV calendars and Todoist tasks
-(add one with a Todoist API token). More providers are planned, see the [roadmap](docs/design/roadmap.md).
+**Status:** early. Read-only providers so far: iCalendar feeds, CalDAV calendars, Todoist tasks
+(add one with a Todoist API token) and personal Microsoft accounts (Outlook calendar and Microsoft To Do, not yet
+verified against a live account). More providers are planned, see the [roadmap](docs/design/roadmap.md).
+
+### Microsoft accounts
+
+Microsoft only issues tokens to a registered app, and the repository does not ship one. To add a Microsoft
+source, register a free app once (a few minutes, no secret, no verification for personal accounts) and paste its
+Application (client) ID into the source form; or build with `AMT_MICROSOFT_CLIENT_ID` set to embed it. Steps:
+[Register an app](docs/design/outlook-calendar-provider.md#register-an-app-once-per-maintainer-or-user). After you save the source, a
+browser window opens to sign in; only a refresh token is kept, in your system keyring. Work and school accounts
+are not supported yet. A calendar-only alternative that needs no registration is the Outlook.com *published
+calendar* link, added as an iCalendar feed.
 
 ## Build and run
 
@@ -39,6 +50,7 @@ do not use `--tray`. See [docs/design/system-tray.md](docs/design/system-tray.md
 | `src/AllMyTasks.Core` | UI-independent logic: tasks, providers, aggregation |
 | `src/AllMyTasks.Providers.ICal` | iCalendar feed and CalDAV providers |
 | `src/AllMyTasks.Providers.Todoist` | Todoist task provider (API token, read-only) |
+| `src/AllMyTasks.Providers.Microsoft` | Outlook calendar and Microsoft To Do for personal accounts (Microsoft Graph, read-only) |
 | `site/` | The static project page published on GitHub Pages |
 | `tests/` | xUnit tests for Core and each provider |
 

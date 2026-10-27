@@ -17,9 +17,9 @@ fix whichever is wrong in the same pull request.
 | [ical-caldav-provider.md](ical-caldav-provider.md) | First provider: iCalendar feeds and CalDAV, read-only |
 | [google-calendar-provider.md](google-calendar-provider.md) | Google Calendar provider: OAuth sign-in, sync tokens, mapping (design only) |
 | [google-tasks-provider.md](google-tasks-provider.md) | Google Tasks provider: OAuth sign-in, `updatedMin` delta sync, mapping, limits |
-| [microsoft-todo-provider.md](microsoft-todo-provider.md) | Microsoft To Do tasks via Microsoft Graph, personal and work/school accounts, read-only |
+| [microsoft-todo-provider.md](microsoft-todo-provider.md) | Microsoft To Do tasks via Microsoft Graph, personal accounts, read-only |
 | [todoist-provider.md](todoist-provider.md) | Todoist task provider: API token auth, Sync API delta, mapping, read-only |
-| [outlook-calendar-provider.md](outlook-calendar-provider.md) | Outlook calendar via Microsoft Graph (personal and work/school accounts), and the Microsoft sign-in shared with To Do |
+| [outlook-calendar-provider.md](outlook-calendar-provider.md) | Outlook calendar via Microsoft Graph (personal accounts), and the Microsoft sign-in and client id shared with To Do |
 | [views.md](views.md) | Day agenda, week, month and upcoming views and the Core logic behind them |
 | [details-pane.md](details-pane.md) | Right-hand details pane and the calendar entry details shown in it |
 | [system-tray.md](system-tray.md) | Tray icon and menu, `--tray` start option, close-to-tray, Linux StatusNotifier caveat |

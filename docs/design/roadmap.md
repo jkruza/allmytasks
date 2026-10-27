@@ -90,8 +90,8 @@ incrementally.
 - Google and Microsoft providers (OAuth), all read-only in v1:
   - Google Calendar: [google-calendar-provider.md](google-calendar-provider.md), [#28](https://github.com/jkruza/allmytasks/issues/28).
   - Google Tasks: [google-tasks-provider.md](google-tasks-provider.md), [#26](https://github.com/jkruza/allmytasks/issues/26).
-  - Outlook calendar (Microsoft Graph, personal and work accounts): [outlook-calendar-provider.md](outlook-calendar-provider.md), [#32](https://github.com/jkruza/allmytasks/issues/32); the shared Microsoft sign-in is described there.
-  - Microsoft To Do: [microsoft-todo-provider.md](microsoft-todo-provider.md), [#24](https://github.com/jkruza/allmytasks/issues/24).
+  - Outlook calendar (Microsoft Graph, personal accounts): [outlook-calendar-provider.md](outlook-calendar-provider.md), [#32](https://github.com/jkruza/allmytasks/issues/32); the shared Microsoft sign-in is described there. Implemented read-only; not yet verified on a live account. Work and school accounts are deferred.
+  - Microsoft To Do (personal accounts): [microsoft-todo-provider.md](microsoft-todo-provider.md), [#24](https://github.com/jkruza/allmytasks/issues/24). Implemented read-only, same source as Outlook; not yet verified on a live account.
 - Write support: complete tasks first (smallest, most valuable), then edit/create.
 - System tray icon with menu, `--tray` start and close-to-tray: [system-tray.md](system-tray.md), [#39](https://github.com/jkruza/allmytasks/issues/39). Implemented.
 - Reminders and notifications; compact upcoming widget.

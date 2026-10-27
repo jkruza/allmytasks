@@ -83,6 +83,12 @@ depends on nobody else being able to sign in as you.
 4. Approve the `release` environment deployment in the Actions run.
 5. Review the draft release it creates, then publish it.
 
+To give release builds a built-in Microsoft application (client) ID, set `AMT_MICROSOFT_CLIENT_ID` in the publish
+step's environment (a repository variable, not a secret: the id is public by design). Without it users enter their
+own id per source. Registration steps:
+[outlook-calendar-provider.md](design/outlook-calendar-provider.md#register-an-app-once-per-maintainer-or-user). The
+release workflow does not pass it yet; that is a change under `.github/` for a separate PR.
+
 Binaries are not code-signed yet, so Windows SmartScreen and macOS Gatekeeper will warn.
 macOS builds are plain executables, not `.app` bundles.
 
