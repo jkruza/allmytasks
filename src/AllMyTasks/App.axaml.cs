@@ -3,6 +3,7 @@ using AllMyTasks.Core.Startup;
 using AllMyTasks.Core.Storage;
 using AllMyTasks.Core.Sync;
 using AllMyTasks.Core.Views;
+using AllMyTasks.Providers.Google;
 using AllMyTasks.Providers.ICal;
 using AllMyTasks.Providers.ICal.CalDav;
 using AllMyTasks.Providers.Microsoft;
@@ -62,7 +63,8 @@ public sealed partial class App : Application
         var davFactory = new CalDavFactory(logger: log);
         var todoistFactory = new TodoistFactory(logger: log, displayZone: zone);
         var microsoftFactory = new MicrosoftFactory(logger: log, displayZone: zone);
-        var registry = new SourceRegistry([feedFactory, davFactory, todoistFactory, microsoftFactory, new SampleSourceFactory(clock, zone)], sources, secrets);
+        var googleFactory = new GoogleFactory(logger: log);
+        var registry = new SourceRegistry([feedFactory, davFactory, todoistFactory, googleFactory, microsoftFactory, new SampleSourceFactory(clock, zone)], sources, secrets);
         var engine = new SyncEngine(items, sources, registry, clock, logger: log);
         var scheduler = new SyncScheduler(engine, sources, clock);
         var dialogs = new DialogService(desktop);
@@ -110,6 +112,7 @@ public sealed partial class App : Application
             feedFactory.Dispose();
             davFactory.Dispose();
             todoistFactory.Dispose();
+            googleFactory.Dispose();
             microsoftFactory.Dispose();
             shell.Dispose();
             engine.Dispose();

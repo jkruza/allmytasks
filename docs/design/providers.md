@@ -117,9 +117,10 @@ public interface ISourceFactory
   password.
 
 A schema-driven form keeps the first provider cheap. If a provider needs bespoke UI
-(OAuth browser hand-off), it can supply a view model instead of a schema. The Microsoft provider does not yet:
-it keeps the schema form and signs in in the browser on the first sync after the source is saved
-([outlook-calendar-provider.md](outlook-calendar-provider.md#sign-in)); a proper sign-in view is a follow-up.
+(OAuth browser hand-off), it can supply a view model instead of a schema. The Microsoft and Google providers do not yet:
+they keep the schema form and sign in in the browser on the first sync after the source is saved
+([outlook-calendar-provider.md](outlook-calendar-provider.md#sign-in),
+[google-calendar-provider.md](google-calendar-provider.md#implementation-notes)); a proper sign-in view is a follow-up.
 
 ## Errors
 

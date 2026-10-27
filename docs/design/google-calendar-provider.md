@@ -1,6 +1,9 @@
 # Google Calendar provider (read-only)
 
-Design only; nothing here is built yet. Project: `AllMyTasks.Providers.Google`. It signs in
+Tracking issue: [#28](https://github.com/jkruza/allmytasks/issues/28).
+
+Status: implemented read-only, together with Google Tasks, in one PR; see [Implementation notes](#implementation-notes) for
+where the code differs from this design and what has not been tried against a live account. Project: `AllMyTasks.Providers.Google`. It signs in
 to a Google account with OAuth and syncs events from the user's Google calendars into the
 common model, using the Google Calendar API v3 and its incremental sync tokens.
 
@@ -303,6 +306,44 @@ Not designed here, listed so the other designs agree:
 4. Docs: update [roadmap.md](roadmap.md), the decision log in [README.md](README.md), and add an "Implementation notes" section here.
 
 Each step is its own PR; the provider is usable by step 3.
+
+## Implementation notes
+
+Implemented in `src/AllMyTasks.Providers.Google` (kind `google`) with offline tests in `tests/AllMyTasks.Providers.Google.Tests`,
+shared with [Google Tasks](google-tasks-provider.md#implementation-notes). **Nothing has been run against a live Google account
+or the real Google Cloud project**: the code and tests follow the documented API shapes and recorded-shape fixtures only.
+
+Differences from the sections above, all deliberate:
+
+- **One source, two switches.** The form has *Google Calendar* and *Google Tasks* switches; both off means both on. The sign-in
+  asks only for the scopes of the enabled services. Enabling a service later means editing the source and signing in again
+  (a new consent for all scopes) instead of incremental authorization; revisit with a proper sign-in view.
+- **Sign-in is the first sync, as for Microsoft.** There is no add-account view yet: after the source is saved, the first sync
+  opens the browser once per app run; a failure says "edit this source and save it". Same limitation and same follow-up as
+  [providers.md](providers.md#configuration-and-credentials).
+- **Scopes.** `openid` (not `email profile`) plus the narrow read scopes. The ID token is read only for its `sub`, which is kept
+  in the secret store (`account-sub`) so that signing in as a different account for the same source is refused. If the user
+  unticks a permission on the consent screen the sign-in fails and names the missing scope.
+- **Client id and secret.** Config fields `clientId` (text) and `clientSecret` (password, so it lives in the secret store), or
+  build properties `AMT_GOOGLE_CLIENT_ID` and `AMT_GOOGLE_CLIENT_SECRET` that embed a default client as assembly metadata. This
+  replaces the `Google:ClientId` / environment-variable names of the sketch; they follow `AMT_MICROSOFT_CLIENT_ID`. A client id typed
+  into the source is always paired with the secret typed into the source, never with the built-in secret.
+- **Secret fields** are `refresh-token` and `account-sub`, like the Microsoft provider's `refresh-token`. `granted_scopes` is not
+  stored: the scopes are derived from the two switches and checked once, at sign-in.
+- **No `GoogleAuthFlow`/`GoogleTokenProvider` split.** `GoogleAuth` does PKCE, the loopback listener (`LoopbackReceiver`,
+  `127.0.0.1`, single use, 5 minutes, `state` checked), code exchange and refresh with one in-flight refresh per source.
+  `GoogleClient` retries once with a fresh access token after a 401, honours `Retry-After` up to 30 s itself and passes longer
+  waits to the engine, and refuses any address outside `www.googleapis.com` and `tasks.googleapis.com` before attaching the token.
+- **Meeting links** are not mapped: there is still no `MeetingUrl` on `CalendarEvent` (open question 7 is accepted but is its own PR).
+  `Url` is the event's `htmlLink`.
+- **Descriptions** that contain HTML are converted to plain text.
+- **Declined events:** the attendee entry with `self: true` and `responseStatus: declined` maps to `Cancelled`, as decided.
+- **Not done:** revoking the token at Google when a source is removed, the "Sign in again" button, the link to
+  `myaccount.google.com/permissions`, `include_granted_scopes`.
+
+Unverified against a live account (please check when a throwaway account exists): the exact `scope` string Google returns in the
+token reply, `prompt=consent select_account` behaviour, that `fields` does not disturb sync tokens, the response shape of a
+cancelled single occurrence in a delta, and whether `calendarList` `selected` hides holiday calendars as expected.
 
 ## Open questions
 

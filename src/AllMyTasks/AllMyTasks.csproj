@@ -28,6 +28,7 @@
     <ProjectReference Include="..\AllMyTasks.Storage.Sqlite\AllMyTasks.Storage.Sqlite.csproj" />
     <ProjectReference Include="..\AllMyTasks.Providers.ICal\AllMyTasks.Providers.ICal.csproj" />
     <ProjectReference Include="..\AllMyTasks.Providers.Todoist\AllMyTasks.Providers.Todoist.csproj" />
+    <ProjectReference Include="..\AllMyTasks.Providers.Google\AllMyTasks.Providers.Google.csproj" />
     <ProjectReference Include="..\AllMyTasks.Providers.Microsoft\AllMyTasks.Providers.Microsoft.csproj" />
     <ProjectReference Include="..\AllMyTasks.Secrets\AllMyTasks.Secrets.csproj" />
   </ItemGroup>

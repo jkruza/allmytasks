@@ -89,6 +89,16 @@ own id per source. Registration steps:
 [outlook-calendar-provider.md](design/outlook-calendar-provider.md#register-an-app-once-per-maintainer-or-user). The
 release workflow does not pass it yet; that is a change under `.github/` for a separate PR.
 
+The same applies to Google: `AMT_GOOGLE_CLIENT_ID` and `AMT_GOOGLE_CLIENT_SECRET` embed a default OAuth client (type
+*Desktop app*) in the build. Set the id as a repository variable and the secret as an Actions secret, so neither is ever
+committed; Google calls a desktop client's secret non-confidential, but secret scanning may still flag it. Without them
+users enter their own client ID and secret per source. The project's Google Cloud project, consent screen and verification
+(sensitive scopes: privacy policy, home page, verified domain, demo video) are a maintainer task; until the consent screen is
+*In production* it caps users at the listed test users and expires refresh tokens after 7 days, so alpha testers are added as
+test users and warned. See
+[google-calendar-provider.md](design/google-calendar-provider.md#oauth-client-and-verification-a-maintainer-task-not-code).
+The release workflow does not pass these yet either.
+
 Binaries are not code-signed yet, so Windows SmartScreen and macOS Gatekeeper will warn.
 macOS builds are plain executables, not `.app` bundles.
 
