@@ -22,7 +22,7 @@ Two rows in one bordered strip.
 | Row | Left | Right |
 | --- | --- | --- |
 | 1 | Title (22 px, semi-bold, trimmed with an ellipsis when short of room) | Segmented view switcher |
-| 2 | Previous, Today, Next | Sync progress, Filter menu, sources status, Refresh (icon), settings |
+| 2 | Previous, Today, Next | Sync progress, Filter menu, sources status, Refresh and Settings (both 14 px icons) |
 
 - The switcher uses the `seg` style on `ToggleButton` (defined in `App.axaml`): no border, 3 px
   corner radius, muted at rest, filled with the theme's low-contrast base brush when checked.
