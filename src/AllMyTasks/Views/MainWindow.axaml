@@ -5,6 +5,7 @@
         x:Class="AllMyTasks.Views.MainWindow"
         x:DataType="vm:CalendarShellViewModel"
         Title="All My Tasks"
+        Icon="/Assets/app.png"
         Width="1100" Height="760" MinWidth="640" MinHeight="420">
   <DockPanel>
     <Border DockPanel.Dock="Top" Padding="12,8" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
