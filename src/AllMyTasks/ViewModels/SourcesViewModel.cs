@@ -23,6 +23,7 @@ public sealed partial class SourceItemViewModel : ObservableObject
         KindName = kindName;
         _owner = owner;
         Name = info.DisplayName;
+        Collections.CollectionChanged += (_, _) => OnPropertyChanged(nameof(HasCollections));
     }
 
     public SourceInfo Info { get; }
@@ -254,12 +255,37 @@ public sealed partial class SourcesViewModel : ViewModelBase, IDisposable
     }
 
     private void OnStatusChanged(object? sender, SourceStatus status) =>
-        Dispatcher.UIThread.Post(() =>
+        Dispatcher.UIThread.Post(async () =>
         {
             _latest[status.SourceId] = status;
             var item = Sources.FirstOrDefault(s => s.Info.Id == status.SourceId);
-            item?.Apply(status, _clock.GetUtcNow());
+            if (item is null)
+            {
+                return;
+            }
+
+            item.Apply(status, _clock.GetUtcNow());
+            if (status.Kind != SourceStatusKind.Syncing)
+            {
+                await ReloadCollectionsAsync(item);
+            }
         });
+
+    /// <summary>Picks up calendars and lists a sync has just discovered (or dropped), so a new source needn't be reopened to show them.</summary>
+    private async Task ReloadCollectionsAsync(SourceItemViewModel item)
+    {
+        var collections = (await _repository.GetCollectionsAsync()).Where(c => c.SourceId == item.Info.Id).ToList();
+        if (collections.Select(c => c.Id).SequenceEqual(item.Collections.Select(r => r.Info.Id)))
+        {
+            return;
+        }
+
+        item.Collections.Clear();
+        foreach (var c in collections)
+        {
+            item.Collections.Add(new CollectionRowViewModel(c, null, OnCollectionChangedAsync));
+        }
+    }
 
     private void RefreshTexts()
     {
