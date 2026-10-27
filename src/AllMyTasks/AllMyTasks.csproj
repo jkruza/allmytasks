@@ -4,6 +4,7 @@
     <RootNamespace>AllMyTasks</RootNamespace>
     <AssemblyName>AllMyTasks</AssemblyName>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\app.ico</ApplicationIcon>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <!-- Listed so packages.lock.json covers every release target and locked restore works in CI. -->

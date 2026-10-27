@@ -87,8 +87,8 @@ adds a D-Bus dependency. Left as a follow-up if people hit this.
   close-to-tray is off, `MainWindow.Closed` calls it too.
 - The window `Closing` handler cancels and hides when `CloseReason == WindowClosing`,
   close-to-tray is on, and the tray icon is visible.
-- Icon: `Assets/tray.png`, a simple placeholder (blue rounded square with a white check mark)
-  until real branding exists. The icon is loaded from the assembly resources so it works in
+- Icon: `Assets/tray.png`, the three-lines logo on a transparent background; see
+  [app-icon.md](app-icon.md). The icon is loaded from the assembly resources so it works in
   single-file publishes.
 
 ### Why Avalonia's `TrayIcon`
