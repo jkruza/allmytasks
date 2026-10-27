@@ -202,7 +202,7 @@ the licence and current version at that time.
   `SourceAuthException`; 5xx (except 501/507) is unavailable.
 - A collection that answers 404 keeps its cached events and adds a warning (not auto-deleted). One that disappears from
   discovery is removed with its items.
-- Collection picker: the Sources window lists each source's calendars with a visibility checkbox and a colour choice.
+- Collection picker: the Sources window lists each source's calendars with a visibility checkbox and a colour choice. A new source's picker appears as soon as its first sync has discovered the collections; no reopening needed.
   Hidden collections are not synced; the colour override is stored locally and wins over the server's colour.
 - Hand-tested against Radicale 3.8 (discovery, sync-collection snapshot, empty delta, edit and delete). An opt-in
   integration test (`AMT_CALDAV_URL`, `AMT_CALDAV_USER`, `AMT_CALDAV_PASSWORD`) exists; it never runs in CI.
