@@ -8,69 +8,80 @@
         Icon="/Assets/app.png"
         Width="1100" Height="760" MinWidth="640" MinHeight="420">
   <DockPanel>
-    <Border DockPanel.Dock="Top" Padding="12,8" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
-      <!-- A WrapPanel, not a Grid: when the window is narrower than the toolbar, whole groups
-           move to the next row instead of overlapping. See docs/design/views.md. -->
-      <WrapPanel Orientation="Horizontal">
-        <StackPanel Orientation="Horizontal" Spacing="4" Margin="0,2,12,2">
-          <Button Content="‹" Command="{Binding PreviousCommand}" IsEnabled="{Binding CanNavigate}"
-                  AutomationProperties.Name="Previous" ToolTip.Tip="Previous (←)" />
-          <Button Content="Today" Command="{Binding GoTodayCommand}" ToolTip.Tip="Today (T)" />
-          <Button Content="›" Command="{Binding NextCommand}" IsEnabled="{Binding CanNavigate}"
-                  AutomationProperties.Name="Next" ToolTip.Tip="Next (→)" />
-        </StackPanel>
-        <TextBlock Text="{Binding Title}" FontSize="20" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,2,12,2" />
-        <StackPanel Orientation="Horizontal" Spacing="4" Margin="0,2,12,2">
-          <ToggleButton Content="Day" IsChecked="{Binding IsDay, Mode=OneWay}"
-                        Command="{Binding SetModeCommand}" CommandParameter="{x:Static vm:ViewMode.Day}" ToolTip.Tip="Day (D)" />
-          <ToggleButton Content="Week" IsChecked="{Binding IsWeek, Mode=OneWay}"
-                        Command="{Binding SetModeCommand}" CommandParameter="{x:Static vm:ViewMode.Week}" ToolTip.Tip="Week (W)" />
-          <ToggleButton Content="Month" IsChecked="{Binding IsMonth, Mode=OneWay}"
-                        Command="{Binding SetModeCommand}" CommandParameter="{x:Static vm:ViewMode.Month}" ToolTip.Tip="Month (M)" />
-          <ToggleButton Content="Upcoming" IsChecked="{Binding IsUpcoming, Mode=OneWay}"
-                        Command="{Binding SetModeCommand}" CommandParameter="{x:Static vm:ViewMode.Upcoming}" ToolTip.Tip="Upcoming (U)" />
-          <ToggleButton Content="All tasks" IsChecked="{Binding IsTasks, Mode=OneWay}"
-                        Command="{Binding SetModeCommand}" CommandParameter="{x:Static vm:ViewMode.Tasks}" ToolTip.Tip="All tasks (A)" />
-        </StackPanel>
-        <Button Content="Filter ▾" Margin="0,2,12,2">
-          <Button.Flyout>
-            <Flyout>
-              <StackPanel Spacing="6" MinWidth="220">
-                <TextBlock Text="Show" FontWeight="SemiBold" />
-                <CheckBox Content="Events" IsChecked="{Binding ShowEvents}" />
-                <CheckBox Content="Tasks" IsChecked="{Binding ShowTasks}" />
-                <CheckBox Content="Completed tasks" IsChecked="{Binding ShowCompleted}" />
-                <CheckBox Content="Hide weekends (week view)" IsChecked="{Binding HideWeekends}" />
-                <Separator />
-                <TextBlock Text="Calendars and lists" FontWeight="SemiBold" />
-                <ItemsControl ItemsSource="{Binding Collections}">
-                  <ItemsControl.ItemTemplate>
-                    <DataTemplate x:DataType="vm:CollectionToggle">
-                      <CheckBox IsChecked="{Binding IsVisible}">
-                        <StackPanel Orientation="Horizontal" Spacing="6">
-                          <Border Width="10" Height="10" CornerRadius="5" Background="{Binding Accent}" VerticalAlignment="Center" />
-                          <TextBlock Text="{Binding Name}" />
-                        </StackPanel>
-                      </CheckBox>
-                    </DataTemplate>
-                  </ItemsControl.ItemTemplate>
-                </ItemsControl>
+    <Border DockPanel.Dock="Top" Padding="16,10" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
+      <!-- Two rows, as in the project site's mockup: title left and view switcher right, then
+           navigation left and filter/sync/settings right. The title column shrinks and trims,
+           and each row's groups fit at the minimum window width, so nothing overlaps.
+           See docs/design/toolbar.md. -->
+      <StackPanel Spacing="6">
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
+          <TextBlock Text="{Binding Title}" FontSize="22" FontWeight="SemiBold" VerticalAlignment="Center"
+                     TextTrimming="CharacterEllipsis" />
+          <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
+            <ToggleButton Classes="seg" Content="Day" IsChecked="{Binding IsDay, Mode=OneWay}"
+                          Command="{Binding SetModeCommand}" CommandParameter="{x:Static vm:ViewMode.Day}" ToolTip.Tip="Day (D)" />
+            <ToggleButton Classes="seg" Content="Week" IsChecked="{Binding IsWeek, Mode=OneWay}"
+                          Command="{Binding SetModeCommand}" CommandParameter="{x:Static vm:ViewMode.Week}" ToolTip.Tip="Week (W)" />
+            <ToggleButton Classes="seg" Content="Month" IsChecked="{Binding IsMonth, Mode=OneWay}"
+                          Command="{Binding SetModeCommand}" CommandParameter="{x:Static vm:ViewMode.Month}" ToolTip.Tip="Month (M)" />
+            <ToggleButton Classes="seg" Content="Upcoming" IsChecked="{Binding IsUpcoming, Mode=OneWay}"
+                          Command="{Binding SetModeCommand}" CommandParameter="{x:Static vm:ViewMode.Upcoming}" ToolTip.Tip="Upcoming (U)" />
+            <ToggleButton Classes="seg" Content="All tasks" IsChecked="{Binding IsTasks, Mode=OneWay}"
+                          Command="{Binding SetModeCommand}" CommandParameter="{x:Static vm:ViewMode.Tasks}" ToolTip.Tip="All tasks (A)" />
+          </StackPanel>
+        </Grid>
+        <Grid ColumnDefinitions="Auto,*,Auto">
+          <StackPanel Orientation="Horizontal" Spacing="2">
+            <Button Classes="tool" Content="‹" Command="{Binding PreviousCommand}" IsEnabled="{Binding CanNavigate}"
+                    AutomationProperties.Name="Previous" ToolTip.Tip="Previous (←)" />
+            <Button Classes="tool" Content="Today" Command="{Binding GoTodayCommand}" ToolTip.Tip="Today (T)" />
+            <Button Classes="tool" Content="›" Command="{Binding NextCommand}" IsEnabled="{Binding CanNavigate}"
+                    AutomationProperties.Name="Next" ToolTip.Tip="Next (→)" />
+          </StackPanel>
+          <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
+            <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsSyncing}" Width="48" Margin="0,0,6,0" />
+            <Button Classes="tool" Content="Filter ▾">
+              <Button.Flyout>
+                <Flyout>
+                  <StackPanel Spacing="6" MinWidth="220">
+                    <TextBlock Text="Show" FontWeight="SemiBold" />
+                    <CheckBox Content="Events" IsChecked="{Binding ShowEvents}" />
+                    <CheckBox Content="Tasks" IsChecked="{Binding ShowTasks}" />
+                    <CheckBox Content="Completed tasks" IsChecked="{Binding ShowCompleted}" />
+                    <CheckBox Content="Hide weekends (week view)" IsChecked="{Binding HideWeekends}" />
+                    <Separator />
+                    <TextBlock Text="Calendars and lists" FontWeight="SemiBold" />
+                    <ItemsControl ItemsSource="{Binding Collections}">
+                      <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:CollectionToggle">
+                          <CheckBox IsChecked="{Binding IsVisible}">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                              <Border Width="10" Height="10" CornerRadius="5" Background="{Binding Accent}" VerticalAlignment="Center" />
+                              <TextBlock Text="{Binding Name}" />
+                            </StackPanel>
+                          </CheckBox>
+                        </DataTemplate>
+                      </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                  </StackPanel>
+                </Flyout>
+              </Button.Flyout>
+            </Button>
+            <Button Classes="tool" Command="{Binding OpenSourcesCommand}" ToolTip.Tip="Sources" AutomationProperties.Name="Sources">
+              <StackPanel Orientation="Horizontal" Spacing="6">
+                <Border Width="8" Height="8" CornerRadius="4" Background="IndianRed" VerticalAlignment="Center" IsVisible="{Binding HasProblems}" />
+                <TextBlock Text="{Binding SyncSummary}" FontSize="12" />
               </StackPanel>
-            </Flyout>
-          </Button.Flyout>
-        </Button>
-        <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,2,0,2">
-          <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsSyncing}" Width="48" />
-          <Button Command="{Binding OpenSourcesCommand}" ToolTip.Tip="Sources" AutomationProperties.Name="Sources">
-            <StackPanel Orientation="Horizontal" Spacing="6">
-              <Border Width="8" Height="8" CornerRadius="4" Background="IndianRed" VerticalAlignment="Center" IsVisible="{Binding HasProblems}" />
-              <TextBlock Text="{Binding SyncSummary}" FontSize="12" />
-            </StackPanel>
-          </Button>
-          <Button Content="⚙" Command="{Binding OpenSettingsCommand}" ToolTip.Tip="Settings" AutomationProperties.Name="Settings" />
-          <Button Content="Refresh" Command="{Binding RefreshCommand}" ToolTip.Tip="Refresh (R)" />
-        </StackPanel>
-      </WrapPanel>
+            </Button>
+            <Button Classes="tool" Command="{Binding RefreshCommand}" ToolTip.Tip="Refresh (R)" AutomationProperties.Name="Refresh">
+              <PathIcon Width="14" Height="14" Data="M17.65 6.35A7.958 7.958 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" />
+            </Button>
+            <Button Classes="tool" Command="{Binding OpenSettingsCommand}" ToolTip.Tip="Settings" AutomationProperties.Name="Settings">
+              <PathIcon Width="14" Height="14" Data="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z" />
+            </Button>
+          </StackPanel>
+        </Grid>
+      </StackPanel>
     </Border>
     <!-- Details pane: one host for every kind of details; see docs/design/details-pane.md. -->
     <Border DockPanel.Dock="Right" Width="340" Padding="16,12" IsVisible="{Binding IsDetailsOpen}"
