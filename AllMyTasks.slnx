@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/AllMyTasks.Core/AllMyTasks.Core.csproj" />
+    <Project Path="src/AllMyTasks.Providers.Google/AllMyTasks.Providers.Google.csproj" />
     <Project Path="src/AllMyTasks.Providers.ICal/AllMyTasks.Providers.ICal.csproj" />
     <Project Path="src/AllMyTasks.Providers.Microsoft/AllMyTasks.Providers.Microsoft.csproj" />
     <Project Path="src/AllMyTasks.Providers.Todoist/AllMyTasks.Providers.Todoist.csproj" />
@@ -10,6 +11,7 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/AllMyTasks.Core.Tests/AllMyTasks.Core.Tests.csproj" />
+    <Project Path="tests/AllMyTasks.Providers.Google.Tests/AllMyTasks.Providers.Google.Tests.csproj" />
     <Project Path="tests/AllMyTasks.Providers.ICal.Tests/AllMyTasks.Providers.ICal.Tests.csproj" />
     <Project Path="tests/AllMyTasks.Providers.Microsoft.Tests/AllMyTasks.Providers.Microsoft.Tests.csproj" />
     <Project Path="tests/AllMyTasks.Providers.Todoist.Tests/AllMyTasks.Providers.Todoist.Tests.csproj" />

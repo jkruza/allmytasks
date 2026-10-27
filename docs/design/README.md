@@ -15,8 +15,8 @@ fix whichever is wrong in the same pull request.
 | [domain-model.md](domain-model.md) | Provider-neutral `CalendarEvent` and `TaskItem`, time handling, recurrence |
 | [providers.md](providers.md) | Provider abstraction, capabilities, sync contract, errors |
 | [ical-caldav-provider.md](ical-caldav-provider.md) | First provider: iCalendar feeds and CalDAV, read-only |
-| [google-calendar-provider.md](google-calendar-provider.md) | Google Calendar provider: OAuth sign-in, sync tokens, mapping (design only) |
-| [google-tasks-provider.md](google-tasks-provider.md) | Google Tasks provider: OAuth sign-in, `updatedMin` delta sync, mapping, limits |
+| [google-calendar-provider.md](google-calendar-provider.md) | Google Calendar provider: OAuth sign-in, sync tokens, mapping (implemented read-only, with Google Tasks) |
+| [google-tasks-provider.md](google-tasks-provider.md) | Google Tasks provider: OAuth sign-in, `updatedMin` delta sync, mapping, limits (implemented read-only) |
 | [microsoft-todo-provider.md](microsoft-todo-provider.md) | Microsoft To Do tasks via Microsoft Graph, personal accounts, read-only |
 | [todoist-provider.md](todoist-provider.md) | Todoist task provider: API token auth, Sync API delta, mapping, read-only |
 | [outlook-calendar-provider.md](outlook-calendar-provider.md) | Outlook calendar via Microsoft Graph (personal accounts), and the Microsoft sign-in and client id shared with To Do |

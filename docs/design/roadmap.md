@@ -88,8 +88,8 @@ incrementally.
 - Todoist provider (first task-only provider; proves the model is not calendar-shaped). Implemented read-only with an API
   token; see [todoist-provider.md](todoist-provider.md), tracked in [#27](https://github.com/jkruza/allmytasks/issues/27).
 - Google and Microsoft providers (OAuth), all read-only in v1:
-  - Google Calendar: [google-calendar-provider.md](google-calendar-provider.md), [#28](https://github.com/jkruza/allmytasks/issues/28).
-  - Google Tasks: [google-tasks-provider.md](google-tasks-provider.md), [#26](https://github.com/jkruza/allmytasks/issues/26).
+  - Google Calendar: [google-calendar-provider.md](google-calendar-provider.md), [#28](https://github.com/jkruza/allmytasks/issues/28). Implemented read-only, same `google` source as Tasks; not yet verified on a live account, and the project's OAuth client still has to be created and verified.
+  - Google Tasks: [google-tasks-provider.md](google-tasks-provider.md), [#26](https://github.com/jkruza/allmytasks/issues/26). Implemented read-only; same caveats.
   - Outlook calendar (Microsoft Graph, personal accounts): [outlook-calendar-provider.md](outlook-calendar-provider.md), [#32](https://github.com/jkruza/allmytasks/issues/32); the shared Microsoft sign-in is described there. Implemented read-only; not yet verified on a live account. Work and school accounts are deferred.
   - Microsoft To Do (personal accounts): [microsoft-todo-provider.md](microsoft-todo-provider.md), [#24](https://github.com/jkruza/allmytasks/issues/24). Implemented read-only, same source as Outlook; not yet verified on a live account.
 - Write support: complete tasks first (smallest, most valuable), then edit/create.

@@ -9,8 +9,8 @@ it runs on Windows, macOS and Linux.
 **Website:** <https://allmytasks.jkruza.com/>
 
 **Status:** early. Read-only providers so far: iCalendar feeds, CalDAV calendars, Todoist tasks
-(add one with a Todoist API token) and personal Microsoft accounts (Outlook calendar and Microsoft To Do, not yet
-verified against a live account). More providers are planned, see the [roadmap](docs/design/roadmap.md).
+(add one with a Todoist API token), personal Microsoft accounts (Outlook calendar and Microsoft To Do) and Google
+accounts (Google Calendar and Google Tasks). The Microsoft and Google providers are not yet verified against a live account. More providers are planned, see the [roadmap](docs/design/roadmap.md).
 
 ### Microsoft accounts
 
@@ -21,6 +21,19 @@ Application (client) ID into the source form; or build with `AMT_MICROSOFT_CLIEN
 browser window opens to sign in; only a refresh token is kept, in your system keyring. Work and school accounts
 are not supported yet. A calendar-only alternative that needs no registration is the Outlook.com *published
 calendar* link, added as an iCalendar feed.
+
+### Google accounts
+
+Google Calendar and Google Tasks share one `google` source per account. Google only issues tokens to a registered OAuth client,
+and the repository does not ship one; the project's own client is still to be created and verified by Google, so for now you
+bring your own. In a Google Cloud project of yours, enable the *Google Calendar API* and *Google Tasks API*, configure the
+OAuth consent screen (add yourself as a test user; an app in *Testing* has refresh tokens that expire after 7 days) and create
+an OAuth client of type **Desktop app**. Paste its client ID and client secret into the source form (the secret is kept in your
+system keyring; Google does not treat a desktop client's secret as confidential), or build with `AMT_GOOGLE_CLIENT_ID` and
+`AMT_GOOGLE_CLIENT_SECRET` set to embed them. After you save the source, a browser window opens to sign in and ask for
+read-only access to your calendars and tasks; only a refresh token is kept. Details:
+[google-calendar-provider.md](docs/design/google-calendar-provider.md#oauth-client-and-verification-a-maintainer-task-not-code).
+A calendar-only alternative that needs no OAuth client is Google Calendar's secret iCal address, added as an iCalendar feed.
 
 ## Build and run
 
@@ -50,6 +63,7 @@ do not use `--tray`. See [docs/design/system-tray.md](docs/design/system-tray.md
 | `src/AllMyTasks.Core` | UI-independent logic: tasks, providers, aggregation |
 | `src/AllMyTasks.Providers.ICal` | iCalendar feed and CalDAV providers |
 | `src/AllMyTasks.Providers.Todoist` | Todoist task provider (API token, read-only) |
+| `src/AllMyTasks.Providers.Google` | Google Calendar and Google Tasks (OAuth, read-only) |
 | `src/AllMyTasks.Providers.Microsoft` | Outlook calendar and Microsoft To Do for personal accounts (Microsoft Graph, read-only) |
 | `site/` | The static project page published on GitHub Pages |
 | `tests/` | xUnit tests for Core and each provider |

@@ -5,7 +5,9 @@ lists behind the Tasks side panel in Gmail and Google Calendar and the Google Ta
 app). Project: `AllMyTasks.Providers.Google`, shared with the Google Calendar provider.
 Kind: `google`.
 
-Status: design only, nothing implemented. v1 is read-only, like every other provider
+Tracking issue: [#26](https://github.com/jkruza/allmytasks/issues/26).
+
+Status: implemented read-only, together with Google Calendar (see [Implementation notes](#implementation-notes)). v1 is read-only, like every other provider
 (see [providers.md](providers.md#write-support-later)).
 
 ## Scope
@@ -383,6 +385,25 @@ Dependencies: the sync engine and secret store from M1 to M3 of the [roadmap](ro
 and an `IAuthFlow` seam in the add-account UI. The OAuth client verification (see
 [The OAuth client](#the-oauth-client)) is a project task outside the code and gates a public
 release of this provider.
+
+## Implementation notes
+
+Implemented in `AllMyTasks.Providers.Google` next to the calendar code; the sign-in, client id handling and every difference from this
+design that is not task-specific are in the
+[Google Calendar implementation notes](google-calendar-provider.md#implementation-notes). Task-specific points:
+
+- Sync follows the algorithm above: `updatedMin` minus a two-minute overlap with `showDeleted=true` for deltas, a full snapshot
+  (no `showDeleted`) on the first sync and once a week. The state is `{"v":1,"updatedMin":...,"fullAt":...}`; an unparsable or
+  unknown-version state throws `SyncStateExpiredException`. For an empty list `updatedMin` starts at the local time of the snapshot
+  because no server timestamp exists yet; the weekly snapshot bounds any skew.
+- `ConfirmedEmpty` needs a `tasks#tasks` document with no items; anything else that parses is not trusted as empty, and a body that
+  does not parse is a `SourceDataException`.
+- A 404 on a list keeps the cache and adds a warning, like a missing calendar.
+- Tasks with an unreadable due date are skipped with a warning; an unknown status is open with a warning; a completion time on
+  an open task is dropped with a warning; a task that is its own parent loses the parent with a warning.
+- Hand-written client; no `Google.Apis.*` packages. No package was added.
+- Not tried against a live account: whether the API ever sends a due time, how Chat/Docs-assigned tasks appear, and the exact
+  tombstone behaviour of `showDeleted` with `updatedMin`.
 
 ## Open questions
 
