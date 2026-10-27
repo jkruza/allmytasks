@@ -19,9 +19,9 @@ View (axaml) → ViewModel (thin) → Core query → DayAgenda / WeekLayout / Mo
 
 ## Toolbar layout
 
-The main window toolbar (navigation and title, view-mode toggles, filter, sync/settings/refresh)
-is a `WrapPanel`. On a narrow window whole groups wrap onto a second row instead of
-overlapping, down to the window's minimum width.
+The main window toolbar has the title and a segmented view switcher on the first row and
+navigation, filter, sync, settings and refresh on the second. Rows are grids whose title column
+trims, so nothing overlaps down to the window's minimum width. See [toolbar.md](toolbar.md).
 
 ## Shared query
 
@@ -138,6 +138,9 @@ is filtered out is shown at top level so it never disappears. Clicking a row (or
 Space on it) opens its [details](task-details.md) in the pane.
 
 ### Filtering
+
+The controls (search, status switcher, one chip per filter, a sort and group menu) are
+described in [toolbar.md](toolbar.md#all-tasks-filter-bar).
 
 Filters combine with AND; within one filter, multiple choices combine with OR.
 

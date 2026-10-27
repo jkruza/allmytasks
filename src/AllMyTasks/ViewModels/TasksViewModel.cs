@@ -5,6 +5,7 @@ using AllMyTasks.Core.Tasks;
 using AllMyTasks.Core.Views;
 using AllMyTasks.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 
 namespace AllMyTasks.ViewModels;
 
@@ -135,43 +136,132 @@ public sealed partial class TasksViewModel(ITaskListService service, TimeProvide
     public ObservableCollection<object> Items { get; } = [];
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsStatusOpen), nameof(IsStatusCompleted), nameof(IsStatusCancelled), nameof(IsStatusAll), nameof(HasActiveFilters))]
     public partial Choice<TaskStatusFilter> Status { get; set; } = StatusChoices[0];
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(DueChip), nameof(IsDueActive), nameof(HasActiveFilters))]
     public partial Choice<DueOption?> Due { get; set; } = DueChoices[0];
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(SortSummary))]
     public partial Choice<TaskSortField> Sort { get; set; } = SortChoices[0];
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(GroupSummary))]
     public partial Choice<TaskGrouping> Grouping { get; set; } = GroupChoices[0];
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(SortSummary))]
     public partial bool Descending { get; set; }
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(PriorityChip), nameof(IsPriorityActive), nameof(HasActiveFilters))]
     public partial bool High { get; set; }
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(PriorityChip), nameof(IsPriorityActive), nameof(HasActiveFilters))]
     public partial bool Medium { get; set; }
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(PriorityChip), nameof(IsPriorityActive), nameof(HasActiveFilters))]
     public partial bool Low { get; set; }
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(PriorityChip), nameof(IsPriorityActive), nameof(HasActiveFilters))]
     public partial bool NoPriority { get; set; }
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(LabelsChip), nameof(IsLabelsActive), nameof(HasActiveFilters))]
     public partial string LabelsText { get; set; } = string.Empty;
 
     [ObservableProperty]
     public partial bool AllLabels { get; set; }
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasActiveFilters))]
     public partial string SearchText { get; set; } = string.Empty;
 
     [ObservableProperty]
     public partial string Summary { get; set; } = string.Empty;
+
+    public bool IsStatusOpen => Status.Value == TaskStatusFilter.Open;
+
+    public bool IsStatusCompleted => Status.Value == TaskStatusFilter.Completed;
+
+    public bool IsStatusCancelled => Status.Value == TaskStatusFilter.Cancelled;
+
+    public bool IsStatusAll => Status.Value == TaskStatusFilter.All;
+
+    [RelayCommand]
+    private void SetStatus(string name) => Status = StatusChoices.First(c => c.Value.ToString() == name);
+
+    public string DueChip => Due.Value is null ? "Due date" : Due.Label;
+
+    public string PriorityChip => PriorityNames() is { Count: > 0 } names ? "Priority: " + string.Join(", ", names) : "Priority";
+
+    public string LabelsChip => LabelsText.Trim().Length > 0 ? "Labels: " + LabelsText.Trim() : "Labels";
+
+    public string SortSummary => $"Sort: {Sort.Label} {(Descending ? "↓" : "↑")}";
+
+    public string GroupSummary => Grouping.Value == TaskGrouping.None ? "No grouping" : "Group: " + Grouping.Label;
+
+    public bool IsDueActive => Due.Value is not null;
+
+    public bool IsPriorityActive => High || Medium || Low || NoPriority;
+
+    public bool IsLabelsActive => LabelsText.Trim().Length > 0;
+
+    /// <summary>Whether anything narrows the list beyond the default (open tasks, everything else open).</summary>
+    public bool HasActiveFilters =>
+        Status.Value != TaskStatusFilter.Open || IsDueActive || IsPriorityActive || IsLabelsActive || SearchText.Trim().Length > 0;
+
+    [RelayCommand]
+    private void ClearFilters()
+    {
+        _restoring = true;
+        try
+        {
+            Status = StatusChoices[0];
+            Due = DueChoices[0];
+            High = Medium = Low = NoPriority = false;
+            LabelsText = string.Empty;
+            AllLabels = false;
+            SearchText = string.Empty;
+        }
+        finally
+        {
+            _restoring = false;
+        }
+
+        Refresh();
+    }
+
+    private List<string> PriorityNames()
+    {
+        var names = new List<string>();
+        if (High)
+        {
+            names.Add("High");
+        }
+
+        if (Medium)
+        {
+            names.Add("Medium");
+        }
+
+        if (Low)
+        {
+            names.Add("Low");
+        }
+
+        if (NoPriority)
+        {
+            names.Add("None");
+        }
+
+        return names;
+    }
 
     public void Dispose()
     {

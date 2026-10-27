@@ -5,27 +5,69 @@
              x:Class="AllMyTasks.Views.TasksView"
              x:DataType="vm:TasksViewModel">
   <DockPanel Margin="12">
-    <!-- Filter bar -->
-    <Border DockPanel.Dock="Top" Padding="0,0,0,8">
-      <WrapPanel Orientation="Horizontal">
-        <TextBox Text="{Binding SearchText}" PlaceholderText="Search title and notes" Width="220" Margin="0,0,8,6" />
-        <ComboBox ItemsSource="{x:Static vm:TasksViewModel.StatusChoices}" SelectedItem="{Binding Status}" Width="120" Margin="0,0,8,6" />
-        <ComboBox ItemsSource="{x:Static vm:TasksViewModel.DueChoices}" SelectedItem="{Binding Due}" Width="150" Margin="0,0,8,6" />
-        <StackPanel Orientation="Horizontal" Spacing="2" Margin="0,0,8,6" VerticalAlignment="Center">
-          <TextBlock Text="Priority:" VerticalAlignment="Center" Margin="0,0,4,0" />
-          <ToggleButton Content="High" IsChecked="{Binding High}" />
-          <ToggleButton Content="Medium" IsChecked="{Binding Medium}" />
-          <ToggleButton Content="Low" IsChecked="{Binding Low}" />
-          <ToggleButton Content="None" IsChecked="{Binding NoPriority}" />
+    <!-- Filter bar: search and status first, then one chip per filter that opens its own flyout,
+         then sort and grouping on the right. See docs/design/all-tasks-filter.md. -->
+    <StackPanel DockPanel.Dock="Top" Spacing="8" Margin="0,0,0,8">
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+        <TextBox Text="{Binding SearchText}" PlaceholderText="Search title and notes" MinWidth="120" />
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
+          <ToggleButton Classes="seg" Content="Open" IsChecked="{Binding IsStatusOpen, Mode=OneWay}" Command="{Binding SetStatusCommand}" CommandParameter="Open" />
+          <ToggleButton Classes="seg" Content="Completed" IsChecked="{Binding IsStatusCompleted, Mode=OneWay}" Command="{Binding SetStatusCommand}" CommandParameter="Completed" />
+          <ToggleButton Classes="seg" Content="Cancelled" IsChecked="{Binding IsStatusCancelled, Mode=OneWay}" Command="{Binding SetStatusCommand}" CommandParameter="Cancelled" />
+          <ToggleButton Classes="seg" Content="All" IsChecked="{Binding IsStatusAll, Mode=OneWay}" Command="{Binding SetStatusCommand}" CommandParameter="All" />
         </StackPanel>
-        <TextBox Text="{Binding LabelsText}" PlaceholderText="Labels, comma-separated" Width="190" Margin="0,0,4,6" />
-        <CheckBox Content="All labels" IsChecked="{Binding AllLabels}" Margin="0,0,12,6" />
-        <ComboBox ItemsSource="{x:Static vm:TasksViewModel.SortChoices}" SelectedItem="{Binding Sort}" Width="140" Margin="0,0,4,6" />
-        <ToggleButton Content="↓ Desc" IsChecked="{Binding Descending}" Margin="0,0,8,6" />
-        <ComboBox ItemsSource="{x:Static vm:TasksViewModel.GroupChoices}" SelectedItem="{Binding Grouping}" Width="140" Margin="0,0,8,6" />
-        <TextBlock Text="{Binding Summary}" VerticalAlignment="Center" Opacity="0.7" Margin="0,0,0,6" />
-      </WrapPanel>
-    </Border>
+      </Grid>
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+        <WrapPanel Orientation="Horizontal">
+          <DropDownButton Classes="chip" Classes.active="{Binding IsDueActive}" Content="{Binding DueChip}" Margin="0,0,6,4">
+            <DropDownButton.Flyout>
+              <Flyout>
+                <ComboBox ItemsSource="{x:Static vm:TasksViewModel.DueChoices}" SelectedItem="{Binding Due}" MinWidth="180" />
+              </Flyout>
+            </DropDownButton.Flyout>
+          </DropDownButton>
+          <DropDownButton Classes="chip" Classes.active="{Binding IsPriorityActive}" Content="{Binding PriorityChip}" Margin="0,0,6,4">
+            <DropDownButton.Flyout>
+              <Flyout>
+                <StackPanel MinWidth="160">
+                  <CheckBox Content="High" IsChecked="{Binding High}" />
+                  <CheckBox Content="Medium" IsChecked="{Binding Medium}" />
+                  <CheckBox Content="Low" IsChecked="{Binding Low}" />
+                  <CheckBox Content="None" IsChecked="{Binding NoPriority}" />
+                </StackPanel>
+              </Flyout>
+            </DropDownButton.Flyout>
+          </DropDownButton>
+          <DropDownButton Classes="chip" Classes.active="{Binding IsLabelsActive}" Content="{Binding LabelsChip}" Margin="0,0,6,4">
+            <DropDownButton.Flyout>
+              <Flyout>
+                <StackPanel Spacing="6" MinWidth="220">
+                  <TextBox Text="{Binding LabelsText}" PlaceholderText="Labels, comma-separated" />
+                  <CheckBox Content="Must have all of them" IsChecked="{Binding AllLabels}" />
+                </StackPanel>
+              </Flyout>
+            </DropDownButton.Flyout>
+          </DropDownButton>
+          <Button Classes="tool" Content="Clear filters" IsVisible="{Binding HasActiveFilters}" Command="{Binding ClearFiltersCommand}" Margin="0,0,0,4" />
+        </WrapPanel>
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Top">
+          <TextBlock Text="{Binding Summary}" VerticalAlignment="Center" Opacity="0.7" />
+          <DropDownButton Classes="tool" Content="{Binding SortSummary}">
+            <DropDownButton.Flyout>
+              <Flyout>
+                <StackPanel Spacing="8" MinWidth="200">
+                  <TextBlock Text="Sort by" FontWeight="SemiBold" />
+                  <ComboBox ItemsSource="{x:Static vm:TasksViewModel.SortChoices}" SelectedItem="{Binding Sort}" HorizontalAlignment="Stretch" />
+                  <ToggleButton Content="Descending" IsChecked="{Binding Descending}" />
+                  <TextBlock Text="Group by" FontWeight="SemiBold" />
+                  <ComboBox ItemsSource="{x:Static vm:TasksViewModel.GroupChoices}" SelectedItem="{Binding Grouping}" HorizontalAlignment="Stretch" />
+                </StackPanel>
+              </Flyout>
+            </DropDownButton.Flyout>
+          </DropDownButton>
+        </StackPanel>
+      </Grid>
+    </StackPanel>
     <ListBox ItemsSource="{Binding Items}" SelectionMode="Single">
       <ListBox.DataTemplates>
         <DataTemplate DataType="vm:TaskGroupHeader">
