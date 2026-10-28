@@ -25,6 +25,7 @@ fix whichever is wrong in the same pull request.
 | [details-pane.md](details-pane.md) | Right-hand details pane and the calendar entry details shown in it |
 | [app-icon.md](app-icon.md) | The three-lines logo as window, executable and tray icon, and how the files are generated |
 | [system-tray.md](system-tray.md) | Tray icon and menu, `--tray` start option, close-to-tray, Linux StatusNotifier caveat |
+| [launch-at-login.md](launch-at-login.md) | Settings option to start at login on Windows, Linux and macOS, optionally tray-only |
 | [storage-and-sync.md](storage-and-sync.md) | Local database, credentials, cache and refresh behaviour |
 | [task-details.md](task-details.md) | Read-only details of a clicked task: fields, subtasks, where the data comes from |
 | [settings.md](settings.md) | Settings dialog, persistence of app preferences, week start |

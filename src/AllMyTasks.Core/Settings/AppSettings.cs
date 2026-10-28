@@ -13,6 +13,12 @@ public sealed record AppSettings
     /// <summary>Closing the main window hides it to the system tray instead of quitting.</summary>
     public bool CloseToTray { get; init; } = true;
 
+    /// <summary>Start All My Tasks when the user logs in to the OS.</summary>
+    public bool LaunchAtLogin { get; init; }
+
+    /// <summary>The login launch starts with only the tray icon (<c>--tray</c>). Regular launches are not affected.</summary>
+    public bool StartInTrayAtLogin { get; init; }
+
     /// <summary>Reads settings from JSON. Missing, unknown or corrupt values give the defaults.</summary>
     public static AppSettings Parse(string? json)
     {
@@ -44,6 +50,12 @@ public sealed record AppSettings
                 result = result with { CloseToTray = tray.GetBoolean() };
             }
 
+            result = result with
+            {
+                LaunchAtLogin = ReadBool(root, "launchAtLogin", result.LaunchAtLogin),
+                StartInTrayAtLogin = ReadBool(root, "startInTrayAtLogin", result.StartInTrayAtLogin),
+            };
+
             return result;
         }
         catch (JsonException)
@@ -53,5 +65,14 @@ public sealed record AppSettings
     }
 
     public string ToJson() => JsonSerializer.Serialize(
-        new Dictionary<string, object> { ["weekStart"] = WeekStart.ToString(), ["closeToTray"] = CloseToTray });
+        new Dictionary<string, object>
+        {
+            ["weekStart"] = WeekStart.ToString(),
+            ["closeToTray"] = CloseToTray,
+            ["launchAtLogin"] = LaunchAtLogin,
+            ["startInTrayAtLogin"] = StartInTrayAtLogin,
+        });
+
+    private static bool ReadBool(JsonElement root, string name, bool fallback) =>
+        root.TryGetProperty(name, out var value) && value.ValueKind is JsonValueKind.True or JsonValueKind.False ? value.GetBoolean() : fallback;
 }

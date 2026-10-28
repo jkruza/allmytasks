@@ -19,6 +19,16 @@
       </StackPanel>
     </StackPanel>
     <StackPanel Spacing="8">
+      <TextBlock Text="Startup" FontWeight="SemiBold" />
+      <CheckBox IsChecked="{Binding LaunchAtLogin}" IsEnabled="{Binding CanChangeLaunchAtLogin}">
+        <TextBlock Text="Launch All My Tasks when I log in" TextWrapping="Wrap" />
+      </CheckBox>
+      <CheckBox Margin="24,0,0,0" IsChecked="{Binding StartInTrayAtLogin}" IsEnabled="{Binding LaunchAtLogin}">
+        <TextBlock Text="Start minimized to tray (only when started at login)" TextWrapping="Wrap" />
+      </CheckBox>
+      <TextBlock Text="{Binding AutostartMessage}" IsVisible="{Binding AutostartMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" TextWrapping="Wrap" Opacity="0.7" />
+    </StackPanel>
+    <StackPanel Spacing="8">
       <TextBlock Text="Window" FontWeight="SemiBold" />
       <CheckBox IsChecked="{Binding CloseToTray}">
         <TextBlock Text="Keep running in the system tray when the window is closed" TextWrapping="Wrap" />

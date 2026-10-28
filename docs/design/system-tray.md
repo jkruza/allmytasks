@@ -18,7 +18,7 @@ so the app can live in the background, keep syncing and be reached in one click.
 - Notifications, reminders, badges or a compact "upcoming" popup. See the roadmap's "Later" list.
 - Single-instance handling. Starting a second copy starts a second process, as today.
 - Minimize-to-tray (the minimize button still minimizes to the taskbar).
-- Autostart at login. `--tray` is what an autostart entry would pass; setting that up is left to the user for now.
+- Autostart at login: a Settings option registers the login entry with `--tray` when asked; see [launch-at-login.md](launch-at-login.md).
 
 ## Behaviour
 

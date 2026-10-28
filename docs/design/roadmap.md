@@ -94,6 +94,7 @@ incrementally.
   - Microsoft To Do (personal accounts): [microsoft-todo-provider.md](microsoft-todo-provider.md), [#24](https://github.com/jkruza/allmytasks/issues/24). Implemented read-only, same source as Outlook; not yet verified on a live account.
 - Write support: complete tasks first (smallest, most valuable), then edit/create.
 - System tray icon with menu, `--tray` start and close-to-tray: [system-tray.md](system-tray.md), [#39](https://github.com/jkruza/allmytasks/issues/39). Implemented.
+- Launch at login with optional tray-only start: [launch-at-login.md](launch-at-login.md), [#52](https://github.com/jkruza/allmytasks/issues/52). Implemented; login launch not yet run on each OS.
 - Reminders and notifications; compact upcoming widget.
 - Saved filters for All tasks; global search.
 - Database encryption.
