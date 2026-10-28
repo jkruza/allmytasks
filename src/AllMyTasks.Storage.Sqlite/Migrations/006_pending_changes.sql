@@ -1,6 +1,7 @@
+-- IF NOT EXISTS because a test rewinds schema_info to re-run the later migrations on a finished database.
 -- Changes the user made (complete or reopen a task) that have not been sent to the source yet.
 -- kind: 0 complete, 1 reopen. state: 0 queued, 1 failed. created_at is UTC milliseconds.
-CREATE TABLE pending_changes (
+CREATE TABLE IF NOT EXISTS pending_changes (
     id            TEXT NOT NULL PRIMARY KEY,
     source_id     TEXT NOT NULL REFERENCES sources (id) ON DELETE CASCADE,
     collection_id TEXT NOT NULL,
@@ -12,4 +13,4 @@ CREATE TABLE pending_changes (
     error         TEXT NULL
 );
 
-CREATE INDEX pending_changes_source ON pending_changes (source_id, created_at);
+CREATE INDEX IF NOT EXISTS pending_changes_source ON pending_changes (source_id, created_at);
