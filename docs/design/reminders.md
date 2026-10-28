@@ -147,7 +147,7 @@ What shipped, and where it differs from the sketches above.
   app was closed are seen. Those due within 15 minutes are delivered; older ones are marked dismissed, and more than three
   produce one "N reminders missed" notification. A first start, and turning reminders back on, count nothing as missed.
   Events that already ended are never announced.
-- **Log.** `reminder_log` (migration 004) stores the whole reminder with its state, so a snoozed reminder survives a restart.
+- **Log.** `reminder_log` (migration 005) stores the whole reminder with its state, so a snoozed reminder survives a restart.
   A snoozed reminder is only shown again if the item is still in the plan: a completed task, a cancelled event or a moved
   event drops it. The time of the last check is kept in the `settings` table (`reminders.lastCheck`). Rows are pruned a
   day after the reminder's `EndsAt`.
