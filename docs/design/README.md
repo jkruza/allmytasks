@@ -26,6 +26,11 @@ fix whichever is wrong in the same pull request.
 | [app-icon.md](app-icon.md) | The three-lines logo as window, executable and tray icon, and how the files are generated |
 | [system-tray.md](system-tray.md) | Tray icon and menu, `--tray` start option, close-to-tray, Linux StatusNotifier caveat |
 | [launch-at-login.md](launch-at-login.md) | Settings option to start at login on Windows, Linux and macOS, optionally tray-only |
+| [complete-tasks.md](complete-tasks.md) | Complete and reopen Todoist tasks from the app: write interface, pending-changes queue, opt-in per source |
+| [reminders.md](reminders.md) | Desktop notifications before events and at task due times: planner, scheduler, per-OS notifier |
+| [search-and-saved-filters.md](search-and-saved-filters.md) | Global search over events and tasks, and saved filters for All tasks |
+| [meeting-url-and-attendees.md](meeting-url-and-attendees.md) | Join links and attendees on events: model, provider mapping, display |
+| [packaging.md](packaging.md) | Installers and signing for Windows, macOS and Linux, shared release decisions |
 | [storage-and-sync.md](storage-and-sync.md) | Local database, credentials, cache and refresh behaviour |
 | [task-details.md](task-details.md) | Read-only details of a clicked task: fields, subtasks, where the data comes from |
 | [settings.md](settings.md) | Settings dialog, persistence of app preferences, week start |
