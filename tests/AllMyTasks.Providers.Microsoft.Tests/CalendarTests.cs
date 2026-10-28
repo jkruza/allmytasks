@@ -144,6 +144,83 @@ public class CalendarTests
     }
 
     [Fact]
+    public async Task A_teams_join_url_becomes_the_meeting_link_and_the_web_link_stays_the_url()
+    {
+        var extra = "\"onlineMeeting\":{\"joinUrl\":\"https://teams.microsoft.com/l/meetup-join/1\"},\"webLink\":\"https://outlook.live.com/owa/?itemid=1\"";
+
+        var (mapped, _) = await MapOneAsync(Event("e1", "2026-11-02T08:00:00.0000000", "2026-11-02T09:00:00.0000000", extra));
+
+        Assert.Equal("https://teams.microsoft.com/l/meetup-join/1", mapped.MeetingUrl?.AbsoluteUri);
+        Assert.Equal("https://outlook.live.com/owa/?itemid=1", mapped.Url?.AbsoluteUri);
+    }
+
+    [Theory]
+    [InlineData("\"onlineMeeting\":{\"joinUrl\":\"javascript:alert(1)\"}", null)]
+    [InlineData("\"onlineMeeting\":{\"joinUrl\":\"https://user:pw@teams.microsoft.com/x\"}", null)]
+    [InlineData("\"onlineMeeting\":null,\"onlineMeetingUrl\":\"https://teams.microsoft.com/l/old\"", "https://teams.microsoft.com/l/old")]
+    [InlineData("\"isOnlineMeeting\":false", null)]
+    public async Task The_meeting_link_is_checked_and_falls_back_to_the_older_property(string extra, string? expected)
+    {
+        var (mapped, _) = await MapOneAsync(Event("e1", "2026-11-02T08:00:00.0000000", "2026-11-02T09:00:00.0000000", extra));
+
+        Assert.Equal(expected, mapped.MeetingUrl?.AbsoluteUri);
+    }
+
+    [Fact]
+    public async Task Organiser_and_attendees_are_mapped_with_roles_and_answers()
+    {
+        var extra = """
+            "isOrganizer":false,
+            "organizer":{"emailAddress":{"name":"Olga","address":"o@example.com"}},
+            "attendees":[
+              {"type":"required","status":{"response":"accepted"},"emailAddress":{"name":"Ann","address":"ann@example.com"}},
+              {"type":"optional","status":{"response":"tentativelyAccepted"},"emailAddress":{"address":"bob@example.com"}},
+              {"type":"resource","status":{"response":"none"},"emailAddress":{"name":"Room 4"}},
+              {"type":"required","status":{"response":"declined"},"emailAddress":{"name":"Cy"}},
+              {"type":"required","status":{"response":"notResponded"},"emailAddress":{}}
+            ]
+            """;
+
+        var (mapped, _) = await MapOneAsync(Event("e1", "2026-11-02T08:00:00.0000000", "2026-11-02T09:00:00.0000000", extra));
+
+        Assert.Equal(new Attendee("Olga", "o@example.com", AttendeeRole.Required, ResponseStatus.Accepted, false), mapped.Organizer);
+        Assert.Equal(
+            [
+                new Attendee("Ann", "ann@example.com", AttendeeRole.Required, ResponseStatus.Accepted),
+                new Attendee(null, "bob@example.com", AttendeeRole.Optional, ResponseStatus.Tentative),
+                new Attendee("Room 4", null, AttendeeRole.Resource, ResponseStatus.NeedsAction),
+                new Attendee("Cy", null, AttendeeRole.Required, ResponseStatus.Declined),
+            ],
+            mapped.Attendees);
+        Assert.Equal(4, mapped.AttendeeCount);
+    }
+
+    [Fact]
+    public async Task The_organiser_flag_marks_the_account_owner_and_a_huge_list_is_capped_but_counted()
+    {
+        var people = string.Join(",", Enumerable.Range(0, 250).Select(i => $$$"""{"type":"required","emailAddress":{"name":"P{{{i}}}","address":"p{{{i}}}@example.com"}}"""));
+        var extra = $$$"""
+            "isOrganizer":true,"organizer":{"emailAddress":{"name":"Me","address":"me@example.com"}},"attendees":[{{{people}}}]
+            """;
+
+        var (mapped, _) = await MapOneAsync(Event("e1", "2026-11-02T08:00:00.0000000", "2026-11-02T09:00:00.0000000", extra));
+
+        Assert.True(mapped.Organizer!.IsSelf);
+        Assert.Equal(Attendee.MaxPerEvent, mapped.Attendees.Count);
+        Assert.Equal(250, mapped.AttendeeCount);
+    }
+
+    [Fact]
+    public async Task An_event_without_meeting_data_has_none()
+    {
+        var (mapped, _) = await MapOneAsync(Event("e1", "2026-11-02T08:00:00.0000000", "2026-11-02T09:00:00.0000000"));
+
+        Assert.Null(mapped.MeetingUrl);
+        Assert.Null(mapped.Organizer);
+        Assert.Empty(mapped.Attendees);
+    }
+
+    [Fact]
     public async Task An_event_with_no_subject_keeps_an_empty_title_and_a_bad_event_is_skipped_with_a_warning()
     {
         var (_, source, _, _) = Setup.Create(_ => Setup.Page(

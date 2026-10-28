@@ -15,10 +15,8 @@ the rest of the app.
 ## Non-goals
 
 - Editing, deleting, RSVP. See [providers.md](providers.md#write-support-later).
-- **Attendees.** `CalendarEvent` has no attendee data yet and the iCalendar mapper drops
-  `ATTENDEE` and `ORGANIZER`. The pane shows only what the model holds; attendees need a
-  model and mapper change first and are a follow-up. The field list below is built so an
-  extra row is a small change.
+- Responding to invitations or inviting people. The pane shows the organiser, the attendees and their answers, and a
+  Join button for an online meeting, read-only ([meeting-url-and-attendees.md](meeting-url-and-attendees.md)).
 - Rendering HTML descriptions or auto-linking text inside descriptions.
 
 ## Decision: a docked pane, not a popover or a dialog

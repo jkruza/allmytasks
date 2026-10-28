@@ -45,19 +45,40 @@ internal sealed class CalendarMapper(string sourceId)
             ? AllDay(dto.Id, start, end, originalZone?.Zone ?? TimeZoneInfo.Utc, warnings)
             : new TimedEvent(start, end, originalZone?.IanaId);
 
+        // Graph does not say which attendee is the account owner, so IsSelf stays false here.
+        var attendees = Attendee.Cap(
+            (dto.Attendees ?? []).Select(a => new Attendee(
+                a.EmailAddress?.Name,
+                a.EmailAddress?.Address,
+                string.Equals(a.Type, "resource", StringComparison.OrdinalIgnoreCase) ? AttendeeRole.Resource : string.Equals(a.Type, "optional", StringComparison.OrdinalIgnoreCase) ? AttendeeRole.Optional : AttendeeRole.Required,
+                ResponseOf(a.Status?.Response))),
+            out var total);
+
         return new CalendarEvent(
             new ItemKey(sourceId, collectionId, dto.Id),
             dto.Subject ?? string.Empty,
             time,
             string.IsNullOrEmpty(dto.Body?.Content) ? null : dto.Body.Content,
             LocationText(dto),
-            Text.HttpsUri(dto.OnlineMeeting?.JoinUrl) ?? Text.HttpsUri(dto.WebLink),
+            Text.HttpsUri(dto.WebLink),
             MapStatus(dto),
             string.Equals(dto.ShowAs, "free", StringComparison.OrdinalIgnoreCase) ? Availability.Free : Availability.Busy,
             Recurrence: null,
             Categories: dto.Categories,
-            LastModified: Text.ParseInstant(dto.LastModifiedDateTime));
+            LastModified: Text.ParseInstant(dto.LastModifiedDateTime),
+            MeetingUrl: MeetingLinks.Sanitize(dto.OnlineMeeting?.JoinUrl) ?? MeetingLinks.Sanitize(dto.OnlineMeetingUrl),
+            Organizer: dto.Organizer?.EmailAddress is { } o ? new Attendee(o.Name, o.Address, AttendeeRole.Required, ResponseStatus.Accepted, dto.IsOrganizer) : null,
+            Attendees: attendees,
+            AttendeeCount: total);
     }
+
+    private static ResponseStatus ResponseOf(string? response) => response?.ToLowerInvariant() switch
+    {
+        "accepted" or "organizer" => ResponseStatus.Accepted,
+        "tentativelyaccepted" => ResponseStatus.Tentative,
+        "declined" => ResponseStatus.Declined,
+        _ => ResponseStatus.NeedsAction,
+    };
 
     internal static EventStatus MapStatus(EventDto dto)
     {

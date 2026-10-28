@@ -1,5 +1,6 @@
 using AllMyTasks.ViewModels;
 using Avalonia.Controls;
+using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 
 namespace AllMyTasks.Views;
@@ -14,6 +15,23 @@ public sealed partial class CalendarEntryDetailsView : UserControl
         if (DataContext is CalendarEntryDetailsViewModel { Link: { } link } && TopLevel.GetTopLevel(this)?.Launcher is { } launcher)
         {
             await launcher.LaunchUriAsync(link);
+        }
+    }
+
+    private async void OnJoinMeeting(object? sender, RoutedEventArgs e)
+    {
+        // Only on a click, and only the https link Core validated; it is never opened by itself.
+        if (DataContext is CalendarEntryDetailsViewModel { MeetingUrl: { } link } && TopLevel.GetTopLevel(this)?.Launcher is { } launcher)
+        {
+            await launcher.LaunchUriAsync(link);
+        }
+    }
+
+    private async void OnCopyMeetingLink(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is CalendarEntryDetailsViewModel { MeetingUrl: { } link } && TopLevel.GetTopLevel(this)?.Clipboard is { } clipboard)
+        {
+            await clipboard.SetTextAsync(link.AbsoluteUri);
         }
     }
 }

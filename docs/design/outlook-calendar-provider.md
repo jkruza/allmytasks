@@ -29,8 +29,8 @@ Not in v1 (decisions, not oversights):
 - A project-owned application registration shipped in the source. The client id is configuration; see
   [Application (client) id](#application-client-id).
 - Writing, RSVP, creating meetings. See [providers.md](providers.md#write-support-later).
-- Attendees, organizer, reminders, attachments. The model has no place for them yet
-  ([details-pane.md](details-pane.md)); the raw payload keeps them for later.
+- Reminders, attachments. Meeting link, organiser and attendees are mapped as display-only data
+  ([meeting-url-and-attendees.md](meeting-url-and-attendees.md)).
 - Other people's calendars via delegate access (`Calendars.Read.Shared`), room/resource calendars,
   Microsoft 365 group calendars.
 - Exchange on-premises mailboxes. Graph only serves mailboxes in Exchange Online.
@@ -313,7 +313,10 @@ calendar's events appear before the last finishes.
 | `originalStartTimeZone` | `TimedEvent.TimeZoneId` as IANA |
 | `body.content` (requested as text) | `Description` |
 | `location.displayName` (else `locations[].displayName` joined with `; `) | `Location` |
-| `onlineMeeting.joinUrl`, else `webLink` | `Url` |
+| `webLink` | `Url` |
+| `onlineMeeting.joinUrl`, else `onlineMeetingUrl`; `https` only, else dropped | `MeetingUrl` |
+| `organizer.emailAddress` (`isOrganizer` sets `IsSelf`) | `Organizer` |
+| `attendees[]`: `emailAddress`, `type` (`required`, `optional`, `resource`), `status.response` (`accepted` and `organizer` → Accepted, `tentativelyAccepted` → Tentative, `declined` → Declined, else NeedsAction) | `Attendees` (first 200, real count in `AttendeeCount`) |
 | `isCancelled` or `responseStatus.response = declined` | `Status = Cancelled` |
 | `showAs = tentative` or `responseStatus.response = tentativelyAccepted` | `Status = Tentative` |
 | otherwise | `Status = Confirmed` |
@@ -321,7 +324,7 @@ calendar's events appear before the last finishes.
 | `busy`, `tentative`, `oof`, `workingElsewhere`, `unknown` | `Availability.Busy` (finer value only in the raw payload) |
 | `categories` | `Categories` |
 | `lastModifiedDateTime` | `LastModified` |
-| `type`, `seriesMasterId`, `changeKey`, `attendees`, `organizer`, `sensitivity`, ... | dropped: the model has no raw-payload field yet |
+| `type`, `seriesMasterId`, `changeKey`, `sensitivity`, ... | dropped: the model has no raw-payload field yet |
 
 Time handling, the part that goes wrong:
 

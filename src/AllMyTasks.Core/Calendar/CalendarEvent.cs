@@ -16,6 +16,10 @@ namespace AllMyTasks.Core.Calendar;
 /// <param name="Recurrence">Null for single events.</param>
 /// <param name="Categories">Provider categories; may be empty.</param>
 /// <param name="LastModified">When the provider last changed it.</param>
+/// <param name="MeetingUrl">Join link of an online meeting; always an absolute <c>https</c> URL (see <see cref="MeetingLinks"/>).</param>
+/// <param name="Organizer">Who organises the event, when the provider says.</param>
+/// <param name="Attendees">Invited people, at most <see cref="Attendee.MaxPerEvent"/>; may be empty.</param>
+/// <param name="AttendeeCount">How many attendees the provider reported; never less than <see cref="Attendees"/>.</param>
 public sealed record CalendarEvent(
     ItemKey Key,
     string Title,
@@ -27,7 +31,11 @@ public sealed record CalendarEvent(
     Availability Availability = Availability.Busy,
     Recurrence? Recurrence = null,
     IReadOnlyList<string>? Categories = null,
-    DateTimeOffset? LastModified = null)
+    DateTimeOffset? LastModified = null,
+    Uri? MeetingUrl = null,
+    Attendee? Organizer = null,
+    IReadOnlyList<Attendee>? Attendees = null,
+    int AttendeeCount = 0)
 {
     public ItemKey Key { get; init => field = Guard.NotNull(value); } = Guard.NotNull(Key);
 
@@ -36,4 +44,10 @@ public sealed record CalendarEvent(
     public EventTime Time { get; init => field = Guard.NotNull(value); } = Guard.NotNull(Time);
 
     public IReadOnlyList<string> Categories { get; init => field = value ?? []; } = Categories ?? [];
+
+    public Uri? MeetingUrl { get; init => field = MeetingLinks.IsSafe(value) ? value : null; } = MeetingLinks.IsSafe(MeetingUrl) ? MeetingUrl : null;
+
+    public IReadOnlyList<Attendee> Attendees { get; init => field = value ?? []; } = Attendees ?? [];
+
+    public int AttendeeCount { get; init => field = Math.Max(value, Attendees.Count); } = Math.Max(AttendeeCount, Attendees?.Count ?? 0);
 }

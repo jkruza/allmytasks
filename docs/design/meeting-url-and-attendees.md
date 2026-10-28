@@ -1,6 +1,7 @@
 # Meeting links and attendees
 
-Tracked in [#57](https://github.com/jkruza/allmytasks/issues/57).
+Tracked in [#57](https://github.com/jkruza/allmytasks/issues/57). **Implemented**; not yet checked against live
+Google or Microsoft accounts (see [Unverified](#unverified)).
 
 Add a join link and the people on an event to the model, fill them from the providers that have them, and show them
 in the [details pane](details-pane.md). The meeting link was accepted as a small model change in the Google Calendar
@@ -59,9 +60,25 @@ Only the iCalendar fallback scans free text, and only for hosts on a short built
 The Outlook and Google `Properties`/`$select` lists in the sync requests gain the new fields. Whether Graph returns
 `onlineMeeting` on `calendarView/delta` or needs an expand or a second request is **not verified** (see below).
 
+## As built
+
+Differences from the plan above, all small:
+
+- `CalendarEvent` also has `AttendeeCount`, the number the provider reported before the 200 cap, for "and 340 more".
+- Join and Copy link use Avalonia's launcher and clipboard rather than `Process.Start`, like the existing Open link button.
+  They are click-only, take only the validated `https` URL and never run from sync.
+- Outlook: Graph does not say which attendee is the account owner, so `IsSelf` is set for the organiser only
+  (from `isOrganizer`). The Outlook `Url` is now the event's `webLink` alone; the join link moved to `MeetingUrl`.
+- iCalendar: `ATTENDEE` values that are not `mailto:` addresses keep the name and have no e-mail. `IsSelf` is never set.
+- Google marks the organiser's answer as accepted when the organiser is not in `attendees`; when they are, the
+  details pane shows the answer from the attendee entry.
+- The pane lists the organiser first and does not repeat them among the attendees (matched by e-mail).
+- Core holds the formatting (`EntryDetailsBuilder`, `PersonLine`, `MeetingLinks`), so it is tested without a UI.
+  There is no app test project, so the Show all state of the view model is not covered by an automated test.
+
 ## Storage and migration
 
-The store gains columns (or one JSON column) for the three fields. Rows cached before the migration have none of the
+The new fields are stored in the event's existing `json` column; the query columns do not change (migration 004 only resets sync state). Rows cached before the migration have none of the
 data, and incremental sync would not bring it back. So the migration clears the sync state of the iCalendar, Google
 and Outlook sources once, which makes the next sync a full one. Items are replaced by the normal snapshot path.
 

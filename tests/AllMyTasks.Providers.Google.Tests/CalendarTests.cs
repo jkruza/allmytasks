@@ -38,6 +38,68 @@ public class CalendarTests
         Assert.All(collections, c => Assert.True(c.IsReadOnly && c.Kind == CollectionKind.Calendar));
     }
 
+    private const string _window = "\"id\":\"e1\",\"summary\":\"S\",\"start\":{\"dateTime\":\"2026-10-27T09:00:00Z\"},\"end\":{\"dateTime\":\"2026-10-27T10:00:00Z\"}";
+
+    [Fact]
+    public async Task The_video_entry_point_is_the_meeting_link_and_phone_entries_are_ignored()
+    {
+        var (e, _) = await MapOneAsync("{" + _window + """
+            ,"hangoutLink":"https://meet.google.com/old-link",
+            "conferenceData":{"entryPoints":[
+              {"entryPointType":"phone","uri":"tel:+48123456789"},
+              {"entryPointType":"video","uri":"https://meet.google.com/abc-defg-hij"}]}}
+            """);
+
+        Assert.Equal("https://meet.google.com/abc-defg-hij", e!.MeetingUrl?.AbsoluteUri);
+    }
+
+    [Theory]
+    [InlineData("\"hangoutLink\":\"https://meet.google.com/xyz\"", "https://meet.google.com/xyz")]
+    [InlineData("\"hangoutLink\":\"javascript:alert(1)\"", null)]
+    [InlineData("\"hangoutLink\":\"http://meet.google.com/xyz\"", null)]
+    [InlineData("\"conferenceData\":{\"entryPoints\":[{\"entryPointType\":\"video\",\"uri\":\"file:///x\"}]},\"hangoutLink\":\"https://meet.google.com/ok\"", "https://meet.google.com/ok")]
+    [InlineData("\"summary\":\"S\"", null)]
+    public async Task The_hangout_link_is_the_fallback_and_unsafe_links_are_dropped(string extra, string? expected)
+    {
+        var (e, _) = await MapOneAsync("{" + _window + "," + extra + "}");
+
+        Assert.Equal(expected, e!.MeetingUrl?.AbsoluteUri);
+    }
+
+    [Fact]
+    public async Task Organiser_and_attendees_are_mapped_and_declined_still_means_cancelled()
+    {
+        var (e, _) = await MapOneAsync("{" + _window + """
+            ,"organizer":{"displayName":"Olga","email":"o@example.com"},
+            "attendees":[
+              {"displayName":"Me","email":"me@example.com","self":true,"responseStatus":"declined"},
+              {"email":"ann@example.com","optional":true,"responseStatus":"tentative"},
+              {"displayName":"Room 4","email":"room@resource.calendar.google.com","resource":true,"responseStatus":"accepted"},
+              {"email":"bob@example.com","responseStatus":"needsAction"}]}
+            """);
+
+        Assert.Equal(EventStatus.Cancelled, e!.Status);
+        Assert.Equal("Olga", e.Organizer?.Name);
+        Assert.Equal(
+            [
+                new Attendee("Me", "me@example.com", AttendeeRole.Required, ResponseStatus.Declined, true),
+                new Attendee(null, "ann@example.com", AttendeeRole.Optional, ResponseStatus.Tentative),
+                new Attendee("Room 4", "room@resource.calendar.google.com", AttendeeRole.Resource, ResponseStatus.Accepted),
+                new Attendee(null, "bob@example.com", AttendeeRole.Required, ResponseStatus.NeedsAction),
+            ],
+            e.Attendees);
+        Assert.Equal(4, e.AttendeeCount);
+    }
+
+    [Fact]
+    public void The_sync_request_asks_for_the_new_fields()
+    {
+        Assert.Contains("conferenceData", GoogleSource.EventFields, StringComparison.Ordinal);
+        Assert.Contains("hangoutLink", GoogleSource.EventFields, StringComparison.Ordinal);
+        Assert.Contains("organizer", GoogleSource.EventFields, StringComparison.Ordinal);
+        Assert.Contains("attendees(displayName,email,optional,resource,self,responseStatus)", GoogleSource.EventFields, StringComparison.Ordinal);
+    }
+
     [Fact]
     public async Task A_timed_event_keeps_its_instants_zone_status_and_text()
     {

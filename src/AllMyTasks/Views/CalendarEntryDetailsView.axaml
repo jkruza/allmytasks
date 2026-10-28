@@ -11,6 +11,13 @@
         <Border Background="{Binding Accent}" CornerRadius="2" />
         <SelectableTextBlock Grid.Column="1" Text="{Binding Title}" FontSize="18" FontWeight="SemiBold" TextWrapping="Wrap" />
       </Grid>
+      <StackPanel IsVisible="{Binding HasMeeting}" Spacing="4">
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <Button x:Name="JoinMeeting" Content="{Binding MeetingLabel}" Click="OnJoinMeeting" />
+          <Button x:Name="CopyMeetingLink" Content="Copy link" Click="OnCopyMeetingLink" />
+        </StackPanel>
+        <TextBlock Text="{Binding MeetingHost}" FontSize="11" Opacity="0.7" />
+      </StackPanel>
       <ItemsControl ItemsSource="{Binding Rows}">
         <ItemsControl.ItemTemplate>
           <DataTemplate x:DataType="core:DetailRow">
@@ -22,6 +29,22 @@
         </ItemsControl.ItemTemplate>
       </ItemsControl>
       <Button x:Name="OpenLink" Content="Open link" IsVisible="{Binding HasLink}" HorizontalAlignment="Left" Click="OnOpenLink" />
+      <StackPanel IsVisible="{Binding HasPeople}" Spacing="4">
+        <TextBlock Text="Attendees" FontSize="11" Opacity="0.7" />
+        <ItemsControl ItemsSource="{Binding VisiblePeople}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="core:PersonLine">
+              <StackPanel Orientation="Horizontal" Spacing="8" AutomationProperties.Name="{Binding Spoken}" ToolTip.Tip="{Binding Tooltip}">
+                <TextBlock Text="{Binding Glyph}" Width="14" Opacity="0.8" />
+                <SelectableTextBlock Text="{Binding Text}" TextWrapping="Wrap" />
+                <TextBlock Text="{Binding Note}" IsVisible="{Binding Note, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" Opacity="0.7" />
+              </StackPanel>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+        <TextBlock Text="{Binding MoreAttendeesText}" IsVisible="{Binding HasMoreAttendees}" Opacity="0.7" />
+        <Button Content="{Binding ShowAllText}" IsVisible="{Binding CanShowAll}" Command="{Binding ShowAllCommand}" HorizontalAlignment="Left" />
+      </StackPanel>
       <StackPanel IsVisible="{Binding HasDescription}">
         <TextBlock Text="Description" FontSize="11" Opacity="0.7" />
         <SelectableTextBlock Text="{Binding Description}" TextWrapping="Wrap" />

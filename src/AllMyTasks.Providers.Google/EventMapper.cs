@@ -74,6 +74,15 @@ internal sealed class EventMapper(string sourceId)
             recurrence = ParseRecurrence(dto.Id, dto.Recurrence, ZoneOf(dto.Start), warnings);
         }
 
+        var attendees = Attendee.Cap(
+            (dto.Attendees ?? []).Select(a => new Attendee(
+                a.DisplayName,
+                a.Email,
+                a.Resource ? AttendeeRole.Resource : a.Optional ? AttendeeRole.Optional : AttendeeRole.Required,
+                ResponseOf(a.ResponseStatus),
+                a.Self)),
+            out var total);
+
         return new CalendarEvent(
             key,
             dto.Summary ?? string.Empty,
@@ -85,8 +94,25 @@ internal sealed class EventMapper(string sourceId)
             string.Equals(dto.Transparency, "transparent", StringComparison.OrdinalIgnoreCase) ? Availability.Free : Availability.Busy,
             recurrence,
             Categories: null,
-            LastModified: Text.ParseInstant(dto.Updated));
+            LastModified: Text.ParseInstant(dto.Updated),
+            MeetingUrl: MeetingUrlOf(dto),
+            Organizer: dto.Organizer is { } o ? new Attendee(o.DisplayName, o.Email, AttendeeRole.Required, ResponseStatus.Accepted, o.Self) : null,
+            Attendees: attendees,
+            AttendeeCount: total);
     }
+
+    /// <summary>The video entry point of the conference data, else the classic <c>hangoutLink</c>. Other entry points (phone, SIP) are not links to open.</summary>
+    internal static Uri? MeetingUrlOf(EventDto dto) =>
+        dto.ConferenceData?.EntryPoints?.Where(e => string.Equals(e.EntryPointType, "video", StringComparison.OrdinalIgnoreCase)).Select(e => MeetingLinks.Sanitize(e.Uri)).FirstOrDefault(u => u is not null)
+        ?? MeetingLinks.Sanitize(dto.HangoutLink);
+
+    private static ResponseStatus ResponseOf(string? status) => status?.ToLowerInvariant() switch
+    {
+        "accepted" => ResponseStatus.Accepted,
+        "tentative" => ResponseStatus.Tentative,
+        "declined" => ResponseStatus.Declined,
+        _ => ResponseStatus.NeedsAction,
+    };
 
     internal static EventStatus MapStatus(EventDto dto, bool cancelled)
     {

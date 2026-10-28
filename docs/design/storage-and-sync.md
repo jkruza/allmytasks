@@ -249,6 +249,7 @@ Last successful sync time is always shown, so stale data is never mistaken for f
 - `SyncScheduler`: startup sync, 30 s tick, window re-activation; interval per source via the `refreshMinutes` config
   value (default 15, minimum 1).
 - Status is persisted (migration 002), so a restart shows the last known state.
+- Migration 004 clears the sync token of every calendar collection once, so events cached before the meeting link and attendee fields existed are fetched again by a full sync. The new fields live in the event's `json` column; no new columns.
 - `ISourceFactory` + `SourceConfigSchema` drive the Add/Edit source form; `SourceRegistry` splits secret fields
   into the secret store and the rest into config. `SampleSourceFactory` ("sample") is the only provider until M5; the app's
   first run adds one through the registry and the first sync fills the database.
