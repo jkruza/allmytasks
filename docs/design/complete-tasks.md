@@ -148,7 +148,7 @@ not something the API supports safely.
 
 Code: `AllMyTasks.Core/Changes` (queue types, `PendingOverlay`, `PendingOverlayStore`, `TaskChangeService`),
 `IWritableTaskSource` in `AllMyTasks.Core/Providers`, the push step in `SyncEngine`, `WritableTodoistSource` in the Todoist
-project, and `SqlitePendingChangeStore` with migration `004_pending_changes.sql`. Differences from the design:
+project, and `SqlitePendingChangeStore` with migration `006_pending_changes.sql`. Differences from the design:
 
 - **Change id is passed to the provider.** `CompleteAsync` and `ReopenAsync` take the `PendingChange.Id`, which the Todoist
   provider sends as the command `uuid`, so a retry after a timeout is a repeat of the same command.
@@ -173,7 +173,7 @@ project, and `SqlitePendingChangeStore` with migration `004_pending_changes.sql`
 - **Not done yet.** The "Next: <date>" notice for a recurring task once the real data arrives. A tick or untick that races
   with the engine sending the same change can end with the source and the screen disagreeing until the next sync, which then
   shows the source's state.
-- **Migration number.** Migration `004` is taken by this feature; if another feature merges first, renumber.
+- **Migration number.** `006`, after the meeting-link (`004`) and reminders (`005`) migrations that merge first. Until those land, a database created from this branch is at version 6 and would skip them, so use a fresh data directory when switching between branches.
 
 ## Docs updated with the implementation
 
