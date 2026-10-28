@@ -1,6 +1,8 @@
 # Reminders and notifications
 
-Tracked in [#55](https://github.com/jkruza/allmytasks/issues/55).
+Tracked in [#55](https://github.com/jkruza/allmytasks/issues/55). Implemented for the core, the scheduler, the Linux
+notifier and the in-app fallback; the Windows and macOS native notifiers wait for the installers (open question 4). See
+[Implementation notes](#implementation-notes) for where the code differs from the sketches below.
 
 Desktop notifications shortly before an event starts and when a task is due. The tray icon and
 launch-at-login ([system-tray.md](system-tray.md), [launch-at-login.md](launch-at-login.md)) let the app run all
@@ -126,6 +128,53 @@ launch-at-login option. On Linux the tray caveat applies only to the tray, not t
   re-plan after a moved event, catch-up and the "N missed" summary, snooze, wake from sleep.
 - Notifier adapters are thin; their manual check status is tracked the same way as the tray and launch-at-login work.
 
+## Implementation notes
+
+What shipped, and where it differs from the sketches above.
+
+- **Planner input.** `ReminderPlanner.Plan` takes the `AgendaEntry` list from `IAgendaService` instead of raw events and
+  tasks. The agenda service already expands recurrences, drops hidden collections and resolves times into the display
+  zone, so the planner stays a pure function and the rules are not written twice. All-day events are recognised by
+  `IsAllDay` and produce nothing.
+- **Reminder identity.** `Reminder` also carries `Occurrence` (event start or due instant) and `EndsAt`. The key plus the
+  occurrence identifies a reminder: a recurring series shares one `ItemKey`, and a moved event is a different
+  occurrence, so it gets a new reminder. `EndsAt` is the end of the event, or a day after a task's due time.
+- **Scheduler.** Every wake (timer, sync that changed items, settings change, a snooze) runs one pass: it reads the agenda
+  for the window, plans, delivers what is due and arms the single timer for the next reminder. The timer never sleeps
+  longer than two minutes, which is how a wake from system sleep or a clock change is noticed without a platform
+  hook. There is no cached plan to go stale.
+- **Window and catch-up.** A pass looks back to the last check (at most 24 hours), so reminders that came due while the
+  app was closed are seen. Those due within 15 minutes are delivered; older ones are marked dismissed, and more than three
+  produce one "N reminders missed" notification. A first start, and turning reminders back on, count nothing as missed.
+  Events that already ended are never announced.
+- **Log.** `reminder_log` (migration 004) stores the whole reminder with its state, so a snoozed reminder survives a restart.
+  A snoozed reminder is only shown again if the item is still in the plan: a completed task, a cancelled event or a moved
+  event drops it. The time of the last check is kept in the `settings` table (`reminders.lastCheck`). Rows are pruned a
+  day after the reminder's `EndsAt`.
+- **At most once.** A reminder is logged as shown before the notifier is called, so a crash or a failing notifier loses a
+  notification instead of repeating it every few minutes.
+- **Linux.** `LinuxNotifier` runs `notify-send` (libnotify) rather than speaking D-Bus directly. It needs no new
+  package, handles the daemon for us, and with libnotify 0.8 or newer gives Open (clicking the notification), Snooze and
+  Dismiss, read from what the program prints when the notification closes. An older `notify-send` without `--action` is
+  detected from its fast failure and used without actions. A missing program, or no notification daemon, raises
+  `NotifierUnavailableException`, and `FallbackNotifier` switches to the in-app window for the rest of the session.
+  The body is escaped because daemons may render markup; the title is passed after `--` so a title starting with a dash is
+  not an option. A direct D-Bus notifier (Tmds.DBus) remains possible if actions turn out unreliable.
+- **In-app fallback.** `InAppNotifier` shows a small topmost window (`ReminderWindow`) in the bottom-right corner with
+  Open, Snooze and Dismiss. It does not take focus. It is the only notifier on Windows and macOS for now.
+- **Settings.** `AppSettings` has `remindersEnabled`, `eventReminderMinutes`, `remindAboutTasks`,
+  `dateOnlyTaskReminderTime` (`HH:mm`) and `snoozeMinutes`; invalid stored values fall back to the defaults. A
+  date-only time that falls in a DST gap moves to the next valid time, and one that happens twice uses the first.
+- **Open.** Open shows the main window (also from the tray), opens the task's details, or switches to the event's day
+  and opens its details. The **Join** action arrives with the meeting links work ([#57](https://github.com/jkruza/allmytasks/issues/57)).
+
+## Manual check status
+
+Unit-tested on Linux in CI: planner, scheduler (fake clock and notifier), the log in SQLite, settings and the `notify-send`
+adapter against a fake process. Not run against a real desktop yet: the actual `notify-send` output on GNOME, KDE and
+others (the action name it prints, what it prints when the notification just closes, the click on the notification), the
+in-app window's position and stacking on each OS, and the Settings section. These need a check on a real session.
+
 ## Open questions
 
 | # | Question | Proposal |
@@ -133,4 +182,4 @@ launch-at-login option. On Linux the tray caveat applies only to the tray, not t
 | 1 | Reminders for all-day events (for example a birthday)? | Not in v1; a later "evening before" option |
 | 2 | Honour provider reminders per event? | Not in v1 |
 | 3 | Per-collection reminder switch? | Not in v1; hiding a collection already silences it |
-| 4 | Build a Windows/macOS notification path before the installers exist? | Core, scheduler, Linux and the in-app fallback first; Windows and macOS adapters land with the packaging issues |
+| 4 | Build a Windows/macOS notification path before the installers exist? | Core, scheduler, Linux and the in-app fallback first; Windows and macOS adapters land with the packaging issues. Done as proposed |

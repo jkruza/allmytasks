@@ -1,0 +1,16 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="AllMyTasks.Views.ReminderWindow"
+        Title="Reminder" Width="360" SizeToContent="Height" CanResize="False"
+        Topmost="True" ShowInTaskbar="False" ShowActivated="False"
+        WindowStartupLocation="Manual">
+  <StackPanel Margin="16" Spacing="10">
+    <TextBlock x:Name="Heading" FontSize="16" FontWeight="SemiBold" TextWrapping="Wrap" />
+    <TextBlock x:Name="Body" TextWrapping="Wrap" Opacity="0.8" />
+    <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+      <Button x:Name="OpenButton" Content="Open" Click="OnOpen" />
+      <Button x:Name="SnoozeButton" Content="Snooze" Click="OnSnooze" />
+      <Button x:Name="DismissButton" Content="Dismiss" IsCancel="True" Click="OnDismiss" />
+    </StackPanel>
+  </StackPanel>
+</Window>

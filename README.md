@@ -62,6 +62,14 @@ agent, Linux XDG autostart file). *Start minimized to tray* makes that login lau
 still opens the window. It is unavailable when the app is run through `dotnet run`. On Linux, only use the tray option with a
 StatusNotifier host (see above). See [docs/design/launch-at-login.md](docs/design/launch-at-login.md).
 
+### Reminders
+
+Settings → Notifications shows a notification shortly before an event starts (10 minutes by default) and when a task is due
+(tasks with a date but no time at 09:00). **Open**, **Snooze** and **Dismiss** are on the notification where the desktop
+allows it. Reminders only appear while the app is running, so combine them with *Launch at login*. On Linux the app uses
+`notify-send` (package `libnotify-bin` or `libnotify`); without it, and on Windows and macOS for now, a small window in
+the corner of the screen is used. See [docs/design/reminders.md](docs/design/reminders.md).
+
 ## Project layout
 
 | Path | What it is |

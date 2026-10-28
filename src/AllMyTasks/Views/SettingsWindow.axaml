@@ -19,6 +19,36 @@
       </StackPanel>
     </StackPanel>
     <StackPanel Spacing="8">
+      <TextBlock Text="Notifications" FontWeight="SemiBold" />
+      <CheckBox IsChecked="{Binding RemindersEnabled}">
+        <TextBlock Text="Show reminders" TextWrapping="Wrap" />
+      </CheckBox>
+      <TextBlock Text="Reminders only appear while All My Tasks is running. Turn on launching at login (below) to have it start with your computer." TextWrapping="Wrap" Opacity="0.7" />
+      <StackPanel Spacing="4" IsEnabled="{Binding RemindersEnabled}">
+        <TextBlock Text="Remind before events" />
+        <ComboBox ItemsSource="{Binding LeadOptions}" SelectedItem="{Binding SelectedLead}" HorizontalAlignment="Stretch">
+          <ComboBox.ItemTemplate>
+            <DataTemplate x:DataType="vm:MinutesOption"><TextBlock Text="{Binding Label}" /></DataTemplate>
+          </ComboBox.ItemTemplate>
+        </ComboBox>
+        <CheckBox IsChecked="{Binding RemindAboutTasks}" Margin="0,4,0,0">
+          <TextBlock Text="Remind about tasks when they are due" TextWrapping="Wrap" />
+        </CheckBox>
+        <TextBlock Text="Time for tasks that have a date but no time" Margin="0,4,0,0" />
+        <ComboBox ItemsSource="{Binding TaskTimeOptions}" SelectedItem="{Binding SelectedTaskTime}" IsEnabled="{Binding RemindAboutTasks}" HorizontalAlignment="Stretch">
+          <ComboBox.ItemTemplate>
+            <DataTemplate x:DataType="vm:TimeOption"><TextBlock Text="{Binding Label}" /></DataTemplate>
+          </ComboBox.ItemTemplate>
+        </ComboBox>
+        <TextBlock Text="Snooze for" Margin="0,4,0,0" />
+        <ComboBox ItemsSource="{Binding SnoozeOptions}" SelectedItem="{Binding SelectedSnooze}" HorizontalAlignment="Stretch">
+          <ComboBox.ItemTemplate>
+            <DataTemplate x:DataType="vm:MinutesOption"><TextBlock Text="{Binding Label}" /></DataTemplate>
+          </ComboBox.ItemTemplate>
+        </ComboBox>
+      </StackPanel>
+    </StackPanel>
+    <StackPanel Spacing="8">
       <TextBlock Text="Startup" FontWeight="SemiBold" />
       <CheckBox IsChecked="{Binding LaunchAtLogin}" IsEnabled="{Binding CanChangeLaunchAtLogin}">
         <TextBlock Text="Launch All My Tasks when I log in" TextWrapping="Wrap" />

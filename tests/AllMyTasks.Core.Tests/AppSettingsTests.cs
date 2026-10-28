@@ -1,4 +1,5 @@
 using System.Globalization;
+using AllMyTasks.Core.Reminders;
 using AllMyTasks.Core.Settings;
 
 namespace AllMyTasks.Core.Tests;
@@ -68,4 +69,40 @@ public class AppSettingsTests
     [InlineData("{\"closeToTray\":null}")]
     public void Missing_or_non_boolean_close_to_tray_gives_the_default(string json) =>
         Assert.True(AppSettings.Parse(json).CloseToTray);
+
+    [Fact]
+    public void Reminder_settings_default_to_the_documented_values()
+    {
+        var settings = new AppSettings();
+
+        Assert.True(settings.RemindersEnabled);
+        Assert.Equal(10, settings.EventReminderMinutes);
+        Assert.True(settings.RemindAboutTasks);
+        Assert.Equal(new TimeOnly(9, 0), settings.DateOnlyTaskReminderTime);
+        Assert.Equal(10, settings.SnoozeMinutes);
+    }
+
+    [Fact]
+    public void Reminder_settings_round_trip_and_convert()
+    {
+        var settings = new AppSettings { RemindersEnabled = false, EventReminderMinutes = 0, RemindAboutTasks = false, DateOnlyTaskReminderTime = new TimeOnly(7, 30), SnoozeMinutes = 30 };
+
+        var parsed = AppSettings.Parse(settings.ToJson());
+
+        Assert.Equal(settings, parsed);
+        var reminder = parsed.ToReminderSettings();
+        Assert.Equal(new ReminderSettings(false, TimeSpan.Zero, false, new TimeOnly(7, 30), TimeSpan.FromMinutes(30)), reminder);
+    }
+
+    [Theory]
+    [InlineData("""{"eventReminderMinutes":-5,"snoozeMinutes":0,"dateOnlyTaskReminderTime":"25:99"}""")]
+    [InlineData("""{"eventReminderMinutes":"ten","snoozeMinutes":99999,"dateOnlyTaskReminderTime":7}""")]
+    public void Invalid_reminder_values_give_the_defaults(string json)
+    {
+        var parsed = AppSettings.Parse(json);
+
+        Assert.Equal(10, parsed.EventReminderMinutes);
+        Assert.Equal(10, parsed.SnoozeMinutes);
+        Assert.Equal(new TimeOnly(9, 0), parsed.DateOnlyTaskReminderTime);
+    }
 }

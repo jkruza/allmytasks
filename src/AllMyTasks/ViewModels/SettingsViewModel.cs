@@ -9,6 +9,12 @@ namespace AllMyTasks.ViewModels;
 /// <summary>One choice in the week start drop-down.</summary>
 public sealed record WeekStartOption(WeekStartSetting Value, string Label);
 
+/// <summary>One choice in a drop-down of minutes.</summary>
+public sealed record MinutesOption(int Minutes, string Label);
+
+/// <summary>One choice in the time-of-day drop-down.</summary>
+public sealed record TimeOption(TimeOnly Value, string Label);
+
 /// <summary>The Settings dialog. Changes are applied and saved as they are made.</summary>
 public sealed partial class SettingsViewModel : ViewModelBase
 {
@@ -35,6 +41,64 @@ public sealed partial class SettingsViewModel : ViewModelBase
         StartInTrayAtLogin = settings.Current.StartInTrayAtLogin;
         _applying = false;
         AutostartMessage = autostart.UnsupportedReason;
+
+        LeadOptions = MinutesChoices([0, 5, 10, 15, 30, 60], settings.Current.EventReminderMinutes, minutes => minutes == 0 ? "At the start" : $"{Minutes(minutes)} before");
+        SnoozeOptions = MinutesChoices([5, 10, 15, 30, 60], settings.Current.SnoozeMinutes, Minutes);
+        TaskTimeOptions = TimeChoices(settings.Current.DateOnlyTaskReminderTime);
+        RemindersEnabled = settings.Current.RemindersEnabled;
+        RemindAboutTasks = settings.Current.RemindAboutTasks;
+        SelectedLead = LeadOptions.First(o => o.Minutes == settings.Current.EventReminderMinutes);
+        SelectedSnooze = SnoozeOptions.First(o => o.Minutes == settings.Current.SnoozeMinutes);
+        SelectedTaskTime = TaskTimeOptions.First(o => o.Value == settings.Current.DateOnlyTaskReminderTime);
+    }
+
+    public IReadOnlyList<MinutesOption> LeadOptions { get; }
+
+    public IReadOnlyList<MinutesOption> SnoozeOptions { get; }
+
+    public IReadOnlyList<TimeOption> TaskTimeOptions { get; }
+
+    [ObservableProperty]
+    public partial bool RemindersEnabled { get; set; }
+
+    partial void OnRemindersEnabledChanged(bool value) =>
+        _settings.Update(s => s with { RemindersEnabled = value });
+
+    [ObservableProperty]
+    public partial MinutesOption SelectedLead { get; set; }
+
+    partial void OnSelectedLeadChanged(MinutesOption value) =>
+        _settings.Update(s => s with { EventReminderMinutes = value.Minutes });
+
+    [ObservableProperty]
+    public partial bool RemindAboutTasks { get; set; }
+
+    partial void OnRemindAboutTasksChanged(bool value) =>
+        _settings.Update(s => s with { RemindAboutTasks = value });
+
+    [ObservableProperty]
+    public partial TimeOption SelectedTaskTime { get; set; }
+
+    partial void OnSelectedTaskTimeChanged(TimeOption value) =>
+        _settings.Update(s => s with { DateOnlyTaskReminderTime = value.Value });
+
+    [ObservableProperty]
+    public partial MinutesOption SelectedSnooze { get; set; }
+
+    partial void OnSelectedSnoozeChanged(MinutesOption value) =>
+        _settings.Update(s => s with { SnoozeMinutes = value.Minutes });
+
+    private static string Minutes(int minutes) =>
+        minutes == 60 ? "1 hour" : minutes % 60 == 0 && minutes > 60 ? $"{minutes / 60} hours" : $"{minutes} minutes";
+
+    /// <summary>The standard choices, plus the stored value if it is not one of them (for example from a hand-edited file).</summary>
+    private static List<MinutesOption> MinutesChoices(int[] standard, int current, Func<int, string> label) =>
+        [.. standard.Append(current).Distinct().Order().Select(minutes => new MinutesOption(minutes, label(minutes)))];
+
+    private static List<TimeOption> TimeChoices(TimeOnly current)
+    {
+        var times = Enumerable.Range(0, 48).Select(i => new TimeOnly(i / 2, i % 2 * 30)).Append(current).Distinct().Order();
+        return [.. times.Select(t => new TimeOption(t, t.ToString("t", CultureInfo.CurrentCulture)))];
     }
 
     public IReadOnlyList<WeekStartOption> WeekStartOptions { get; }
