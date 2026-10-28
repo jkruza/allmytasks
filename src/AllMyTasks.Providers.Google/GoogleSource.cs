@@ -23,7 +23,7 @@ public sealed class GoogleSource : SourceBase, ICalendarSource, ITaskSource, IDi
     internal static readonly TimeSpan Overlap = TimeSpan.FromMinutes(2);
 
     internal const string CalendarListFields = "kind,nextPageToken,items(id,summary,summaryOverride,backgroundColor,selected,hidden,deleted)";
-    internal const string EventFields = "kind,nextPageToken,nextSyncToken,items(id,status,summary,description,location,htmlLink,start,end,recurrence,recurringEventId,originalStartTime,transparency,updated,eventType,attendees(self,responseStatus))";
+    internal const string EventFields = "kind,nextPageToken,nextSyncToken,items(id,status,summary,description,location,htmlLink,start,end,recurrence,recurringEventId,originalStartTime,transparency,updated,eventType,attendees(displayName,email,optional,resource,self,responseStatus),organizer(displayName,email,self),conferenceData(entryPoints(entryPointType,uri)),hangoutLink)";
     internal const string TaskListFields = "kind,nextPageToken,items(id,title)";
     internal const string TaskFields = "kind,nextPageToken,items(id,title,notes,due,status,completed,parent,webViewLink,updated,deleted)";
 

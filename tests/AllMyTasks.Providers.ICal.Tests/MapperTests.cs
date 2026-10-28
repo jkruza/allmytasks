@@ -212,4 +212,94 @@ public class MapperTests
 
         Assert.Empty(r.Events);
     }
+
+    private const string _head = "BEGIN:VEVENT\nUID:m1\nDTSTAMP:20261001T000000Z\nDTSTART:20261019T090000Z\nDTEND:20261019T100000Z\nSUMMARY:Call\n";
+
+    private static CalendarEvent Meeting(string lines) => By(Parse(_head + lines + "\nEND:VEVENT"), "m1");
+
+    [Fact]
+    public void Conference_with_video_feature_is_the_meeting_link_and_other_features_are_skipped()
+    {
+        var e = Meeting("CONFERENCE;VALUE=URI;FEATURE=PHONE:https://example.com/dial\nCONFERENCE;VALUE=URI;FEATURE=AUDIO,VIDEO:https://meet.jit.si/standup");
+
+        Assert.Equal("https://meet.jit.si/standup", e.MeetingUrl?.AbsoluteUri);
+    }
+
+    [Theory]
+    [InlineData("X-GOOGLE-CONFERENCE:https://meet.google.com/abc-defg-hij", "https://meet.google.com/abc-defg-hij")]
+    [InlineData("X-MICROSOFT-SKYPETEAMSMEETINGURL:https://teams.microsoft.com/l/meetup-join/1", "https://teams.microsoft.com/l/meetup-join/1")]
+    [InlineData("X-MICROSOFT-ONLINEMEETINGEXTERNALLINK:https://teams.microsoft.com/l/meetup-join/2", "https://teams.microsoft.com/l/meetup-join/2")]
+    [InlineData("LOCATION:Microsoft Teams Meeting https://teams.microsoft.com/l/meetup-join/3 (online)", "https://teams.microsoft.com/l/meetup-join/3")]
+    [InlineData("DESCRIPTION:Join us: https://acme.zoom.us/j/123456789?pwd=x.", "https://acme.zoom.us/j/123456789?pwd=x")]
+    public void Vendor_properties_then_location_and_description_give_the_link(string line, string expected) =>
+        Assert.Equal(expected, Meeting(line).MeetingUrl?.AbsoluteUri);
+
+    [Theory]
+    [InlineData("DESCRIPTION:Slides at https://example.com/deck")]
+    [InlineData("LOCATION:Room 4")]
+    [InlineData("X-GOOGLE-CONFERENCE:javascript:alert(1)")]
+    [InlineData("CONFERENCE;VALUE=URI;FEATURE=VIDEO:http://meet.jit.si/insecure")]
+    [InlineData("DESCRIPTION:Dial in: https://user:pw@zoom.us/j/1")]
+    public void An_arbitrary_or_unsafe_link_is_not_a_meeting_link(string line) => Assert.Null(Meeting(line).MeetingUrl);
+
+    [Fact]
+    public void A_structured_property_wins_over_a_link_in_the_description()
+    {
+        var e = Meeting("DESCRIPTION:https://meet.google.com/from-text\nX-GOOGLE-CONFERENCE:https://meet.google.com/structured");
+
+        Assert.Equal("https://meet.google.com/structured", e.MeetingUrl?.AbsoluteUri);
+    }
+
+    [Fact]
+    public void Organiser_and_attendees_read_parameters_and_mailto_values()
+    {
+        var e = Meeting(
+            "ORGANIZER;CN=Olga:mailto:o@example.com\n"
+            + "ATTENDEE;CN=Ann;PARTSTAT=ACCEPTED;ROLE=REQ-PARTICIPANT:mailto:ann@example.com\n"
+            + "ATTENDEE;PARTSTAT=TENTATIVE;ROLE=OPT-PARTICIPANT:mailto:bob@example.com\n"
+            + "ATTENDEE;CN=Room 4;CUTYPE=RESOURCE;PARTSTAT=ACCEPTED:mailto:room@example.com\n"
+            + "ATTENDEE;CN=Cy;PARTSTAT=DECLINED:mailto:cy@example.com\n"
+            + "ATTENDEE;PARTSTAT=NEEDS-ACTION:mailto:dee@example.com");
+
+        Assert.Equal(new Attendee("Olga", "o@example.com"), e.Organizer);
+        Assert.Equal(
+            [
+                new Attendee("Ann", "ann@example.com", AttendeeRole.Required, ResponseStatus.Accepted),
+                new Attendee(null, "bob@example.com", AttendeeRole.Optional, ResponseStatus.Tentative),
+                new Attendee("Room 4", "room@example.com", AttendeeRole.Resource, ResponseStatus.Accepted),
+                new Attendee("Cy", "cy@example.com", AttendeeRole.Required, ResponseStatus.Declined),
+                new Attendee(null, "dee@example.com", AttendeeRole.Required, ResponseStatus.NeedsAction),
+            ],
+            e.Attendees);
+        Assert.Equal(5, e.AttendeeCount);
+    }
+
+    [Fact]
+    public void A_non_mailto_attendee_keeps_the_name_but_no_email()
+    {
+        var e = Meeting("ATTENDEE;CN=Pat:https://example.com/people/pat");
+
+        Assert.Equal(new Attendee("Pat", null), Assert.Single(e.Attendees));
+    }
+
+    [Fact]
+    public void Hundreds_of_attendees_are_capped_but_counted()
+    {
+        var lines = string.Join("\n", Enumerable.Range(0, 340).Select(i => $"ATTENDEE;CN=P{i}:mailto:p{i}@example.com"));
+
+        var e = Meeting(lines);
+
+        Assert.Equal(Attendee.MaxPerEvent, e.Attendees.Count);
+        Assert.Equal(340, e.AttendeeCount);
+    }
+
+    [Fact]
+    public void An_event_without_meeting_data_has_none()
+    {
+        var e = By(Parse(Fixtures.Basic), "utc-1");
+
+        Assert.Null(e.MeetingUrl);
+        Assert.Null(e.Organizer);
+        Assert.Empty(e.Attendees);
+    }
 }

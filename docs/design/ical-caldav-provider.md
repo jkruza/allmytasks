@@ -28,7 +28,7 @@ Not in v1 (documented so absence is a decision, not a bug):
 - OAuth-based CalDAV (Google CalDAV requires OAuth). Google users use the secret `.ics`
   address until the Google provider exists.
 - Digest/NTLM/client-certificate auth.
-- Attendees, alarms, attachments.
+- Alarms, attachments. Meeting link, organiser and attendees are display-only data ([meeting-url-and-attendees.md](meeting-url-and-attendees.md)): `CONFERENCE` with `FEATURE=VIDEO`, the vendor `X-` properties, then a known meeting host in `LOCATION` or `DESCRIPTION`; `ORGANIZER` and `ATTENDEE` with `CN`, `PARTSTAT`, `ROLE`, `CUTYPE`.
 - Writing.
 
 ## `ical` source: single feed

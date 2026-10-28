@@ -81,6 +81,14 @@ internal sealed record EventDto
 
     public OnlineMeetingDto? OnlineMeeting { get; init; }
 
+    public string? OnlineMeetingUrl { get; init; }
+
+    public bool IsOrganizer { get; init; }
+
+    public RecipientDto? Organizer { get; init; }
+
+    public List<AttendeeDto>? Attendees { get; init; }
+
     public string? WebLink { get; init; }
 
     public List<string>? Categories { get; init; }
@@ -98,6 +106,27 @@ internal sealed record ResponseStatusDto
 internal sealed record LocationDto
 {
     public string? DisplayName { get; init; }
+}
+
+internal sealed record EmailAddressDto
+{
+    public string? Name { get; init; }
+
+    public string? Address { get; init; }
+}
+
+internal sealed record RecipientDto
+{
+    public EmailAddressDto? EmailAddress { get; init; }
+}
+
+internal sealed record AttendeeDto
+{
+    public string? Type { get; init; }
+
+    public ResponseStatusDto? Status { get; init; }
+
+    public EmailAddressDto? EmailAddress { get; init; }
 }
 
 internal sealed record OnlineMeetingDto

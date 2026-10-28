@@ -12,6 +12,8 @@
       <StackPanel Orientation="Horizontal" Spacing="6">
         <TextBlock Text="{Binding Glyph}" IsVisible="{Binding IsTask}" />
         <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+        <PathIcon Data="M2,4 H11 V12 H2 Z M12,7 L16,4 V12 L12,9 Z" Width="14" Height="14" IsVisible="{Binding HasMeeting}" Opacity="0.7"
+                  ToolTip.Tip="Online meeting" />
         <TextBlock Text="(tentative)" IsVisible="{Binding IsTentative}" Opacity="0.7" />
         <TextBlock Text="overdue" IsVisible="{Binding IsOverdue}" Foreground="IndianRed" FontWeight="SemiBold" />
       </StackPanel>
