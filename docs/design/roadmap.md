@@ -95,7 +95,7 @@ incrementally.
 - Write support: complete tasks first (smallest, most valuable), then edit/create. Designed for Todoist only: [complete-tasks.md](complete-tasks.md), [#54](https://github.com/jkruza/allmytasks/issues/54).
 - System tray icon with menu, `--tray` start and close-to-tray: [system-tray.md](system-tray.md), [#39](https://github.com/jkruza/allmytasks/issues/39). Implemented.
 - Launch at login with optional tray-only start: [launch-at-login.md](launch-at-login.md), [#52](https://github.com/jkruza/allmytasks/issues/52). Implemented; login launch not yet run on each OS.
-- Reminders and notifications: [reminders.md](reminders.md), [#55](https://github.com/jkruza/allmytasks/issues/55). Compact upcoming widget.
+- Reminders and notifications: [reminders.md](reminders.md), [#55](https://github.com/jkruza/allmytasks/issues/55). Implemented with a Linux notifier and an in-app window; Windows and macOS native notifiers wait for the installers; not yet run on a real desktop. Compact upcoming widget is still open.
 - Global search and saved filters for All tasks: [search-and-saved-filters.md](search-and-saved-filters.md), [#56](https://github.com/jkruza/allmytasks/issues/56).
 - Meeting join links and attendees on events: [meeting-url-and-attendees.md](meeting-url-and-attendees.md), [#57](https://github.com/jkruza/allmytasks/issues/57). Implemented for Google, Outlook and iCalendar/CalDAV; not yet checked against live accounts.
 - Installers and signing: [packaging.md](packaging.md), Windows [#58](https://github.com/jkruza/allmytasks/issues/58), macOS [#59](https://github.com/jkruza/allmytasks/issues/59), Linux [#60](https://github.com/jkruza/allmytasks/issues/60).

@@ -27,7 +27,7 @@ fix whichever is wrong in the same pull request.
 | [system-tray.md](system-tray.md) | Tray icon and menu, `--tray` start option, close-to-tray, Linux StatusNotifier caveat |
 | [launch-at-login.md](launch-at-login.md) | Settings option to start at login on Windows, Linux and macOS, optionally tray-only |
 | [complete-tasks.md](complete-tasks.md) | Complete and reopen Todoist tasks from the app: write interface, pending-changes queue, opt-in per source |
-| [reminders.md](reminders.md) | Desktop notifications before events and at task due times: planner, scheduler, per-OS notifier |
+| [reminders.md](reminders.md) | Desktop notifications before events and at task due times: planner, scheduler, per-OS notifier; implementation notes |
 | [search-and-saved-filters.md](search-and-saved-filters.md) | Global search over events and tasks, and saved filters for All tasks |
 | [meeting-url-and-attendees.md](meeting-url-and-attendees.md) | Join links and attendees on events: model, provider mapping, display |
 | [packaging.md](packaging.md) | Installers and signing for Windows, macOS and Linux, shared release decisions |
@@ -58,7 +58,7 @@ fix whichever is wrong in the same pull request.
 - Sync between a user's own devices.
 - Attendee management, invitations, free/busy scheduling.
 - Mobile or web builds.
-- Reminders and notifications. Likely soon after v1, but not designed here.
+- Reminders and notifications: added after v1, see [reminders.md](reminders.md).
 
 ## Decision log
 
