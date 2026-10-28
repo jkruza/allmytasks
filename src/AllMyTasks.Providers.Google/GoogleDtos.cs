@@ -57,9 +57,38 @@ internal sealed record EventTimeDto
 
 internal sealed record AttendeeDto
 {
+    public string? DisplayName { get; init; }
+
+    public string? Email { get; init; }
+
+    public bool Optional { get; init; }
+
+    public bool Resource { get; init; }
+
     public bool Self { get; init; }
 
     public string? ResponseStatus { get; init; }
+}
+
+internal sealed record OrganizerDto
+{
+    public string? DisplayName { get; init; }
+
+    public string? Email { get; init; }
+
+    public bool Self { get; init; }
+}
+
+internal sealed record EntryPointDto
+{
+    public string? EntryPointType { get; init; }
+
+    public string? Uri { get; init; }
+}
+
+internal sealed record ConferenceDataDto
+{
+    public List<EntryPointDto>? EntryPoints { get; init; }
 }
 
 internal sealed record EventDto
@@ -93,6 +122,12 @@ internal sealed record EventDto
     public string? EventType { get; init; }
 
     public List<AttendeeDto>? Attendees { get; init; }
+
+    public OrganizerDto? Organizer { get; init; }
+
+    public ConferenceDataDto? ConferenceData { get; init; }
+
+    public string? HangoutLink { get; init; }
 }
 
 internal sealed record TaskListDto
