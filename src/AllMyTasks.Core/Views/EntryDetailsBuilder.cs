@@ -21,6 +21,9 @@ public static class EntryDetailsBuilder
 
         string? description;
         Uri? url;
+        Uri? meeting = null;
+        IReadOnlyList<PersonLine> people = [];
+        var more = 0;
         switch (entry)
         {
             case EventEntry e:
@@ -37,6 +40,9 @@ public static class EntryDetailsBuilder
                 Add(rows, "Categories", string.Join(", ", ev.Categories));
                 AddLink(rows, url);
                 AddModified(rows, ev.LastModified, zone, culture);
+                meeting = MeetingLinks.IsSafe(ev.MeetingUrl) ? ev.MeetingUrl : null;
+                people = People(ev);
+                more = Math.Max(0, ev.AttendeeCount - ev.Attendees.Count);
                 break;
             case TaskEntry t:
                 var task = t.Task;
@@ -62,7 +68,55 @@ public static class EntryDetailsBuilder
             ColorUtil.OrDefault(entry.Color),
             rows,
             SafeLink(url),
-            Cap(description));
+            Cap(description),
+            meeting,
+            meeting is null ? null : MeetingLinks.JoinLabel(meeting),
+            meeting?.IdnHost,
+            people,
+            more);
+    }
+
+    /// <summary>The organiser first, then required attendees, optional ones and resources, each in provider order.</summary>
+    private static List<PersonLine> People(CalendarEvent ev)
+    {
+        var lines = new List<PersonLine>();
+        var organizer = ev.Organizer is { } o ? Attendee.Clean(o) : null;
+        var rest = ev.Attendees.AsEnumerable();
+        if (organizer is not null)
+        {
+            // Providers list the organiser among the attendees too; the matching entry carries the answer.
+            var match = ev.Attendees.FirstOrDefault(a => SameEmail(a, organizer));
+            lines.Add(Line(match is null ? organizer : organizer with { Response = match.Response, IsSelf = organizer.IsSelf || match.IsSelf }, "Organiser"));
+            rest = rest.Where(a => !SameEmail(a, organizer));
+        }
+
+        var others = rest.Select(Attendee.Clean).OfType<Attendee>().ToList();
+        lines.AddRange(others.Where(a => a.Role == AttendeeRole.Required).Select(a => Line(a, null)));
+        lines.AddRange(others.Where(a => a.Role == AttendeeRole.Optional).Select(a => Line(a, "Optional")));
+        lines.AddRange(others.Where(a => a.Role == AttendeeRole.Resource).Select(a => Line(a, "Room")));
+        return lines;
+    }
+
+    private static bool SameEmail(Attendee a, Attendee b) =>
+        !string.IsNullOrWhiteSpace(a.Email) && string.Equals(a.Email.Trim(), b.Email, StringComparison.OrdinalIgnoreCase);
+
+    private static PersonLine Line(Attendee a, string? note)
+    {
+        var name = a.DisplayText ?? string.Empty;
+        var (glyph, response) = a.Response switch
+        {
+            ResponseStatus.Accepted => ("✓", "Accepted"),
+            ResponseStatus.Tentative => ("?", "Maybe"),
+            ResponseStatus.Declined => ("✗", "Declined"),
+            _ => ("…", "No answer yet"),
+        };
+        if (a.IsSelf)
+        {
+            return new PersonLine("You", a.DisplayText is null ? null : string.Join(", ", new[] { a.Name, a.Email }.Where(t => !string.IsNullOrWhiteSpace(t))), glyph, note, response);
+        }
+
+        // The e-mail is the tooltip; it is the text itself only when there is no name.
+        return new PersonLine(name, !string.IsNullOrWhiteSpace(a.Name) ? a.Email : null, glyph, note, response);
     }
 
     private static string When(AgendaEntry entry, TimeZoneInfo zone, CultureInfo culture, bool isTask)

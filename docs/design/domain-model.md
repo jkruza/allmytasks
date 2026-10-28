@@ -51,12 +51,21 @@ record CalendarEvent(
     Availability Availability,         // Busy | Free
     Recurrence? Recurrence,            // null for single events
     IReadOnlyList<string> Categories,
-    DateTimeOffset? LastModified);
+    DateTimeOffset? LastModified,
+    Uri? MeetingUrl,                   // https only, see meeting-url-and-attendees.md
+    Attendee? Organizer,
+    IReadOnlyList<Attendee> Attendees, // at most 200
+    int AttendeeCount);                // the real number when the list was capped
+
+record Attendee(string? Name, string? Email, AttendeeRole Role, ResponseStatus Response, bool IsSelf);
+enum AttendeeRole { Required, Optional, Resource }
+enum ResponseStatus { NeedsAction, Accepted, Tentative, Declined }
 ```
 
-Deliberately **left out of v1**: attendees, organiser, reminders/alarms, attachments,
-conference links as a distinct concept. They stay available in the raw payload and can be
-promoted to fields when a view needs them.
+`MeetingUrl`, `Organizer` and `Attendees` are display-only data ([meeting-url-and-attendees.md](meeting-url-and-attendees.md)).
+Deliberately **left out**: reminders/alarms and attachments (reminders have their own design,
+[reminders.md](reminders.md)). They stay available in the raw payload and can be promoted to fields
+when a view needs them.
 
 ## TaskItem
 

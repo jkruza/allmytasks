@@ -43,7 +43,11 @@ public class SqliteStoreTests
             Availability: Availability.Free,
             Recurrence: rec,
             Categories: ["a", "b"],
-            LastModified: T0.AddDays(-1));
+            LastModified: T0.AddDays(-1),
+            MeetingUrl: new Uri("https://meet.google.com/abc-defg-hij"),
+            Organizer: new Attendee("Olga", "o@example.com", IsSelf: false),
+            Attendees: [new Attendee("Ann", "ann@example.com", AttendeeRole.Optional, ResponseStatus.Tentative, IsSelf: true), new Attendee(null, "room@example.com", AttendeeRole.Resource, ResponseStatus.Accepted)],
+            AttendeeCount: 340);
         var allDay = new CalendarEvent(Key("allday"), "Holiday", new AllDayEvent(new DateOnly(2026, 12, 24), new DateOnly(2026, 12, 27)));
         var floating = new CalendarEvent(Key("float"), "Pill", new TimedEvent(T0, T0.AddMinutes(5), null, IsFloating: true));
         var over = new CalendarEvent(Key("full") with { RecurrenceId = T0.AddDays(7) }, "Moved", new TimedEvent(T0.AddDays(7).AddHours(2), T0.AddDays(7).AddHours(3)));
@@ -59,6 +63,12 @@ public class SqliteStoreTests
         Assert.Equal(full.Url, f.Url);
         Assert.Equal(["a", "b"], f.Categories);
         Assert.Equal(full.LastModified, f.LastModified);
+        Assert.Equal(full.MeetingUrl, f.MeetingUrl);
+        Assert.Equal(full.Organizer, f.Organizer);
+        Assert.Equal(full.Attendees, f.Attendees);
+        Assert.Equal(340, f.AttendeeCount);
+        Assert.Null(loaded[allDay.Key].MeetingUrl);
+        Assert.Empty(loaded[allDay.Key].Attendees);
         Assert.Equal(("FREQ=WEEKLY;UNTIL=20261231T000000Z", 1, 1), (f.Recurrence!.Rule, f.Recurrence.ExtraDates.Count, f.Recurrence.ExcludedDates.Count));
         Assert.Equal(allDay.Time, loaded[allDay.Key].Time);
         Assert.True(((TimedEvent)loaded[floating.Key].Time).IsFloating);
@@ -328,6 +338,59 @@ public class SqliteStoreTests
         Assert.Equal(SqliteDatabase.LatestVersion, await again.GetVersionAsync(Ct));
         Assert.True(SqliteDatabase.LatestVersion >= 1);
         Assert.Equal(SqliteDatabase.LatestVersion, await db.GetVersionAsync(Ct));
+    }
+
+    [Fact]
+    public async Task Rows_cached_before_meeting_data_read_as_having_none()
+    {
+        var (temp, db) = await TempDatabase.CreateAsync();
+        using var _ = temp;
+        var store = new SqliteItemStore(db);
+        var ev = new CalendarEvent(Key("old"), "Old", new TimedEvent(T0, T0.AddHours(1), "UTC"));
+        await store.ApplyAsync("s", "c", Snapshot(ev), Ct);
+        await using (var connection = await db.OpenConnectionAsync(Ct))
+        {
+            // The JSON an earlier version wrote has none of the new members.
+            await using var command = connection.CreateCommand();
+            command.CommandText = "UPDATE events SET json = json_remove(json, '$.MeetingUrl', '$.Organizer', '$.Attendees', '$.AttendeeCount');";
+            await command.ExecuteNonQueryAsync(Ct);
+        }
+
+        var loaded = Assert.Single(await Range(store, T0.AddDays(-1), T0.AddDays(1)));
+
+        Assert.Null(loaded.MeetingUrl);
+        Assert.Null(loaded.Organizer);
+        Assert.Empty(loaded.Attendees);
+        Assert.Equal(0, loaded.AttendeeCount);
+    }
+
+    [Fact]
+    public async Task The_meeting_migration_clears_calendar_sync_state_once_and_keeps_task_state()
+    {
+        var (temp, db) = await TempDatabase.CreateAsync();
+        using var _ = temp;
+        await Exec(db, "UPDATE schema_info SET version = 3;");
+        await Exec(db, "INSERT INTO sources (id, kind, display_name) VALUES ('s', 'google', 'G');");
+        await Exec(db, "INSERT INTO collections (source_id, id, display_name, kind, sync_token) VALUES ('s', 'cal', 'Cal', 0, 'tok1'), ('s', 'tasks', 'Tasks', 1, 'tok2');");
+
+        var migrated = await SqliteDatabase.OpenAsync(temp.FilePath, Ct);
+        var repo = new SqliteSourceRepository(migrated);
+
+        Assert.Null(await repo.GetSyncStateAsync("s", "cal", Ct));
+        Assert.Equal("tok2", (await repo.GetSyncStateAsync("s", "tasks", Ct))?.Token);
+
+        // A later sync saves a token again; opening the database again must not clear it.
+        await repo.SaveSyncStateAsync("s", "cal", new SyncState("tok3"), Ct);
+        await SqliteDatabase.OpenAsync(temp.FilePath, Ct);
+        Assert.Equal("tok3", (await repo.GetSyncStateAsync("s", "cal", Ct))?.Token);
+    }
+
+    private static async Task Exec(SqliteDatabase db, string sql)
+    {
+        await using var connection = await db.OpenConnectionAsync(Ct);
+        await using var command = connection.CreateCommand();
+        command.CommandText = sql;
+        await command.ExecuteNonQueryAsync(Ct);
     }
 
     [Fact]

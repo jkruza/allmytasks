@@ -41,6 +41,7 @@ public class EntryItem
         IsPast = segment.IsPast(now) && !IsOverdue;
         IsCompleted = entry is TaskEntry { Task.IsCompleted: true };
         IsTentative = entry is EventEntry { IsTentative: true };
+        HasMeeting = entry is EventEntry { HasMeeting: true };
         var color = ColorUtil.OrDefault(entry.Color);
         Accent = Brush.Parse(color);
         ChipBackground = Brush.Parse(color);
@@ -70,6 +71,8 @@ public class EntryItem
     public bool IsCompleted { get; }
 
     public bool IsTentative { get; }
+
+    public bool HasMeeting { get; }
 
     public string Glyph { get; }
 

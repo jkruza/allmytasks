@@ -9,6 +9,7 @@ using Ical.Net.Serialization.DataTypes;
 using CoreEvent = AllMyTasks.Core.Calendar.CalendarEvent;
 using IcalCalendar = Ical.Net.Calendar;
 using IcalEvent = Ical.Net.CalendarComponents.CalendarEvent;
+using Person = AllMyTasks.Core.Calendar.Attendee;
 
 namespace AllMyTasks.Providers.ICal;
 
@@ -237,6 +238,7 @@ public static class IcalMapper
         }
 
         var key = new ItemKey(sourceId, collectionId, uid, recurrenceId);
+        var attendees = Person.Cap(ev.Attendees.Select(a => PersonOf(a.CommonName, a.Value, a.ParticipationStatus, a.Role, a.Type)), out var total);
         return new CoreEvent(
             key,
             ev.Summary ?? string.Empty,
@@ -253,7 +255,59 @@ public static class IcalMapper
             Availability: string.Equals(ev.Transparency, "TRANSPARENT", StringComparison.OrdinalIgnoreCase) ? Availability.Free : Availability.Busy,
             Recurrence: recurrence,
             Categories: [.. ev.Categories.Where(c => !string.IsNullOrWhiteSpace(c))],
-            LastModified: ev.LastModified is { } lm ? new DateTimeOffset(lm.AsUtc, TimeSpan.Zero) : null);
+            LastModified: ev.LastModified is { } lm ? new DateTimeOffset(lm.AsUtc, TimeSpan.Zero) : null,
+            MeetingUrl: MeetingUrlOf(ev),
+            Organizer: ev.Organizer is { } organizer ? PersonOf(organizer.CommonName, organizer.Value, null, null, null) : null,
+            Attendees: attendees,
+            AttendeeCount: total);
+    }
+
+    /// <summary>
+    /// A structured conferencing property first (RFC 7986 <c>CONFERENCE</c> with <c>FEATURE=VIDEO</c>, then the vendor ones), then the
+    /// first link on a known meeting host in <c>LOCATION</c> and <c>DESCRIPTION</c>. An arbitrary link in free text is not a meeting link.
+    /// </summary>
+    internal static Uri? MeetingUrlOf(IcalEvent ev)
+    {
+        foreach (var property in ev.Properties.Where(p => string.Equals(p.Name, "CONFERENCE", StringComparison.OrdinalIgnoreCase)))
+        {
+            // FEATURE can list several values (AUDIO,VIDEO).
+            var features = property.Parameters.Where(p => string.Equals(p.Name, "FEATURE", StringComparison.OrdinalIgnoreCase)).SelectMany(p => p.Values);
+            if (features.Contains("VIDEO", StringComparer.OrdinalIgnoreCase)
+                && MeetingLinks.Sanitize(property.Value?.ToString()) is { } video)
+            {
+                return video;
+            }
+        }
+
+        foreach (var name in new[] { "X-GOOGLE-CONFERENCE", "X-MICROSOFT-SKYPETEAMSMEETINGURL", "X-MICROSOFT-ONLINEMEETINGEXTERNALLINK" })
+        {
+            var value = ev.Properties.FirstOrDefault(p => string.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase))?.Value?.ToString();
+            if (MeetingLinks.Sanitize(value) is { } vendor)
+            {
+                return vendor;
+            }
+        }
+
+        return MeetingLinks.FindInText(ev.Location) ?? MeetingLinks.FindInText(ev.Description);
+    }
+
+    /// <summary>A person from the <c>mailto:</c> value and parameters of an ORGANIZER or ATTENDEE line.</summary>
+    internal static Person PersonOf(string? commonName, Uri? value, string? partStat, string? role, string? calendarUserType)
+    {
+        // Ical.Net puts "mailto:" in front of any value, so a value that is not an address (no "@") is not an e-mail.
+        var address = value is not null && value.Scheme.Equals("mailto", StringComparison.OrdinalIgnoreCase) && Uri.UnescapeDataString(value.AbsoluteUri[7..]) is var mail && mail.Contains('@', StringComparison.Ordinal) ? mail : null;
+        var kind = calendarUserType?.ToUpperInvariant();
+        var attendeeRole = kind is "RESOURCE" or "ROOM" || string.Equals(role, "NON-PARTICIPANT", StringComparison.OrdinalIgnoreCase)
+            ? AttendeeRole.Resource
+            : string.Equals(role, "OPT-PARTICIPANT", StringComparison.OrdinalIgnoreCase) ? AttendeeRole.Optional : AttendeeRole.Required;
+        var response = partStat?.ToUpperInvariant() switch
+        {
+            "ACCEPTED" => ResponseStatus.Accepted,
+            "TENTATIVE" => ResponseStatus.Tentative,
+            "DECLINED" => ResponseStatus.Declined,
+            _ => ResponseStatus.NeedsAction,
+        };
+        return new Person(commonName, address, attendeeRole, response);
     }
 
     private static (EventTime Time, TimeZoneInfo? Zone) MapTime(IcalEvent ev, CalDateTime start, string uid, List<SyncWarning> warnings)

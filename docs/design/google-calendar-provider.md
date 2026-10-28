@@ -25,7 +25,7 @@ In v1:
 Not in v1, documented so absence is a decision:
 
 - Writing (create, edit, delete, RSVP). The scope choice below keeps the door open.
-- Attendees, reminders, attachments, Google Meet details beyond keeping them in the raw payload.
+- Reminders, attachments. The meeting link, organiser and attendees are display-only data ([meeting-url-and-attendees.md](meeting-url-and-attendees.md)).
 - Push notifications (`events.watch`): they need a public HTTPS endpoint and the app has no backend. Polling only.
 - Google Tasks. It is a separate design, but shares the sign-in; see [Sharing with Google Tasks](#sharing-with-google-tasks).
 - A time-range limited sync. Sync tokens cannot be combined with `timeMin`/`timeMax`; see [Open questions](#open-questions).
@@ -183,7 +183,10 @@ includes deleted entries, so nothing else is needed to learn about deletions.
 | `status` | `EventStatus`: `confirmed`, `tentative`, `cancelled` map one to one |
 | `transparency` | `opaque` or absent → `Busy`; `transparent` → `Free` |
 | `updated` | `LastModified` |
-| `etag`, `iCalUId`, `hangoutLink`, `conferenceData`, `attendees`, `eventType`, `colorId`, everything else | raw payload only |
+| `conferenceData.entryPoints[]` with `entryPointType = video` (`uri`), else `hangoutLink`; `https` only, else dropped | `MeetingUrl` |
+| `organizer` (`displayName`, `email`, `self`) | `Organizer` |
+| `attendees[]` (`displayName`, `email`, `optional`, `resource`, `self`, `responseStatus`) | `Attendees` (first 200, real count in `AttendeeCount`) |
+| `etag`, `iCalUId`, `eventType`, `colorId`, everything else | raw payload only |
 | (no equivalent) | `Categories` empty |
 
 Recurrence: `recurrence[]` is a list of iCalendar lines. `RRULE:FREQ=...` becomes `Recurrence.Rule` (prefix stripped),
@@ -211,9 +214,9 @@ An entry with no usable `start` that is not cancelled is a `SourceDataException`
 
 - `eventType` `workingLocation` entries are dropped (they are all-day clutter, one per day). `default`, `birthday`,
   `fromGmail`, `focusTime`, `outOfOffice` are kept. Dropped entries are not warnings.
-- **Declined invitations**: the model has no attendee data. Proposal: an event whose attendee entry with `self: true`
+- **Declined invitations**: an event whose attendee entry with `self: true`
   has `responseStatus: declined` is mapped to `Status = Cancelled`, which the views already hide, matching Google's
-  default of hiding declined events. Revisit when an RSVP model exists.
+  default of hiding declined events. The attendee list is now in the model, but the mapping stays as decided; the declined answer is also shown in the details pane.
 - All-day events spanning the user's time zone change are unaffected, since `AllDayEvent` is date-based.
 - Calendar-level `timeZone` is only needed for events that omit a zone on recurring masters; Google always sends
   `start.timeZone` on those, so the provider does not read it.

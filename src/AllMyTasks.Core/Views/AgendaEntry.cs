@@ -51,8 +51,10 @@ public sealed record EventEntry(
 
     public bool IsTentative => Occurrence.Event.Status == EventStatus.Tentative;
 
+    public bool HasMeeting => Occurrence.Event.MeetingUrl is not null;
+
     public override string SpokenText(TimeZoneInfo zone) =>
-        $"{Title}, {AgendaText.TimeRange(this, zone)}, {CollectionName}";
+        $"{Title}, {AgendaText.TimeRange(this, zone)}, {CollectionName}{(HasMeeting ? ", online meeting" : string.Empty)}";
 }
 
 /// <summary>A task with a due date.</summary>
