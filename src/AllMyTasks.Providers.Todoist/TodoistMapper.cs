@@ -5,7 +5,7 @@ using AllMyTasks.Core.Tasks;
 namespace AllMyTasks.Providers.Todoist;
 
 /// <summary>Maps Sync API objects to the app's model. Pure: no I/O.</summary>
-internal sealed class TodoistMapper(string sourceId, TimeZoneInfo displayZone)
+internal sealed class TodoistMapper(string sourceId, TimeZoneInfo displayZone, bool readOnly = true)
 {
     internal const string TaskUrlPrefix = "https://app.todoist.com/app/task/";
 
@@ -39,7 +39,7 @@ internal sealed class TodoistMapper(string sourceId, TimeZoneInfo displayZone)
 
     public CollectionInfo? MapProject(ProjectDto project) =>
         project is { Id: { Length: > 0 } id, IsArchived: false, IsDeleted: false }
-            ? new CollectionInfo(sourceId, id, project.Name ?? string.Empty, CollectionKind.TaskList, ColorFor(project.Color), IsVisible: true, IsReadOnly: true)
+            ? new CollectionInfo(sourceId, id, project.Name ?? string.Empty, CollectionKind.TaskList, ColorFor(project.Color), IsVisible: true, IsReadOnly: readOnly)
             : null;
 
     /// <summary>Maps one item, or returns null when it cannot be mapped (no id, no project, unreadable due value).</summary>

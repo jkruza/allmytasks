@@ -1,4 +1,5 @@
 using System.Globalization;
+using AllMyTasks.Core.Changes;
 using AllMyTasks.Core.Model;
 using AllMyTasks.Core.Tasks;
 
@@ -18,6 +19,10 @@ public sealed record TaskRef(ItemKey Key, string Title, string Glyph);
 /// <param name="Notes">Plain text, capped at <see cref="TaskDetailsBuilder.MaxNotesLength"/> characters.</param>
 /// <param name="Parent">The parent task, if it is cached.</param>
 /// <param name="Subtasks">Direct subtasks in display order.</param>
+/// <param name="IsCompleted">Whether the task shows as completed (including a pending change).</param>
+/// <param name="CanChange">Whether the pane offers to complete or reopen the task.</param>
+/// <param name="Pending">The change that has not reached the source yet, if any.</param>
+/// <param name="IsRecurring">Whether completing the task only moves it to its next occurrence.</param>
 public sealed record TaskDetailsContent(
     ItemKey Key,
     string Title,
@@ -28,7 +33,11 @@ public sealed record TaskDetailsContent(
     Uri? Link,
     string? Notes,
     TaskRef? Parent,
-    IReadOnlyList<TaskRef> Subtasks);
+    IReadOnlyList<TaskRef> Subtasks,
+    bool IsCompleted = false,
+    bool CanChange = false,
+    PendingChange? Pending = null,
+    bool IsRecurring = false);
 
 /// <summary>Builds the text of the task details pane. Pure, so it is tested without a UI.</summary>
 public static class TaskDetailsBuilder
@@ -67,7 +76,11 @@ public static class TaskDetailsBuilder
             SafeLink(task.Url),
             Cap(task.Notes),
             details.Parent is { } parent ? Ref(parent) : null,
-            [.. details.Subtasks.Select(Ref)]);
+            [.. details.Subtasks.Select(Ref)],
+            task.IsCompleted,
+            details.CanChange,
+            details.Pending,
+            task.Recurrence is not null);
     }
 
     private static TaskRef Ref(TaskItem task) => new(task.Key, Title(task), Glyph(task));

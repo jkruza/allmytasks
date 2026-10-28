@@ -71,6 +71,7 @@
               <StackPanel Orientation="Horizontal" Spacing="6">
                 <Border Width="8" Height="8" CornerRadius="4" Background="IndianRed" VerticalAlignment="Center" IsVisible="{Binding HasProblems}" />
                 <TextBlock Text="{Binding SyncSummary}" FontSize="12" />
+                <TextBlock Text="{Binding PendingText}" FontSize="12" Opacity="0.7" IsVisible="{Binding HasPendingText}" />
               </StackPanel>
             </Button>
             <Button Classes="tool" Command="{Binding RefreshCommand}" ToolTip.Tip="Refresh (R)" AutomationProperties.Name="Refresh">
@@ -82,6 +83,14 @@
           </StackPanel>
         </Grid>
       </StackPanel>
+    </Border>
+    <!-- Short message after a change, with Undo; see docs/design/complete-tasks.md. -->
+    <Border DockPanel.Dock="Top" IsVisible="{Binding HasNotice}" Padding="16,6" Background="{DynamicResource SystemControlBackgroundBaseLowBrush}">
+      <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+        <TextBlock Text="{Binding Notice}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+        <Button Grid.Column="1" Content="Undo" Command="{Binding UndoCommand}" IsVisible="{Binding CanUndo}" />
+        <Button Grid.Column="2" Content="✕" Command="{Binding DismissNoticeCommand}" AutomationProperties.Name="Dismiss" />
+      </Grid>
     </Border>
     <!-- Details pane: one host for every kind of details; see docs/design/details-pane.md. -->
     <Border DockPanel.Dock="Right" Width="340" Padding="16,12" IsVisible="{Binding IsDetailsOpen}"

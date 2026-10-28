@@ -1,3 +1,4 @@
+using AllMyTasks.Core.Changes;
 using AllMyTasks.Core.Tasks;
 
 namespace AllMyTasks.Core.Views;
@@ -44,13 +45,17 @@ public sealed record TaskListQuery(TaskFilter Filter, TaskSort Sort, TaskGroupin
 /// <param name="Color">Collection colour.</param>
 /// <param name="IsOverdue">Whether to highlight the due value.</param>
 /// <param name="Children">Subtasks that passed the filter.</param>
+/// <param name="CanChange">Whether the task can be completed and reopened from the app.</param>
+/// <param name="Pending">The change that has not reached the source yet, if any.</param>
 public sealed record TaskRow(
     TaskItem Task,
     string CollectionName,
     string SourceName,
     string? Color,
     bool IsOverdue,
-    IReadOnlyList<TaskRow> Children);
+    IReadOnlyList<TaskRow> Children,
+    bool CanChange = false,
+    PendingChange? Pending = null);
 
 /// <summary>A heading and its rows. For <see cref="TaskGrouping.None"/> there is one group with an empty label.</summary>
 /// <param name="Label">Collection name, label or priority name; empty for the other groupings, where the view localises <paramref name="Bucket"/>.</param>

@@ -153,6 +153,12 @@ public interface IWritableCalendarSource : ICalendarSource
 // ITaskSource gets IWritableTaskSource, plus CompleteAsync.
 ```
 
+The task one exists now, with only what completing needs:
+`IWritableTaskSource { CompleteAsync(key, changeId, ct); ReopenAsync(key, changeId, ct); }`, returning
+`WriteResult(Applied | AlreadyInState | NotFound)` and throwing `SourceException` subtypes for failures. A source
+that is read-only, or whose owner did not allow changes, does not implement it. Only Todoist does so far; see
+[complete-tasks.md](complete-tasks.md). The create/update/delete interfaces for events and tasks are still future work.
+
 What v1 does now to keep this open: items keep the provider's raw payload and version tag
 (ETag / `LastModified`); `Collection.IsReadOnly` exists; the store has room for a pending
 changes queue. Conflict handling is a decision for that milestone.

@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Globalization;
+using AllMyTasks.Core.Changes;
 using AllMyTasks.Core.Model;
 using AllMyTasks.Core.Settings;
 using AllMyTasks.Core.Storage;
@@ -33,6 +34,9 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
     private readonly Action? _openSources;
     private readonly Action? _openSettings;
     private readonly SettingsService? _settings;
+    private readonly ITaskChangeService? _changes;
+    private ItemKey? _undoKey;
+    private int _noticeVersion;
     private readonly Dictionary<string, SourceStatus> _statuses = [];
     private int _reloadScheduled;
     private bool _restoring;
@@ -51,9 +55,16 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
         SyncEngine? engine = null,
         Action? openSources = null,
         SettingsService? settings = null,
-        Action? openSettings = null)
+        Action? openSettings = null,
+        ITaskChangeService? changes = null)
     {
         _state = state;
+        _changes = changes;
+        if (changes is not null)
+        {
+            changes.Changed += OnTaskChanged;
+        }
+
         _engine = engine;
         _openSources = openSources;
         _openSettings = openSettings;
@@ -79,7 +90,7 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
         _week = new WeekViewModel(agenda);
         _month = new MonthViewModel(agenda, OpenDay);
         _upcoming = new UpcomingViewModel(agenda);
-        _tasks = new TasksViewModel(taskList, clock, state);
+        _tasks = new TasksViewModel(taskList, clock, state, ToggleTaskAsync);
         Content = _day;
 
         // Rolls the "today" boundary over at midnight without the user having to refresh.
@@ -121,6 +132,23 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
 
     [ObservableProperty]
     public partial bool HasProblems { get; set; }
+
+    /// <summary>"2 changes waiting" when completed or reopened tasks have not reached their source yet.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasPendingText))]
+    public partial string PendingText { get; set; } = string.Empty;
+
+    public bool HasPendingText => PendingText.Length > 0;
+
+    /// <summary>A short message at the top of the window, such as "Completed …" with an Undo button.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasNotice))]
+    public partial string Notice { get; set; } = string.Empty;
+
+    public bool HasNotice => Notice.Length > 0;
+
+    [ObservableProperty]
+    public partial bool CanUndo { get; set; }
 
     [ObservableProperty]
     public partial bool IsSyncing { get; set; }
@@ -281,7 +309,124 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
 
         SelectedDetails = details is null
             ? null
-            : new TaskDetailsViewModel(TaskDetailsBuilder.Create(details, _zone), ShowTaskDetailsAsync);
+            : new TaskDetailsViewModel(
+                TaskDetailsBuilder.Create(details, _zone),
+                ShowTaskDetailsAsync,
+                new TaskActions(ToggleTaskAsync, RetryChangeAsync, DiscardChangeAsync));
+    }
+
+    /// <summary>
+    /// Completes or reopens a task: the change is queued and shown at once, and sent on the source's next sync.
+    /// A completed task that does not repeat can be undone for a few seconds.
+    /// </summary>
+    public async Task ToggleTaskAsync(ItemKey key, bool complete, bool recurring, string title)
+    {
+        if (_changes is null)
+        {
+            return;
+        }
+
+        try
+        {
+            if (complete)
+            {
+                await _changes.CompleteAsync(key);
+            }
+            else
+            {
+                await _changes.ReopenAsync(key);
+            }
+        }
+        catch (InvalidOperationException)
+        {
+            ShowNotice("This source does not allow changes. Switch it on in Sources.", null);
+            return;
+        }
+
+        if (complete)
+        {
+            ShowNotice(
+                recurring ? $"Completed \"{title}\". It repeats, so it returns with its next date after the next sync." : $"Completed \"{title}\".",
+                recurring ? null : key);
+        }
+        else
+        {
+            ClearNotice();
+        }
+    }
+
+    [RelayCommand]
+    private async Task UndoAsync()
+    {
+        if (_undoKey is { } key && _changes is not null)
+        {
+            ClearNotice();
+            await _changes.ReopenAsync(key);
+        }
+    }
+
+    [RelayCommand]
+    private void DismissNotice() => ClearNotice();
+
+    private void ShowNotice(string text, ItemKey? undo)
+    {
+        var version = ++_noticeVersion;
+        _undoKey = undo;
+        CanUndo = undo is not null;
+        Notice = text;
+        _ = HideNoticeLaterAsync(version);
+    }
+
+    private async Task HideNoticeLaterAsync(int version)
+    {
+        await Task.Delay(TimeSpan.FromSeconds(8), _clock);
+        if (version == _noticeVersion)
+        {
+            ClearNotice();
+        }
+    }
+
+    private void ClearNotice()
+    {
+        _noticeVersion++;
+        _undoKey = null;
+        CanUndo = false;
+        Notice = string.Empty;
+    }
+
+    private Task RetryChangeAsync(Guid id) => _changes?.RetryAsync(id) ?? Task.CompletedTask;
+
+    private Task DiscardChangeAsync(Guid id) => _changes?.DiscardAsync(id) ?? Task.CompletedTask;
+
+    // The queue changed (from any thread): show the new state everywhere, including an open details pane.
+    private void OnTaskChanged(object? sender, TaskChangeEventArgs e) =>
+        Dispatcher.UIThread.Post(async () =>
+        {
+            await ReloadAsync();
+            await RefreshPendingTextAsync();
+            if (SelectedDetails is TaskDetailsViewModel open)
+            {
+                await ShowTaskDetailsAsync(open.Key);
+            }
+        });
+
+    private async Task RefreshPendingTextAsync()
+    {
+        if (_changes is null)
+        {
+            return;
+        }
+
+        var snapshot = await _changes.GetSnapshotAsync();
+        var queued = snapshot.QueuedCount;
+        var failed = snapshot.FailedCount;
+        PendingText = (queued, failed) switch
+        {
+            (0, 0) => string.Empty,
+            (_, 0) => queued == 1 ? "1 change waiting" : $"{queued} changes waiting",
+            (0, _) => failed == 1 ? "1 change failed" : $"{failed} changes failed",
+            _ => $"{queued} waiting, {failed} failed",
+        };
     }
 
     /// <summary>Loads collections and the first view. Call once after the window is shown.</summary>
@@ -299,6 +444,7 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
             UpdateSummary();
         }
 
+        await RefreshPendingTextAsync();
         await ReloadAsync();
     }
 
@@ -307,6 +453,11 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
         if (_settings is not null)
         {
             _settings.Changed -= OnSettingsChanged;
+        }
+
+        if (_changes is not null)
+        {
+            _changes.Changed -= OnTaskChanged;
         }
 
         if (_engine is not null)
@@ -381,6 +532,7 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
         {
             Interlocked.Exchange(ref _reloadScheduled, 0);
             await LoadCollectionsAsync();
+            await RefreshPendingTextAsync();
             await ReloadAsync();
         });
     }
@@ -392,6 +544,7 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
         {
             _statuses[status.SourceId] = status;
             UpdateSummary();
+            _ = RefreshPendingTextAsync();
         });
 
     private void UpdateSummary()

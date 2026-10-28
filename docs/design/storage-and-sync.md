@@ -56,6 +56,8 @@ events       (source_id, collection_id, item_id, recurrence_id NULL,
               PK(source_id, collection_id, item_id, recurrence_id))
 tasks        (source_id, collection_id, item_id, title, status, due_date, due_utc,
               parent_item_id, priority, ..., raw, PK(...))
+pending_changes (id PK, source_id -> sources ON DELETE CASCADE, collection_id, item_id,
+              kind, created_at, attempts, state, error)   -- unsent complete/reopen, see complete-tasks.md
 settings     (key PK, value)
 schema_info  (version)
 ```
@@ -152,7 +154,8 @@ public sealed class SyncEngine
 }
 ```
 
-Per source, per collection:
+Per source, first send the queued [pending changes](complete-tasks.md#pending-changes) (oldest first; a source that
+is unreachable or rejects the token stops here and keeps them), then per collection:
 
 1. Load previous `SyncState` from the repository.
 2. Call the provider's `SyncEventsAsync`/`SyncTasksAsync`.

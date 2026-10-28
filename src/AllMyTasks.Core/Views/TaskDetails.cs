@@ -1,3 +1,4 @@
+using AllMyTasks.Core.Changes;
 using AllMyTasks.Core.Model;
 using AllMyTasks.Core.Storage;
 using AllMyTasks.Core.Tasks;
@@ -12,6 +13,8 @@ namespace AllMyTasks.Core.Views;
 /// <param name="Parent">The parent task, when <see cref="TaskItem.ParentKey"/> is set and the parent is cached.</param>
 /// <param name="Subtasks">Direct subtasks: open ones first, then by due date, then by title.</param>
 /// <param name="IsOverdue">Open and past due at the time of the query.</param>
+/// <param name="CanChange">Whether the task can be completed and reopened from the app.</param>
+/// <param name="Pending">The change that has not reached the source yet, if any.</param>
 public sealed record TaskDetails(
     TaskItem Task,
     string CollectionName,
@@ -19,7 +22,9 @@ public sealed record TaskDetails(
     string SourceName,
     TaskItem? Parent,
     IReadOnlyList<TaskItem> Subtasks,
-    bool IsOverdue);
+    bool IsOverdue,
+    bool CanChange = false,
+    PendingChange? Pending = null);
 
 public interface ITaskDetailsService
 {
@@ -28,7 +33,7 @@ public interface ITaskDetailsService
 }
 
 /// <summary>Builds <see cref="TaskDetails"/> from the store.</summary>
-public sealed class TaskDetailsService(IItemStore store, ISourceRepository sources, TimeProvider clock) : ITaskDetailsService
+public sealed class TaskDetailsService(IItemStore store, ISourceRepository sources, TimeProvider clock, ITaskChangeService? changes = null) : ITaskDetailsService
 {
     public async Task<TaskDetails?> GetAsync(ItemKey key, TimeZoneInfo displayZone, CancellationToken cancellationToken = default)
     {
@@ -45,6 +50,7 @@ public sealed class TaskDetailsService(IItemStore store, ISourceRepository sourc
             .FirstOrDefault(c => c.SourceId == key.SourceId && c.Id == key.CollectionId);
         var source = (await sources.GetSourcesAsync(cancellationToken).ConfigureAwait(false))
             .FirstOrDefault(s => s.Id == key.SourceId);
+        var changeState = changes is null ? TaskChangeSnapshot.Empty : await changes.GetSnapshotAsync(cancellationToken).ConfigureAwait(false);
         cancellationToken.ThrowIfCancellationRequested();
 
         // A task that names itself as its parent has no parent; longer cycles only matter to the list's nesting.
@@ -66,6 +72,8 @@ public sealed class TaskDetailsService(IItemStore store, ISourceRepository sourc
             source?.DisplayName ?? string.Empty,
             parent,
             subtasks,
-            task.IsOverdue(clock.GetUtcNow(), displayZone));
+            task.IsOverdue(clock.GetUtcNow(), displayZone),
+            changeState.CanChange(key),
+            changeState.PendingFor(key));
     }
 }

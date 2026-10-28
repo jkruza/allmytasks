@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Globalization;
+using System.Windows.Input;
+using AllMyTasks.Core.Changes;
 using AllMyTasks.Core.Model;
 using AllMyTasks.Core.Tasks;
 using AllMyTasks.Core.Views;
@@ -18,7 +20,7 @@ public sealed class TaskGroupHeader(string text, int count)
 
 public sealed class TaskRowItem
 {
-    public TaskRowItem(TaskRow row, int depth, DateTimeOffset now, TimeZoneInfo zone)
+    public TaskRowItem(TaskRow row, int depth, DateTimeOffset now, TimeZoneInfo zone, Func<ItemKey, bool, bool, string, Task>? toggle = null)
     {
         var task = row.Task;
         Key = task.Key;
@@ -42,6 +44,21 @@ public sealed class TaskRowItem
         LabelsText = string.Join(", ", task.Labels);
         SubtaskText = row.Children.Count > 0 ? $"{row.Children.Count} subtask{(row.Children.Count == 1 ? string.Empty : "s")}" : string.Empty;
         Opacity = task.IsOpen ? 1 : 0.55;
+        CanChange = row.CanChange && toggle is not null && task.Status != TaskItemStatus.Cancelled;
+        IsRecurring = task.Recurrence is not null;
+        ToggleName = task.IsCompleted ? "Mark as not done" : "Mark as done";
+        if (row.Pending is { State: PendingState.Failed } failed)
+        {
+            FailedText = "Not sent: " + (failed.Error ?? "the source refused the change") + ". Open the task to retry or discard.";
+        }
+
+        ToggleCommand = new RelayCommand(() =>
+        {
+            if (toggle is not null)
+            {
+                _ = toggle(Key, !task.IsCompleted, IsRecurring, Title);
+            }
+        });
         Spoken = $"{Title}, {(IsOverdue ? "overdue, " : string.Empty)}{(DueText.Length > 0 ? "due " + DueText + ", " : string.Empty)}{CollectionName}";
     }
 
@@ -81,6 +98,22 @@ public sealed class TaskRowItem
     public double Opacity { get; }
 
     public string Spoken { get; }
+
+    /// <summary>Whether the glyph is a button that completes or reopens the task.</summary>
+    public bool CanChange { get; }
+
+    public bool CannotChange => !CanChange;
+
+    public bool IsRecurring { get; }
+
+    public string ToggleName { get; }
+
+    public ICommand ToggleCommand { get; }
+
+    /// <summary>Why the last change to this task did not reach the source; empty when nothing failed.</summary>
+    public string FailedText { get; } = string.Empty;
+
+    public bool HasFailed => FailedText.Length > 0;
 }
 
 /// <summary>Option shown in a combo box.</summary>
@@ -90,7 +123,11 @@ public sealed record Choice<T>(string Label, T Value)
 }
 
 /// <summary>State of the All tasks view: its filters, sort and grouping, and the resulting rows.</summary>
-public sealed partial class TasksViewModel(ITaskListService service, TimeProvider clock, ViewStateStore? state = null) : ContentViewModel, IDisposable
+public sealed partial class TasksViewModel(
+    ITaskListService service,
+    TimeProvider clock,
+    ViewStateStore? state = null,
+    Func<ItemKey, bool, bool, string, Task>? toggle = null) : ContentViewModel, IDisposable
 {
     internal const string StateKey = "view.tasks";
     private bool _restoring;
@@ -433,7 +470,7 @@ public sealed partial class TasksViewModel(ITaskListService service, TimeProvide
 
     private int Add(TaskRow row, int depth, ViewContext context)
     {
-        Items.Add(new TaskRowItem(row, depth, context.Now, context.Zone));
+        Items.Add(new TaskRowItem(row, depth, context.Now, context.Zone, toggle));
         return 1 + row.Children.Sum(c => Add(c, depth + 1, context));
     }
 

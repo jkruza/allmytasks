@@ -6,7 +6,18 @@ using AllMyTasks.Core.Providers;
 namespace AllMyTasks.Providers.Todoist;
 
 /// <summary>A parsed Sync API reply.</summary>
-internal sealed record SyncReply(string SyncToken, bool FullSync, IReadOnlyList<ProjectDto> Projects, IReadOnlyList<ItemDto> Items);
+internal sealed record SyncReply(
+    string SyncToken,
+    bool FullSync,
+    IReadOnlyList<ProjectDto> Projects,
+    IReadOnlyList<ItemDto> Items,
+    IReadOnlyDictionary<string, CommandStatus>? CommandStatus = null);
+
+/// <summary>What Todoist said about one command: ok, or an error with a code and a short text.</summary>
+internal sealed record CommandStatus(bool IsOk, int? ErrorCode, string? Error);
+
+/// <summary>One command of the Sync API. <paramref name="Uuid"/> makes a retry of the same command harmless.</summary>
+internal sealed record TodoistCommand(string Type, Guid Uuid, string ItemId);
 
 /// <summary>
 /// Calls the Todoist Sync API. The host is fixed in code, the token is only ever sent to it as a bearer token, redirects
@@ -34,7 +45,17 @@ internal sealed class TodoistClient(HttpMessageHandler handler, Func<Cancellatio
     };
 
     /// <summary>Asks for the given resources changed since <paramref name="syncToken"/> (<c>*</c> for everything).</summary>
-    public async Task<SyncReply> SyncAsync(string syncToken, string[] resourceTypes, CancellationToken cancellationToken)
+    public Task<SyncReply> SyncAsync(string syncToken, string[] resourceTypes, CancellationToken cancellationToken) =>
+        SyncAsync(syncToken, resourceTypes, null, cancellationToken);
+
+    /// <summary>
+    /// Sends commands (completing or reopening tasks) and returns Todoist's answer per command. Only a small resource
+    /// list is requested back, because the caller syncs afterwards.
+    /// </summary>
+    public Task<SyncReply> ExecuteAsync(IReadOnlyList<TodoistCommand> commands, CancellationToken cancellationToken) =>
+        SyncAsync("*", ProjectsOnly, commands, cancellationToken);
+
+    private async Task<SyncReply> SyncAsync(string syncToken, string[] resourceTypes, IReadOnlyList<TodoistCommand>? commands, CancellationToken cancellationToken)
     {
         var token = await getToken(cancellationToken).ConfigureAwait(false);
         if (token is null || !IsUsableToken(token))
@@ -46,7 +67,7 @@ internal sealed class TodoistClient(HttpMessageHandler handler, Func<Cancellatio
         timeoutSource.CancelAfter(_timeout);
         try
         {
-            return await SendAsync(token, syncToken, resourceTypes, timeoutSource.Token).ConfigureAwait(false);
+            return await SendAsync(token, syncToken, resourceTypes, commands, timeoutSource.Token).ConfigureAwait(false);
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
@@ -69,16 +90,19 @@ internal sealed class TodoistClient(HttpMessageHandler handler, Func<Cancellatio
     internal static bool IsUsableToken(string? token) =>
         !string.IsNullOrEmpty(token) && token.All(c => c is > ' ' and < '\u007f');
 
-    private async Task<SyncReply> SendAsync(string token, string syncToken, string[] resourceTypes, CancellationToken cancellationToken)
+    private async Task<SyncReply> SendAsync(string token, string syncToken, string[] resourceTypes, IReadOnlyList<TodoistCommand>? commands, CancellationToken cancellationToken)
     {
-        using var request = new HttpRequestMessage(HttpMethod.Post, SyncUrl)
+        var form = new List<KeyValuePair<string, string>>
         {
-            Content = new FormUrlEncodedContent(
-            [
-                KeyValuePair.Create("sync_token", syncToken),
-                KeyValuePair.Create("resource_types", JsonSerializer.Serialize(resourceTypes, TodoistJson.Default.StringArray)),
-            ]),
+            KeyValuePair.Create("sync_token", syncToken),
+            KeyValuePair.Create("resource_types", JsonSerializer.Serialize(resourceTypes, TodoistJson.Default.StringArray)),
         };
+        if (commands is not null)
+        {
+            form.Add(KeyValuePair.Create("commands", WriteCommands(commands)));
+        }
+
+        using var request = new HttpRequestMessage(HttpMethod.Post, SyncUrl) { Content = new FormUrlEncodedContent(form) };
         request.Headers.Authorization = new("Bearer", token);
         request.Headers.Accept.ParseAdd("application/json");
         request.Headers.UserAgent.ParseAdd("AllMyTasks/0.1");
@@ -121,6 +145,29 @@ internal sealed class TodoistClient(HttpMessageHandler handler, Func<Cancellatio
         }
 
         return Parse(await ReadAsync(response, cancellationToken).ConfigureAwait(false));
+    }
+
+    internal static string WriteCommands(IReadOnlyList<TodoistCommand> commands)
+    {
+        using var buffer = new MemoryStream();
+        using (var writer = new Utf8JsonWriter(buffer))
+        {
+            writer.WriteStartArray();
+            foreach (var command in commands)
+            {
+                writer.WriteStartObject();
+                writer.WriteString("type", command.Type);
+                writer.WriteString("uuid", command.Uuid.ToString("D"));
+                writer.WriteStartObject("args");
+                writer.WriteString("id", command.ItemId);
+                writer.WriteEndObject();
+                writer.WriteEndObject();
+            }
+
+            writer.WriteEndArray();
+        }
+
+        return System.Text.Encoding.UTF8.GetString(buffer.ToArray());
     }
 
     internal static TimeSpan? RetryAfter(HttpResponseMessage response)
@@ -179,6 +226,30 @@ internal sealed class TodoistClient(HttpMessageHandler handler, Func<Cancellatio
             throw new SourceDataException("The Todoist reply had no sync position.") { Diagnostics = $"{body.Length} bytes" };
         }
 
-        return new SyncReply(syncToken, dto.FullSync, dto.Projects ?? [], dto.Items ?? []);
+        return new SyncReply(syncToken, dto.FullSync, dto.Projects ?? [], dto.Items ?? [], dto.SyncStatus is { } status ? ParseStatuses(status) : null);
+    }
+
+    private static Dictionary<string, CommandStatus> ParseStatuses(Dictionary<string, JsonElement> raw)
+    {
+        var result = new Dictionary<string, CommandStatus>(StringComparer.OrdinalIgnoreCase);
+        foreach (var (uuid, value) in raw)
+        {
+            if (value.ValueKind == JsonValueKind.String && value.GetString() == "ok")
+            {
+                result[uuid] = new CommandStatus(true, null, null);
+            }
+            else if (value.ValueKind == JsonValueKind.Object)
+            {
+                int? code = value.TryGetProperty("error_code", out var c) && c.ValueKind == JsonValueKind.Number && c.TryGetInt32(out var n) ? n : null;
+                var text = value.TryGetProperty("error", out var e) && e.ValueKind == JsonValueKind.String ? e.GetString() : null;
+                result[uuid] = new CommandStatus(false, code, text);
+            }
+            else
+            {
+                result[uuid] = new CommandStatus(false, null, null);
+            }
+        }
+
+        return result;
     }
 }

@@ -1,7 +1,8 @@
 # Task details
 
-Clicking a task in any view shows everything the app knows about it. v1 is read-only, like
-the rest of the app.
+Clicking a task in any view shows everything the app knows about it. The pane is read-only except for one control: a button to complete or reopen the task, shown only when its source
+allows changes ([complete-tasks.md](complete-tasks.md)). A change that could not be sent shows its error with Retry
+and Discard.
 
 The presentation (a right-docked details pane, one at a time, Esc to close) is shared with
 calendar entry details and is described in [details-pane.md](details-pane.md). This doc

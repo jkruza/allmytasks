@@ -2,6 +2,8 @@
 
 Tracked in [#54](https://github.com/jkruza/allmytasks/issues/54).
 
+**Status: implemented** for Todoist. Where the implementation differs from the design below, "Implementation notes" at the end says so. Not yet verified against a live Todoist account (see [Unverified](#unverified)).
+
 The first write support: tick a Todoist task in the app to complete it, untick it to reopen it. This is
 the "complete tasks first" step from the [roadmap](roadmap.md), limited to Todoist so the write path is
 proven on one provider before Google Tasks and Microsoft To Do get it.
@@ -28,8 +30,8 @@ task one, with only what is needed now:
 ```csharp
 public interface IWritableTaskSource : ITaskSource
 {
-    Task<WriteResult> CompleteAsync(ItemKey key, CancellationToken ct);
-    Task<WriteResult> ReopenAsync(ItemKey key, CancellationToken ct);
+    Task<WriteResult> CompleteAsync(ItemKey key, Guid changeId, CancellationToken ct);
+    Task<WriteResult> ReopenAsync(ItemKey key, Guid changeId, CancellationToken ct);
 }
 
 public enum WriteOutcome { Applied, AlreadyInState, NotFound }   // failures throw SourceException
@@ -142,10 +144,41 @@ not something the API supports safely.
 - Sync engine: queue drained before pull; a pull between enqueue and push does not undo the change.
 - Optional integration test against a throwaway account, gated by `AMT_TODOIST_TOKEN`, off in CI.
 
-## Docs to update with the implementation
+## Implementation notes
+
+Code: `AllMyTasks.Core/Changes` (queue types, `PendingOverlay`, `PendingOverlayStore`, `TaskChangeService`),
+`IWritableTaskSource` in `AllMyTasks.Core/Providers`, the push step in `SyncEngine`, `WritableTodoistSource` in the Todoist
+project, and `SqlitePendingChangeStore` with migration `004_pending_changes.sql`. Differences from the design:
+
+- **Change id is passed to the provider.** `CompleteAsync` and `ReopenAsync` take the `PendingChange.Id`, which the Todoist
+  provider sends as the command `uuid`, so a retry after a timeout is a repeat of the same command.
+- **One request per change, not one batch.** The engine sends the queued changes of a source one after another, oldest first,
+  before it pulls. Batching several commands into one request is possible later; it only changes the provider.
+- **Who sees the overlay.** Views read through `PendingOverlayStore`, a decorator over the cache that applies the pending
+  changes to the tasks it returns. The sync engine writes to the undecorated cache, so the overlay never lands in the database.
+- **Allow switch.** With `allowChanges` off the factory creates a plain `TodoistSource`; with it on, a `WritableTodoistSource`.
+  Editing a source recreates it, so the switch takes effect at once. Queued changes of a source that no longer allows changes
+  become `Failed` ("Changes are switched off for this source") and can be discarded.
+- **Read-only lists.** `TaskChangeService` refuses a change for a collection with `IsReadOnly` and for a source that does not
+  implement `IWritableTaskSource`; the UI then shows no checkbox. Todoist's lists report `IsReadOnly` unless the source allows changes, so switching the option on takes effect for the checkbox after the next sync (which saves the lists again).
+- **Failure handling in the engine.** An unreachable source or rejected token stops the sync as before and leaves the change
+  queued (the attempt count goes up). Any other `SourceException` marks only that change `Failed` with the provider's short
+  message and the rest of the queue goes on. `NotFound` drops the change and sets a source warning.
+- **Todoist memo.** The provider remembers one reply per sync token for two minutes; a write clears that memory so the pull
+  that follows does not return a reply from before the change.
+- **UI.** In All tasks the glyph is a button when the task can be changed; Space on a focused row toggles it, Enter opens
+  details. The details pane has a "Mark as done" or "Mark as not done" button and, for a failed change, the error with Retry
+  and Discard. A notice bar below the toolbar shows "Completed ..." with Undo for eight seconds (not for recurring tasks), and
+  the sync summary shows "N changes waiting" or "N changes failed".
+- **Not done yet.** The "Next: <date>" notice for a recurring task once the real data arrives. A tick or untick that races
+  with the engine sending the same change can end with the source and the screen disagreeing until the next sync, which then
+  shows the source's state.
+- **Migration number.** Migration `004` is taken by this feature; if another feature merges first, renumber.
+
+## Docs updated with the implementation
 
 [todoist-provider.md](todoist-provider.md) (scope, security, config schema), [providers.md](providers.md) (write
-interface and capabilities), [storage-and-sync.md](storage-and-sync.md) (pending changes table, sync order),
+interface), [storage-and-sync.md](storage-and-sync.md) (pending changes table, sync order),
 [views.md](views.md#all-tasks), [task-details.md](task-details.md), the README status paragraph and the
 [roadmap](roadmap.md).
 
@@ -155,7 +188,7 @@ To check against a live Todoist account before the docs call this verified:
 
 - `item_close` on a recurring task and on a parent with subtasks, and what the next incremental sync returns.
 - `item_uncomplete` on a task completed through `item_close`.
-- The shape of `sync_status` errors (task not found, rate limit) and the `Retry-After` handling on write commands.
+- The shape of `sync_status` errors (task not found, rate limit) and the `Retry-After` handling on write commands. The provider assumes a task that is gone is reported with the words "not found" in the error text; any other error is a failed change.
 
 ## Open questions
 

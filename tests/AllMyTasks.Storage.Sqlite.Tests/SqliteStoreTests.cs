@@ -1,4 +1,5 @@
 using AllMyTasks.Core.Calendar;
+using AllMyTasks.Core.Changes;
 using AllMyTasks.Core.Model;
 using AllMyTasks.Core.Providers;
 using AllMyTasks.Core.Samples;
@@ -391,6 +392,60 @@ public class SqliteStoreTests
             store.ApplyAsync("s", "c", Snapshot(new TaskItem(Key("2"), "new")), cts.Token));
 
         Assert.Equal(["keep"], (await store.GetTasksAsync(Ct)).Select(t => t.Title));
+    }
+
+    [Fact]
+    public async Task Pending_changes_round_trip_in_order_and_survive_reopening_the_file()
+    {
+        var (temp, db) = await TempDatabase.CreateAsync();
+        using var _ = temp;
+        await new SqliteSourceRepository(db).SaveSourceAsync(new SourceInfo("s", "k", "S"), SourceConfig.Empty, Ct);
+        var store = new SqlitePendingChangeStore(db);
+        var later = new PendingChange(Guid.NewGuid(), Key("b"), PendingKind.Reopen, T0.AddSeconds(5));
+        var first = new PendingChange(Guid.NewGuid(), Key("a"), PendingKind.Complete, T0, 2, PendingState.Failed, "refused");
+        await store.SaveAsync(later, Ct);
+        await store.SaveAsync(first, Ct);
+
+        var again = new SqlitePendingChangeStore(await SqliteDatabase.OpenAsync(db.Path, Ct));
+        var loaded = await again.GetAllAsync(Ct);
+
+        Assert.Equal([first, later], loaded);
+    }
+
+    [Fact]
+    public async Task Saving_a_change_again_updates_it_and_removing_is_idempotent()
+    {
+        var (temp, db) = await TempDatabase.CreateAsync();
+        using var _ = temp;
+        await new SqliteSourceRepository(db).SaveSourceAsync(new SourceInfo("s", "k", "S"), SourceConfig.Empty, Ct);
+        var store = new SqlitePendingChangeStore(db);
+        var change = new PendingChange(Guid.NewGuid(), Key("a"), PendingKind.Complete, T0);
+        await store.SaveAsync(change, Ct);
+
+        await store.SaveAsync(change with { Attempts = 3, State = PendingState.Failed, Error = "no" }, Ct);
+        var updated = Assert.Single(await store.GetAllAsync(Ct));
+        await store.RemoveAsync(change.Id, Ct);
+        await store.RemoveAsync(change.Id, Ct);
+
+        Assert.Equal((3, PendingState.Failed, "no"), (updated.Attempts, updated.State, updated.Error));
+        Assert.Empty(await store.GetAllAsync(Ct));
+    }
+
+    [Fact]
+    public async Task Removing_a_source_removes_its_pending_changes_and_keeps_those_of_others()
+    {
+        var (temp, db) = await TempDatabase.CreateAsync();
+        using var _ = temp;
+        var repo = new SqliteSourceRepository(db);
+        await repo.SaveSourceAsync(new SourceInfo("one", "k", "One"), SourceConfig.Empty, Ct);
+        await repo.SaveSourceAsync(new SourceInfo("two", "k", "Two"), SourceConfig.Empty, Ct);
+        var store = new SqlitePendingChangeStore(db);
+        await store.SaveAsync(new PendingChange(Guid.NewGuid(), Key("a", "one"), PendingKind.Complete, T0), Ct);
+        await store.SaveAsync(new PendingChange(Guid.NewGuid(), Key("b", "two"), PendingKind.Complete, T0), Ct);
+
+        await repo.RemoveSourceAsync("one", Ct);
+
+        Assert.Equal(["two"], (await store.GetAllAsync(Ct)).Select(c => c.Key.SourceId));
     }
 }
 
