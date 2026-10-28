@@ -1,3 +1,4 @@
+using AllMyTasks.Core.Autostart;
 using AllMyTasks.Core.Samples;
 using AllMyTasks.Core.Startup;
 using AllMyTasks.Core.Storage;
@@ -48,7 +49,8 @@ public sealed partial class App : Application
     {
         var clock = TimeProvider.System;
         var zone = TimeZoneInfo.Local;
-        var dataDirectory = DataDirectory.Resolve(DataDirectory.FromArguments(desktop.Args ?? []));
+        var dataDirectoryOption = DataDirectory.FromArguments(desktop.Args ?? []);
+        var dataDirectory = DataDirectory.Resolve(dataDirectoryOption);
 
         var database = SqliteDatabase.OpenAsync(System.IO.Path.Combine(dataDirectory, "data.db")).GetAwaiter().GetResult();
         var items = new SqliteItemStore(database);
@@ -81,6 +83,13 @@ public sealed partial class App : Application
         var appSettings = new SettingsService(viewState);
         appSettings.LoadAsync().GetAwaiter().GetResult();
 
+        // Rewrite the login entry from the settings so it follows the executable if the app was moved or updated.
+        var autostart = AutostartManager.ForCurrentProcess(dataDirectoryOption);
+        if (appSettings.Current.LaunchAtLogin)
+        {
+            _ = autostart.Apply(true, appSettings.Current.StartInTrayAtLogin);
+        }
+
         var agenda = new AgendaService(items, sources, new IcalRecurrenceExpander(), clock);
         CalendarShellViewModel? shell = null;
         shell = new CalendarShellViewModel(
@@ -94,7 +103,7 @@ public sealed partial class App : Application
             engine,
             () => dialogs.ShowSources(new SourcesViewModel(engine, registry, sources, clock, dialogs, () => shell!.OnCollectionsChangedAsync())),
             appSettings,
-            () => _ = dialogs.ShowSettingsAsync(new SettingsViewModel(appSettings)));
+            () => _ = dialogs.ShowSettingsAsync(new SettingsViewModel(appSettings, autostart)));
 
         var window = new MainWindow { DataContext = shell };
         window.Activated += (_, _) => _ = scheduler.OnWindowActivatedAsync();

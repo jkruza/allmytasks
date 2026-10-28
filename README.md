@@ -55,6 +55,13 @@ On Linux the tray needs a StatusNotifier/AppIndicator host. KDE, Xfce, Cinnamon 
 *AppIndicator and KStatusNotifierItem Support* extension. Without one the icon does not show, so turn the setting off and
 do not use `--tray`. See [docs/design/system-tray.md](docs/design/system-tray.md).
 
+### Launch at login
+
+Settings → Startup → *Launch All My Tasks when I log in* adds a per-user login entry (Windows Run key, macOS launchd
+agent, Linux XDG autostart file). *Start minimized to tray* makes that login launch use `--tray`; starting the app yourself
+still opens the window. It is unavailable when the app is run through `dotnet run`. On Linux, only use the tray option with a
+StatusNotifier host (see above). See [docs/design/launch-at-login.md](docs/design/launch-at-login.md).
+
 ## Project layout
 
 | Path | What it is |

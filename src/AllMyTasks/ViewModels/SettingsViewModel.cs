@@ -1,4 +1,5 @@
 using System.Globalization;
+using AllMyTasks.Core.Autostart;
 using AllMyTasks.Core.Settings;
 using AllMyTasks.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -12,10 +13,14 @@ public sealed record WeekStartOption(WeekStartSetting Value, string Label);
 public sealed partial class SettingsViewModel : ViewModelBase
 {
     private readonly SettingsService _settings;
+    private readonly AutostartManager _autostart;
+    // True while the properties are being set from stored settings or reverted, so setting them does not touch the OS.
+    private bool _applying;
 
-    public SettingsViewModel(SettingsService settings)
+    public SettingsViewModel(SettingsService settings, AutostartManager autostart)
     {
         _settings = settings;
+        _autostart = autostart;
         var system = WeekStart.Resolve(WeekStartSetting.System, CultureInfo.CurrentCulture);
         WeekStartOptions =
         [
@@ -25,6 +30,11 @@ public sealed partial class SettingsViewModel : ViewModelBase
         ];
         SelectedWeekStart = WeekStartOptions.First(o => o.Value == settings.Current.WeekStart);
         CloseToTray = settings.Current.CloseToTray;
+        _applying = true;
+        LaunchAtLogin = settings.Current.LaunchAtLogin && autostart.IsSupported;
+        StartInTrayAtLogin = settings.Current.StartInTrayAtLogin;
+        _applying = false;
+        AutostartMessage = autostart.UnsupportedReason;
     }
 
     public IReadOnlyList<WeekStartOption> WeekStartOptions { get; }
@@ -40,4 +50,59 @@ public sealed partial class SettingsViewModel : ViewModelBase
 
     partial void OnCloseToTrayChanged(bool value) =>
         _settings.Update(s => s with { CloseToTray = value });
+
+    public bool CanChangeLaunchAtLogin => _autostart.IsSupported;
+
+    [ObservableProperty]
+    public partial bool LaunchAtLogin { get; set; }
+
+    /// <summary>Only meaningful, and only editable, while launching at login is on.</summary>
+    [ObservableProperty]
+    public partial bool StartInTrayAtLogin { get; set; }
+
+    /// <summary>Why launching at login is unavailable, or what went wrong the last time it was changed.</summary>
+    [ObservableProperty]
+    public partial string? AutostartMessage { get; set; }
+
+    partial void OnLaunchAtLoginChanged(bool value)
+    {
+        if (_applying)
+        {
+            return;
+        }
+
+        var error = _autostart.Apply(value, StartInTrayAtLogin);
+        if (error is not null)
+        {
+            // The OS refused: show the previous state again and say why.
+            _applying = true;
+            LaunchAtLogin = !value;
+            _applying = false;
+            AutostartMessage = error;
+            return;
+        }
+
+        AutostartMessage = _autostart.UnsupportedReason;
+        _settings.Update(s => s with { LaunchAtLogin = value });
+    }
+
+    partial void OnStartInTrayAtLoginChanged(bool value)
+    {
+        if (_applying)
+        {
+            return;
+        }
+
+        if (LaunchAtLogin)
+        {
+            var error = _autostart.Apply(true, value);
+            if (error is not null)
+            {
+                AutostartMessage = error;
+                return;
+            }
+        }
+
+        _settings.Update(s => s with { StartInTrayAtLogin = value });
+    }
 }
