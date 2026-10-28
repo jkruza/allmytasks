@@ -1,4 +1,5 @@
 using AllMyTasks.Core.Calendar;
+using AllMyTasks.Core.Changes;
 using AllMyTasks.Core.Model;
 using AllMyTasks.Core.Providers;
 using AllMyTasks.Core.Sync;
@@ -10,7 +11,7 @@ namespace AllMyTasks.Core.Storage;
 /// A store that keeps everything in memory. The fake used by Core and view tests, and by the app
 /// until the SQLite store arrives.
 /// </summary>
-public sealed class InMemoryStore : IItemStore, ISourceRepository
+public sealed class InMemoryStore : IItemStore, ISourceRepository, IPendingChangeStore
 {
     private readonly Lock _gate = new();
     private readonly Dictionary<ItemKey, CalendarEvent> _events = [];
@@ -21,6 +22,7 @@ public sealed class InMemoryStore : IItemStore, ISourceRepository
     private readonly Dictionary<string, SourceConfig> _configs = [];
     private readonly Dictionary<string, SourceStatus> _statuses = [];
     private readonly Dictionary<(string Source, string Collection), SyncState> _states = [];
+    private readonly Dictionary<Guid, PendingChange> _pending = [];
 
     public Task ApplyAsync(string sourceId, string collectionId, SyncResult<CalendarEvent> result, CancellationToken cancellationToken = default)
     {
@@ -90,6 +92,35 @@ public sealed class InMemoryStore : IItemStore, ISourceRepository
         lock (_gate)
         {
             _statuses[status.SourceId] = status;
+        }
+
+        return Task.CompletedTask;
+    }
+
+    public Task<IReadOnlyList<PendingChange>> GetAllAsync(CancellationToken cancellationToken = default)
+    {
+        lock (_gate)
+        {
+            return Task.FromResult<IReadOnlyList<PendingChange>>([.. _pending.Values.OrderBy(c => c.CreatedAt)]);
+        }
+    }
+
+    public Task SaveAsync(PendingChange change, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(change);
+        lock (_gate)
+        {
+            _pending[change.Id] = change;
+        }
+
+        return Task.CompletedTask;
+    }
+
+    public Task RemoveAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        lock (_gate)
+        {
+            _pending.Remove(id);
         }
 
         return Task.CompletedTask;
@@ -185,6 +216,11 @@ public sealed class InMemoryStore : IItemStore, ISourceRepository
         {
             _sources.Remove(sourceId);
             _configs.Remove(sourceId);
+            foreach (var id in _pending.Values.Where(c => c.Key.SourceId == sourceId).Select(c => c.Id).ToList())
+            {
+                _pending.Remove(id);
+            }
+
             _statuses.Remove(sourceId);
             foreach (var key in _collections.Keys.Where(k => k.Source == sourceId).ToList())
             {

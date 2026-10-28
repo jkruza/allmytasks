@@ -1,12 +1,12 @@
-# Todoist provider (read-only)
+# Todoist provider
 
 The first task-only provider. Project: `AllMyTasks.Providers.Todoist`, source kind
 `todoist`. It implements `ITaskSource` and nothing else, which is the point: it proves the
 model and sync engine work for a provider that has no calendar at all. Tracking issue:
 [#27](https://github.com/jkruza/allmytasks/issues/27).
 
-Read-only in v1, like the rest of the app: no create, edit or complete, and every
-collection has `IsReadOnly = true`.
+Read-only by default: no create or edit, and the source only reads until the user switches on
+`allowChanges` (see [complete-tasks.md](complete-tasks.md)), which adds completing and reopening tasks.
 
 **Status: implemented** in `src/AllMyTasks.Providers.Todoist` (`TodoistFactory`, `TodoistSource`,
 `TodoistClient`, `TodoistMapper`), with tests in `tests/AllMyTasks.Providers.Todoist.Tests`. Where the
@@ -208,9 +208,10 @@ the provider references Core and nothing else.
 ## Security
 
 - Token in the secret store only; never in `SourceConfig`, logs, or exception text.
-- A Todoist token has full read/write access to the account. The setup form says so, and
-  the provider only ever calls read endpoints. Users who want to limit risk can revoke the
-  token in Todoist at any time.
+- A Todoist token has full read/write access to the account. The setup form says so. The
+  provider calls write commands only for actions the user takes (complete, reopen), and only when
+  the source's `allowChanges` switch is on (off by default). Users who want to limit risk can
+  revoke the token in Todoist at any time.
 - Fixed host, TLS required, no cross-host redirects.
 - Responses are untrusted input: size cap, tolerant JSON parsing (unknown fields ignored,
   missing optional fields allowed), and item-level failures become warnings.

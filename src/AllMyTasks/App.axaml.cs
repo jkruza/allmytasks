@@ -1,4 +1,5 @@
 using AllMyTasks.Core.Autostart;
+using AllMyTasks.Core.Changes;
 using AllMyTasks.Core.Reminders;
 using AllMyTasks.Core.Samples;
 using AllMyTasks.Core.Startup;
@@ -55,6 +56,10 @@ public sealed partial class App : Application
 
         var database = SqliteDatabase.OpenAsync(System.IO.Path.Combine(dataDirectory, "data.db")).GetAwaiter().GetResult();
         var items = new SqliteItemStore(database);
+        var pending = new SqlitePendingChangeStore(database);
+
+        // Views read the cache with the user's unsent changes applied; the sync engine writes to the plain cache.
+        var viewItems = new PendingOverlayStore(items, pending);
         var sources = new SqliteSourceRepository(database);
         var settings = new SqliteSettingsStore(database);
 
@@ -68,7 +73,15 @@ public sealed partial class App : Application
         var microsoftFactory = new MicrosoftFactory(logger: log, displayZone: zone);
         var googleFactory = new GoogleFactory(logger: log);
         var registry = new SourceRegistry([feedFactory, davFactory, todoistFactory, googleFactory, microsoftFactory, new SampleSourceFactory(clock, zone)], sources, secrets);
-        var engine = new SyncEngine(items, sources, registry, clock, logger: log);
+        var engine = new SyncEngine(items, sources, registry, clock, logger: log, pendingChanges: pending);
+        var changes = new TaskChangeService(pending, sources, registry, clock);
+        changes.Changed += (_, e) =>
+        {
+            if (e.NeedsPush)
+            {
+                _ = engine.SyncSourceAsync(e.SourceId);
+            }
+        };
         var scheduler = new SyncScheduler(engine, sources, clock);
         var dialogs = new DialogService(desktop);
 
@@ -91,12 +104,12 @@ public sealed partial class App : Application
             _ = autostart.Apply(true, appSettings.Current.StartInTrayAtLogin);
         }
 
-        var agenda = new AgendaService(items, sources, new IcalRecurrenceExpander(), clock);
+        var agenda = new AgendaService(viewItems, sources, new IcalRecurrenceExpander(), clock);
         CalendarShellViewModel? shell = null;
         shell = new CalendarShellViewModel(
             agenda,
-            new TaskListService(items, sources, clock),
-            new TaskDetailsService(items, sources, clock),
+            new TaskListService(viewItems, sources, clock, changes),
+            new TaskDetailsService(viewItems, sources, clock, changes),
             sources,
             clock,
             zone,
@@ -104,7 +117,8 @@ public sealed partial class App : Application
             engine,
             () => dialogs.ShowSources(new SourcesViewModel(engine, registry, sources, clock, dialogs, () => shell!.OnCollectionsChangedAsync())),
             appSettings,
-            () => _ = dialogs.ShowSettingsAsync(new SettingsViewModel(appSettings, autostart)));
+            () => _ = dialogs.ShowSettingsAsync(new SettingsViewModel(appSettings, autostart)),
+            changes);
 
         var window = new MainWindow { DataContext = shell };
         window.Activated += (_, _) => _ = scheduler.OnWindowActivatedAsync();
@@ -139,6 +153,7 @@ public sealed partial class App : Application
             googleFactory.Dispose();
             microsoftFactory.Dispose();
             shell.Dispose();
+            changes.Dispose();
             engine.Dispose();
             secrets.Dispose();
         };

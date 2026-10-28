@@ -1,4 +1,5 @@
 using AllMyTasks.Core.Calendar;
+using AllMyTasks.Core.Changes;
 using AllMyTasks.Core.Model;
 using AllMyTasks.Core.Providers;
 using AllMyTasks.Core.Storage;
@@ -25,7 +26,8 @@ public sealed partial class SyncEngine(
     ISourceProvider sources,
     TimeProvider clock,
     SyncOptions? options = null,
-    ILogger? logger = null) : IDisposable
+    ILogger? logger = null,
+    IPendingChangeStore? pendingChanges = null) : IDisposable
 {
     private readonly ILogger _logger = logger ?? NullLogger.Instance;
     private readonly SyncOptions _options = options ?? new SyncOptions();
@@ -181,6 +183,12 @@ public sealed partial class SyncEngine(
         try
         {
             var source = await sources.GetAsync(info, cancellationToken).ConfigureAwait(false);
+
+            // The user's changes go first, so the pull that follows brings their effect.
+            var pushed = await PushPendingAsync(source, sourceId, cancellationToken).ConfigureAwait(false);
+            warning = pushed.Warning;
+            changed = pushed.Changed;
+
             var offered = await source.GetCollectionsAsync(cancellationToken).ConfigureAwait(false);
             await repository.SaveCollectionsAsync(info, offered, cancellationToken).ConfigureAwait(false);
 
@@ -245,6 +253,61 @@ public sealed partial class SyncEngine(
                 SourceSynced?.Invoke(this, new SourceSyncedEventArgs(sourceId));
             }
         }
+    }
+
+    /// <summary>
+    /// Sends the queued changes of one source in the order the user made them. A source that is unreachable or rejects
+    /// the credentials stops the sync (the changes stay queued and the normal failure handling applies); a change the
+    /// source refuses for good is marked failed and the rest go on.
+    /// </summary>
+    private async Task<(string? Warning, bool Changed)> PushPendingAsync(ISource source, string sourceId, CancellationToken cancellationToken)
+    {
+        if (pendingChanges is null)
+        {
+            return (null, false);
+        }
+
+        var queued = (await pendingChanges.GetAllAsync(cancellationToken).ConfigureAwait(false))
+            .Where(c => c.Key.SourceId == sourceId && c.State == PendingState.Queued)
+            .ToList();
+        string? warning = null;
+        var changed = false;
+        foreach (var change in queued)
+        {
+            if (source is not IWritableTaskSource writable)
+            {
+                // Changes were switched off after the user made this one.
+                await pendingChanges.SaveAsync(change with { State = PendingState.Failed, Error = "Changes are switched off for this source." }, cancellationToken).ConfigureAwait(false);
+                changed = true;
+                continue;
+            }
+
+            try
+            {
+                var result = change.Kind == PendingKind.Complete
+                    ? await writable.CompleteAsync(change.Key, change.Id, cancellationToken).ConfigureAwait(false)
+                    : await writable.ReopenAsync(change.Key, change.Id, cancellationToken).ConfigureAwait(false);
+                await pendingChanges.RemoveAsync(change.Id, cancellationToken).ConfigureAwait(false);
+                changed = true;
+                if (result.Outcome == WriteOutcome.NotFound)
+                {
+                    warning ??= "A task you changed no longer exists in the source, so the change was dropped.";
+                }
+            }
+            catch (Exception ex) when (ex is SourceAuthException or SourceUnavailableException)
+            {
+                await pendingChanges.SaveAsync(change with { Attempts = change.Attempts + 1 }, CancellationToken.None).ConfigureAwait(false);
+                throw;
+            }
+            catch (SourceException ex)
+            {
+                LogChangeFailed(_logger, sourceId, change.Kind, DiagnosticText.Describe(ex, includeMessage: true));
+                await pendingChanges.SaveAsync(change with { Attempts = change.Attempts + 1, State = PendingState.Failed, Error = ex.Message }, cancellationToken).ConfigureAwait(false);
+                changed = true;
+            }
+        }
+
+        return (warning, changed);
     }
 
     private async Task<(int Skipped, string? Warning, bool Changed)> SyncCollectionAsync(
@@ -363,6 +426,9 @@ public sealed partial class SyncEngine(
 
     [LoggerMessage(Level = LogLevel.Warning, Message = "Sync of source {SourceId} ({Kind}) failed: {Error}\n{Cause}\n{Detail}")]
     private static partial void LogSyncFailed(ILogger logger, string sourceId, string kind, string error, string cause, string? detail);
+
+    [LoggerMessage(Level = LogLevel.Warning, Message = "Source {SourceId} refused a change ({Kind}): {Cause}")]
+    private static partial void LogChangeFailed(ILogger logger, string sourceId, PendingKind kind, string cause);
 
     [LoggerMessage(Level = LogLevel.Warning, Message = "Source {SourceId}, collection {CollectionId}, item {ItemId}: {Problem}")]
     private static partial void LogItemWarning(ILogger logger, string sourceId, string collectionId, string? itemId, string problem);

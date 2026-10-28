@@ -8,7 +8,7 @@ it runs on Windows, macOS and Linux.
 
 **Website:** <https://allmytasks.jkruza.com/>
 
-**Status:** early. Read-only providers so far: iCalendar feeds, CalDAV calendars, Todoist tasks
+**Status:** early. Read-only providers so far (Todoist tasks can also be completed and reopened from the app once you switch on "Allow All My Tasks to change tasks" for that source; not yet verified against a live account): iCalendar feeds, CalDAV calendars, Todoist tasks
 (add one with a Todoist API token), personal Microsoft accounts (Outlook calendar and Microsoft To Do) and Google
 accounts (Google Calendar and Google Tasks). The Microsoft and Google providers are not yet verified against a live account. More providers are planned, see the [roadmap](docs/design/roadmap.md).
 
@@ -77,7 +77,7 @@ the corner of the screen is used. See [docs/design/reminders.md](docs/design/rem
 | `src/AllMyTasks` | The Avalonia desktop app (views and view models) |
 | `src/AllMyTasks.Core` | UI-independent logic: tasks, providers, aggregation |
 | `src/AllMyTasks.Providers.ICal` | iCalendar feed and CalDAV providers |
-| `src/AllMyTasks.Providers.Todoist` | Todoist task provider (API token, read-only) |
+| `src/AllMyTasks.Providers.Todoist` | Todoist task provider (API token; read-only unless changes are allowed) |
 | `src/AllMyTasks.Providers.Google` | Google Calendar and Google Tasks (OAuth, read-only) |
 | `src/AllMyTasks.Providers.Microsoft` | Outlook calendar and Microsoft To Do for personal accounts (Microsoft Graph, read-only) |
 | `site/` | The static project page published on GitHub Pages |

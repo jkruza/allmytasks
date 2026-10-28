@@ -6,18 +6,19 @@ using Microsoft.Extensions.Logging;
 namespace AllMyTasks.Providers.Todoist;
 
 /// <summary>
-/// A Todoist account (kind <c>todoist</c>): every active project is a task list and the tasks are read-only.
+/// A Todoist account (kind <c>todoist</c>): every active project is a task list. This class only reads; the
+/// <see cref="WritableTodoistSource"/> subclass is what a source with changes allowed becomes.
 /// Todoist syncs per account while the engine syncs per collection, so a collection's state is the account's
 /// sync token it was last synced from, and one reply is shared by every collection asking from the same token.
 /// </summary>
-public sealed class TodoistSource : SourceBase, ITaskSource, IDisposable
+public class TodoistSource : SourceBase, ITaskSource, IDisposable
 {
     public const string KindName = "todoist";
 
     internal const int MemoLimit = 4;
     private static readonly TimeSpan MemoLifetime = TimeSpan.FromMinutes(2);
 
-    private readonly TodoistClient _client;
+    private protected readonly TodoistClient _client;
     private readonly TodoistMapper _mapper;
     private readonly Lock _gate = new();
     private readonly Dictionary<string, MemoEntry> _memo = [];
@@ -28,14 +29,36 @@ public sealed class TodoistSource : SourceBase, ITaskSource, IDisposable
         TodoistClient client,
         TimeZoneInfo displayZone,
         ILogger? logger = null,
-        TimeProvider? timeProvider = null)
+        TimeProvider? timeProvider = null,
+        bool allowChanges = false)
         : base(id, KindName, displayName, logger, timeProvider)
     {
         _client = client;
-        _mapper = new TodoistMapper(id, displayZone);
+        _mapper = new TodoistMapper(id, displayZone, readOnly: !allowChanges);
     }
 
-    public void Dispose() => _client.Dispose();
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _client.Dispose();
+        }
+    }
+
+    /// <summary>Forgets the remembered replies, which a change on the server has made out of date.</summary>
+    private protected void ForgetReplies()
+    {
+        lock (_gate)
+        {
+            _memo.Clear();
+        }
+    }
 
     /// <summary>Lists the projects with a projects-only full sync, which is small and always the complete list.</summary>
     public override async Task<IReadOnlyList<CollectionInfo>> GetCollectionsAsync(CancellationToken cancellationToken = default)

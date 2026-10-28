@@ -1,4 +1,5 @@
 using System.Windows.Input;
+using AllMyTasks.Core.Changes;
 using AllMyTasks.Core.Model;
 using AllMyTasks.Core.Views;
 using Avalonia.Media;
@@ -6,11 +7,15 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace AllMyTasks.ViewModels;
 
-/// <summary>Read-only details of one task, shown in the details pane.</summary>
+/// <summary>What the details pane can do to a task: complete or reopen it, and retry or discard a change that failed.</summary>
+public sealed record TaskActions(Func<ItemKey, bool, bool, string, Task> Toggle, Func<Guid, Task> Retry, Func<Guid, Task> Discard);
+
+/// <summary>Details of one task, shown in the details pane, with a button to complete or reopen it when its source allows.</summary>
 public sealed class TaskDetailsViewModel : ViewModelBase
 {
-    public TaskDetailsViewModel(TaskDetailsContent details, Func<ItemKey, Task> open)
+    public TaskDetailsViewModel(TaskDetailsContent details, Func<ItemKey, Task> open, TaskActions? actions = null)
     {
+        Key = details.Key;
         Title = details.Title;
         Glyph = details.Glyph;
         Accent = Brush.Parse(details.AccentColor);
@@ -20,7 +25,44 @@ public sealed class TaskDetailsViewModel : ViewModelBase
         Notes = details.Notes;
         Parent = details.Parent is { } parent ? new TaskLink(parent, open) : null;
         Subtasks = [.. details.Subtasks.Select(t => new TaskLink(t, open))];
+
+        CanChange = details.CanChange && actions is not null;
+        ToggleLabel = details.IsCompleted ? "Mark as not done" : "Mark as done";
+        ToggleCommand = new AsyncRelayCommand(() => actions?.Toggle(details.Key, !details.IsCompleted, details.IsRecurring, details.Title) ?? Task.CompletedTask);
+        if (details.Pending is { } pending)
+        {
+            if (pending.State == PendingState.Failed)
+            {
+                FailedText = "Not sent to the source: " + (pending.Error ?? "the change was refused") + ".";
+                RetryCommand = new AsyncRelayCommand(() => actions?.Retry(pending.Id) ?? Task.CompletedTask);
+                DiscardCommand = new AsyncRelayCommand(() => actions?.Discard(pending.Id) ?? Task.CompletedTask);
+            }
+            else
+            {
+                WaitingText = "Waiting to be sent to the source.";
+            }
+        }
     }
+
+    public ItemKey Key { get; }
+
+    public bool CanChange { get; }
+
+    public string ToggleLabel { get; }
+
+    public ICommand? ToggleCommand { get; }
+
+    public string FailedText { get; } = string.Empty;
+
+    public bool HasFailed => FailedText.Length > 0;
+
+    public ICommand? RetryCommand { get; }
+
+    public ICommand? DiscardCommand { get; }
+
+    public string WaitingText { get; } = string.Empty;
+
+    public bool IsWaiting => WaitingText.Length > 0;
 
     public string Title { get; }
 

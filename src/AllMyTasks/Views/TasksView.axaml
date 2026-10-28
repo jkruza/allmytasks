@@ -79,13 +79,18 @@
         <DataTemplate DataType="vm:TaskRowItem">
           <Grid ColumnDefinitions="Auto,4,*,Auto,Auto,Auto,Auto" ColumnSpacing="10" Margin="{Binding Indent}" Opacity="{Binding Opacity}"
                 AutomationProperties.Name="{Binding Spoken}" Background="Transparent" c:EntryActivation.Enabled="True">
-            <TextBlock Grid.Column="0" Text="{Binding Glyph}" VerticalAlignment="Center" />
+            <TextBlock Grid.Column="0" Text="{Binding Glyph}" VerticalAlignment="Center" IsVisible="{Binding CannotChange}" />
+            <!-- A button only for tasks whose source allows changes; see docs/design/complete-tasks.md. -->
+            <Button Grid.Column="0" Content="{Binding Glyph}" Command="{Binding ToggleCommand}" IsVisible="{Binding CanChange}"
+                    Background="Transparent" BorderThickness="0" Padding="2,0" VerticalAlignment="Center" Focusable="False"
+                    AutomationProperties.Name="{Binding ToggleName}" ToolTip.Tip="{Binding ToggleName}" />
             <Border Grid.Column="1" Background="{Binding Accent}" CornerRadius="2" />
             <StackPanel Grid.Column="2" VerticalAlignment="Center">
               <TextBlock Text="{Binding Title}" TextTrimming="CharacterEllipsis" />
               <StackPanel Orientation="Horizontal" Spacing="8">
                 <TextBlock Text="{Binding LabelsText}" FontSize="11" Opacity="0.7" />
                 <TextBlock Text="{Binding SubtaskText}" FontSize="11" Opacity="0.7" />
+                <TextBlock Text="{Binding FailedText}" IsVisible="{Binding HasFailed}" FontSize="11" Foreground="IndianRed" TextTrimming="CharacterEllipsis" />
               </StackPanel>
             </StackPanel>
             <TextBlock Grid.Column="3" Text="{Binding PriorityText}" Foreground="DarkOrange" FontWeight="Bold" VerticalAlignment="Center" />

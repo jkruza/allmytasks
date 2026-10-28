@@ -131,11 +131,11 @@ Core type: `UpcomingList(IReadOnlyList<DayGroup>)`.
 A flat list of tasks from every source, independent of date. It is where undated tasks
 live and where the user triages everything.
 
-Rows: checkbox glyph (display only in read-only v1), title, due (date or date+time,
+Rows: checkbox glyph (a button that completes or reopens the task when its source allows changes, see
+[complete-tasks.md](complete-tasks.md); display only otherwise), title, due (date or date+time,
 overdue highlighted), collection badge and colour, priority marker, labels, and a
 subtask indicator. Subtasks nest under their parent (`ParentKey`); a subtask whose parent
-is filtered out is shown at top level so it never disappears. Clicking a row (or Enter or
-Space on it) opens its [details](task-details.md) in the pane.
+is filtered out is shown at top level so it never disappears. Clicking a row (or Enter on it, or Space where the task cannot be ticked) opens its [details](task-details.md) in the pane.
 
 ### Filtering
 

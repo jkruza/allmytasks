@@ -3,6 +3,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.VisualTree;
 
 namespace AllMyTasks.Controls;
 
@@ -35,14 +36,33 @@ public static class EntryActivation
         }
     }
 
-    private static void OnTapped(object? sender, TappedEventArgs e) => Open(sender, e);
+    private static void OnTapped(object? sender, TappedEventArgs e)
+    {
+        // A button inside the row (the completion checkbox) handles its own click.
+        if (sender is Visual row && e.Source is Visual source && source.FindAncestorOfType<Button>(includeSelf: true) is { } button && row.IsVisualAncestorOf(button))
+        {
+            return;
+        }
+
+        Open(sender, e);
+    }
 
     private static void OnKeyDown(object? sender, KeyEventArgs e)
     {
-        if (e.Key is Key.Enter or Key.Space && e.KeyModifiers == KeyModifiers.None)
+        if (e.Key is not (Key.Enter or Key.Space) || e.KeyModifiers != KeyModifiers.None || !ReferenceEquals(e.Source, sender))
         {
-            Open(sender, e);
+            return;
         }
+
+        // On a task that can be changed, Space ticks it and Enter opens it.
+        if (e.Key == Key.Space && sender is Control { DataContext: TaskRowItem { CanChange: true } row })
+        {
+            row.ToggleCommand.Execute(null);
+            e.Handled = true;
+            return;
+        }
+
+        Open(sender, e);
     }
 
     private static void Open(object? sender, RoutedEventArgs e)

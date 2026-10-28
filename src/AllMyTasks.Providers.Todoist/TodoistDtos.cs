@@ -13,6 +13,9 @@ internal sealed record SyncResponseDto
     public List<ProjectDto>? Projects { get; init; }
 
     public List<ItemDto>? Items { get; init; }
+
+    /// <summary>The result of each command sent, by the command's uuid: the string <c>ok</c> or an error object.</summary>
+    public Dictionary<string, JsonElement>? SyncStatus { get; init; }
 }
 
 internal sealed record ProjectDto

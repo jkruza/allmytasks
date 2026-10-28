@@ -1,3 +1,4 @@
+using AllMyTasks.Core.Changes;
 using AllMyTasks.Core.Model;
 using AllMyTasks.Core.Storage;
 using AllMyTasks.Core.Tasks;
@@ -6,7 +7,7 @@ using AllMyTasks.Core.Time;
 namespace AllMyTasks.Core.Views;
 
 /// <summary>Builds the All tasks list from the store.</summary>
-public sealed class TaskListService(IItemStore store, ISourceRepository sources, TimeProvider clock) : ITaskListService
+public sealed class TaskListService(IItemStore store, ISourceRepository sources, TimeProvider clock, ITaskChangeService? changes = null) : ITaskListService
 {
     public async Task<IReadOnlyList<TaskGroup>> GetAsync(TaskListQuery query, CancellationToken cancellationToken = default)
     {
@@ -16,6 +17,7 @@ public sealed class TaskListService(IItemStore store, ISourceRepository sources,
             .ToDictionary(c => (c.SourceId, c.Id));
         var sourceNames = (await sources.GetSourcesAsync(cancellationToken).ConfigureAwait(false))
             .ToDictionary(s => s.Id, s => s.DisplayName);
+        var changeState = changes is null ? TaskChangeSnapshot.Empty : await changes.GetSnapshotAsync(cancellationToken).ConfigureAwait(false);
         cancellationToken.ThrowIfCancellationRequested();
 
         var now = clock.GetUtcNow();
@@ -38,7 +40,7 @@ public sealed class TaskListService(IItemStore store, ISourceRepository sources,
             sourceNames.TryGetValue(task.Key.SourceId, out var sourceName);
             visited.Add(task.Key);
             var children = childrenOf[task.Key].Where(c => !visited.Contains(c.Key)).Select(ToRow).ToList();
-            return new TaskRow(task, collection?.DisplayName ?? string.Empty, sourceName ?? string.Empty, collection?.Color, task.IsOverdue(now, zone), children);
+            return new TaskRow(task, collection?.DisplayName ?? string.Empty, sourceName ?? string.Empty, collection?.Color, task.IsOverdue(now, zone), children, changeState.CanChange(task.Key), changeState.PendingFor(task.Key));
         }
 
         // A subtask whose parent was filtered out is shown at the top level so it never disappears.

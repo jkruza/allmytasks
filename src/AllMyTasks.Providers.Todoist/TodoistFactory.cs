@@ -9,6 +9,7 @@ namespace AllMyTasks.Providers.Todoist;
 public sealed class TodoistFactory(HttpMessageHandler? handler = null, ILogger? logger = null, TimeZoneInfo? displayZone = null) : ISourceFactory, IDisposable
 {
     public const string TokenField = "token";
+    public const string AllowChangesField = "allowChanges";
 
     private readonly HttpMessageHandler _handler = handler ?? TodoistClient.CreateDefaultHandler();
     private readonly bool _ownsHandler = handler is null;
@@ -24,7 +25,12 @@ public sealed class TodoistFactory(HttpMessageHandler? handler = null, ILogger? 
             "API token",
             FieldKind.Password,
             Required: true,
-            Help: "In Todoist open Settings, Integrations, Developer and copy the API token. It gives full access to your account, so the app only reads with it. It is stored in your system keyring."),
+            Help: "In Todoist open Settings, Integrations, Developer and copy the API token. It gives full access to your account, so the app only reads with it unless you allow changes below. It is stored in your system keyring."),
+        new SourceConfigField(
+            AllowChangesField,
+            "Allow All My Tasks to change tasks in Todoist",
+            FieldKind.Bool,
+            Help: "Lets you complete and reopen tasks from the app. Off by default: the app then only reads."),
         new SourceConfigField(SyncScheduler.IntervalKey, "Refresh every (minutes)", FieldKind.Number, Help: "Leave blank for 15."),
     ]);
 
@@ -41,6 +47,9 @@ public sealed class TodoistFactory(HttpMessageHandler? handler = null, ILogger? 
         ArgumentNullException.ThrowIfNull(config);
         ArgumentNullException.ThrowIfNull(secrets);
         var client = new TodoistClient(_handler, async ct => (await secrets.GetAsync(sourceId, TokenField, ct).ConfigureAwait(false))?.Trim());
-        return new TodoistSource(sourceId, displayName, client, displayZone ?? TimeZoneInfo.Local, logger);
+        var zone = displayZone ?? TimeZoneInfo.Local;
+        return string.Equals(config.Get(AllowChangesField), "true", StringComparison.OrdinalIgnoreCase)
+            ? new WritableTodoistSource(sourceId, displayName, client, zone, logger)
+            : new TodoistSource(sourceId, displayName, client, zone, logger);
     }
 }
