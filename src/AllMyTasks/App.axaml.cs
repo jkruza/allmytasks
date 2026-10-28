@@ -1,5 +1,6 @@
 using AllMyTasks.Core.Autostart;
 using AllMyTasks.Core.Changes;
+using AllMyTasks.Core.Reminders;
 using AllMyTasks.Core.Samples;
 using AllMyTasks.Core.Startup;
 using AllMyTasks.Core.Storage;
@@ -128,8 +129,22 @@ public sealed partial class App : Application
             desktop.MainWindow = window;
         }
 
+        // Reminders: Linux uses the desktop's notification daemon and falls back to an in-app window; the other systems
+        // use the in-app window until their native notifiers land with the installers (docs/design/reminders.md).
+        var inApp = new InAppNotifier();
+        INotifier notifier = OperatingSystem.IsLinux() ? new FallbackNotifier(new LinuxNotifier(new ProcessLauncher()), inApp) : inApp;
+        var reminders = new ReminderScheduler(agenda, new SqliteReminderLog(database), notifier, () => appSettings.Current.ToReminderSettings(), zone, clock, log);
+        reminders.OpenRequested += (_, reminder) => Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+        {
+            tray.Show();
+            _ = shell.OpenReminderAsync(reminder);
+        });
+        appSettings.Changed += (_, _) => _ = reminders.TickAsync();
+        engine.SourceSynced += (_, _) => _ = reminders.TickAsync();
+
         desktop.Exit += (_, _) =>
         {
+            reminders.Dispose();
             tray.Dispose();
             scheduler.Dispose();
             feedFactory.Dispose();
@@ -144,12 +159,13 @@ public sealed partial class App : Application
         };
 
         // Show cached data first, then sync in the background.
-        _ = StartAsync(shell, scheduler);
+        _ = StartAsync(shell, scheduler, reminders);
     }
 
-    private static async Task StartAsync(CalendarShellViewModel shell, SyncScheduler scheduler)
+    private static async Task StartAsync(CalendarShellViewModel shell, SyncScheduler scheduler, ReminderScheduler reminders)
     {
         await shell.InitializeAsync();
+        await reminders.StartAsync();
         await scheduler.StartAsync();
     }
 

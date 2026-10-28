@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using AllMyTasks.Core.Changes;
 using AllMyTasks.Core.Model;
+using AllMyTasks.Core.Reminders;
 using AllMyTasks.Core.Settings;
 using AllMyTasks.Core.Storage;
 using AllMyTasks.Core.Sync;
@@ -19,6 +20,7 @@ namespace AllMyTasks.ViewModels;
 /// </summary>
 public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
 {
+    private readonly IAgendaService _agenda;
     private readonly ISourceRepository _sources;
     private readonly ITaskDetailsService _taskDetails;
     private readonly TimeProvider _clock;
@@ -80,6 +82,7 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
             engine.StatusChanged += OnStatusChanged;
         }
 
+        _agenda = agenda;
         _sources = sources;
         _taskDetails = taskDetails;
         _clock = clock;
@@ -427,6 +430,29 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
             (0, _) => failed == 1 ? "1 change failed" : $"{failed} changes failed",
             _ => $"{queued} waiting, {failed} failed",
         };
+    }
+
+    /// <summary>Shows the item a reminder is about: the task's details, or the event's day with its details open.</summary>
+    public async Task OpenReminderAsync(Reminder reminder)
+    {
+        ArgumentNullException.ThrowIfNull(reminder);
+        switch (reminder.Kind)
+        {
+            case ReminderKind.TaskDue:
+                await ShowTaskDetailsAsync(reminder.Key);
+                break;
+            case ReminderKind.EventStart:
+                var day = DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(reminder.Occurrence, _zone).DateTime);
+                Mode = ViewMode.Day;
+                CurrentDate = day;
+                var entries = await _agenda.GetEntriesAsync(new ViewQuery(day, day.AddDays(1), _zone, new ViewFilter()));
+                if (entries.OfType<EventEntry>().FirstOrDefault(e => e.Key == reminder.Key && e.Start == reminder.Occurrence) is { } entry)
+                {
+                    await ShowDetailsAsync(entry);
+                }
+
+                break;
+        }
     }
 
     /// <summary>Loads collections and the first view. Call once after the window is shown.</summary>
