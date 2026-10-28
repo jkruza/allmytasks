@@ -1,6 +1,6 @@
 -- One row per reminder that was delivered, snoozed or dismissed. Times are UTC milliseconds. The reminder is kept
 -- whole so a snoozed one can be shown again without re-reading the item.
-CREATE TABLE reminder_log (
+CREATE TABLE IF NOT EXISTS reminder_log (
     source_id      TEXT NOT NULL,
     collection_id  TEXT NOT NULL,
     item_id        TEXT NOT NULL,
@@ -16,4 +16,4 @@ CREATE TABLE reminder_log (
     PRIMARY KEY (source_id, collection_id, item_id, recurrence_id, occurrence_utc)
 );
 
-CREATE INDEX reminder_log_ends_at ON reminder_log (ends_at_utc);
+CREATE INDEX IF NOT EXISTS reminder_log_ends_at ON reminder_log (ends_at_utc);
