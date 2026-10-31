@@ -27,6 +27,7 @@ internal sealed class GoogleAuth : IDisposable
     public const string TasksScope = "https://www.googleapis.com/auth/tasks.readonly";
 
     internal static readonly Uri AuthorizeUrl = new("https://accounts.google.com/o/oauth2/v2/auth");
+    internal static readonly Uri RevokeUrl = new("https://oauth2.googleapis.com/revoke");
     internal static readonly Uri TokenUrl = new("https://oauth2.googleapis.com/token");
     internal static readonly TimeSpan SignInTimeout = TimeSpan.FromMinutes(5);
 
@@ -88,6 +89,25 @@ internal sealed class GoogleAuth : IDisposable
         {
             throw new SourceException($"No web browser could be opened for sign-in ({ex.GetType().Name}).");
         }
+    }
+
+    /// <summary>
+    /// Asks Google to revoke the stored refresh token (and with it the access granted to this app). Does nothing without a
+    /// token; failures are the caller's to ignore.
+    /// </summary>
+    public async Task RevokeAsync(CancellationToken cancellationToken)
+    {
+        if (await _secrets.GetAsync(_sourceId, RefreshTokenField, cancellationToken).ConfigureAwait(false) is not { Length: > 0 } token)
+        {
+            return;
+        }
+
+        using var request = new HttpRequestMessage(HttpMethod.Post, RevokeUrl)
+        {
+            Content = new FormUrlEncodedContent([KeyValuePair.Create("token", token)]),
+        };
+        using var _ = await _http.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        _accessToken = null;
     }
 
     /// <summary>Forgets the cached access token, for example after the API answered 401.</summary>

@@ -14,7 +14,7 @@ namespace AllMyTasks.Providers.Google;
 /// Calendar API's sync tokens and keep recurring events as series plus overrides; task lists have no sync token, so they sync
 /// with <c>updatedMin</c> and a full snapshot once a week.
 /// </summary>
-public sealed class GoogleSource : SourceBase, ICalendarSource, ITaskSource, IDisposable
+public sealed class GoogleSource : SourceBase, ICalendarSource, ITaskSource, ISourceCleanup, IDisposable
 {
     public const string KindName = "google";
 
@@ -52,6 +52,8 @@ public sealed class GoogleSource : SourceBase, ICalendarSource, ITaskSource, IDi
         _eventMapper = new EventMapper(id);
         _taskMapper = new TaskMapper(id);
     }
+
+    public Task OnRemovingAsync(CancellationToken cancellationToken = default) => _auth.RevokeAsync(cancellationToken);
 
     public void Dispose()
     {
