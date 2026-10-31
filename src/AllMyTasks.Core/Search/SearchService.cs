@@ -58,8 +58,8 @@ public interface ISearchService
 public sealed class SearchService(IItemStore store, ISourceRepository sources, IRecurrenceExpander expander, TimeProvider clock) : ISearchService
 {
     // The cache holds only what the sync window brought in, so a wide range simply means "all of it".
-    private const int RangeYears = 30;
-    private const int NextOccurrenceYears = 3;
+    internal const int RangeYears = 30;
+    internal const int NextOccurrenceYears = 3;
 
     public async Task<SearchResults> SearchAsync(SearchQuery query, TimeZoneInfo displayZone, CancellationToken cancellationToken = default)
     {
