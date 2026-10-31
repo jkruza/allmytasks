@@ -182,9 +182,8 @@ public sealed class SearchService(IItemStore store, ISourceRepository sources, I
         {
             var modified = overrides.ToList();
             var next = expander.Expand(item, modified, now, now.AddYears(NextOccurrenceYears), zone);
-            var shown = next.Count > 0
-                ? next[0]
-                : expander.Expand(item, modified, now.AddYears(-NextOccurrenceYears), now, zone).LastOrDefault();
+            var past = next.Count > 0 ? next : expander.Expand(item, modified, now.AddYears(-NextOccurrenceYears), now, zone);
+            var shown = next.Count > 0 ? next[0] : past.Count > 0 ? past[^1] : null;
             if (shown is not null)
             {
                 time = shown.Time;
