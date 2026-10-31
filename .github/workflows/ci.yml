@@ -97,3 +97,81 @@ jobs:
       - name: Skipped (docs-only change)
         if: needs.changes.outputs.code != 'true'
         run: echo "Only documentation changed; build and test skipped."
+
+  package:
+    # Builds every platform's package on every run (unsigned) so packaging cannot rot until release day.
+    # Like `build`, the job always runs and skips its steps for docs-only changes. See docs/design/packaging.md.
+    needs: changes
+    name: package (${{ matrix.rid }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: windows-latest, rid: win-x64 }
+          - { os: windows-latest, rid: win-arm64 }
+          - { os: ubuntu-latest, rid: linux-x64 }
+          - { os: ubuntu-latest, rid: linux-arm64 }
+          - { os: macos-latest, rid: osx-x64 }
+          - { os: macos-latest, rid: osx-arm64 }
+    env:
+      DOTNET_NOLOGO: true
+      DOTNET_CLI_TELEMETRY_OPTOUT: true
+      VERSION: 0.0.0-ci
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: needs.changes.outputs.code == 'true'
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        if: needs.changes.outputs.code == 'true'
+        with:
+          global-json-file: global.json
+
+      - name: Publish
+        if: needs.changes.outputs.code == 'true'
+        shell: bash
+        run: bash packaging/publish.sh "${{ matrix.rid }}" "$VERSION" "out/${{ matrix.rid }}"
+
+      - name: Package (Linux)
+        if: needs.changes.outputs.code == 'true' && startsWith(matrix.rid, 'linux-')
+        run: bash packaging/linux/build.sh "${{ matrix.rid }}" "$VERSION" "out/${{ matrix.rid }}" dist
+
+      - name: Smoke test (Linux)
+        if: needs.changes.outputs.code == 'true' && matrix.rid == 'linux-x64'
+        run: bash packaging/linux/smoke.sh "$VERSION" dist
+
+      - name: Package (Windows)
+        if: needs.changes.outputs.code == 'true' && startsWith(matrix.rid, 'win-')
+        shell: pwsh
+        run: ./packaging/windows/build.ps1 -Rid '${{ matrix.rid }}' -Version $env:VERSION -PublishDir 'out/${{ matrix.rid }}' -DistDir dist
+
+      - name: Smoke test (Windows)
+        if: needs.changes.outputs.code == 'true' && matrix.rid == 'win-x64'
+        shell: pwsh
+        run: ./packaging/windows/smoke.ps1 -Msi "dist/AllMyTasks-$env:VERSION-windows-x64.msi" -Version $env:VERSION
+
+      - name: Package (archive)
+        if: needs.changes.outputs.code == 'true'
+        shell: bash
+        run: |
+          mkdir -p dist
+          if [[ "${{ matrix.rid }}" == win-* ]]; then
+            (cd "out/${{ matrix.rid }}" && 7z a -tzip "../../dist/AllMyTasks-${VERSION}-${{ matrix.rid }}.zip" . > /dev/null)
+          else
+            tar -C "out/${{ matrix.rid }}" -czf "dist/AllMyTasks-${VERSION}-${{ matrix.rid }}.tar.gz" .
+          fi
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: needs.changes.outputs.code == 'true'
+        with:
+          name: package-${{ matrix.rid }}
+          path: dist/*
+          retention-days: 7
+          if-no-files-found: error
+
+      - name: Skipped (docs-only change)
+        if: needs.changes.outputs.code != 'true'
+        run: echo "Only documentation changed; packaging skipped."

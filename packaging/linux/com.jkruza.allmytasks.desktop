@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=All My Tasks
+Comment=Calendars and tasks from many providers in one place
+Exec=allmytasks
+Icon=com.jkruza.allmytasks
+Terminal=false
+Categories=Office;Calendar;ProjectManagement;
+StartupWMClass=AllMyTasks
