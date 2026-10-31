@@ -17,7 +17,7 @@ accounts (Google Calendar and Google Tasks). The Microsoft and Google providers 
 Microsoft only issues tokens to a registered app, and the repository does not ship one. To add a Microsoft
 source, register a free app once (a few minutes, no secret, no verification for personal accounts) and paste its
 Application (client) ID into the source form; or build with `AMT_MICROSOFT_CLIENT_ID` set to embed it. Steps:
-[Register an app](docs/design/outlook-calendar-provider.md#register-an-app-once-per-maintainer-or-user). After you save the source, a
+[Register an app](docs/oauth-setup.md#microsoft-register-an-app-in-microsoft-entra). After you save the source, a
 browser window opens to sign in; only a refresh token is kept, in your system keyring. Work and school accounts
 are not supported yet. A calendar-only alternative that needs no registration is the Outlook.com *published
 calendar* link, added as an iCalendar feed.
@@ -26,13 +26,13 @@ calendar* link, added as an iCalendar feed.
 
 Google Calendar and Google Tasks share one `google` source per account. Google only issues tokens to a registered OAuth client,
 and the repository does not ship one; the project's own client is still to be created and verified by Google, so for now you
-bring your own. In a Google Cloud project of yours, enable the *Google Calendar API* and *Google Tasks API*, configure the
+bring your own (the form requires it when your build has none built in). In a Google Cloud project of yours, enable the *Google Calendar API* and *Google Tasks API*, configure the
 OAuth consent screen (add yourself as a test user; an app in *Testing* has refresh tokens that expire after 7 days) and create
 an OAuth client of type **Desktop app**. Paste its client ID and client secret into the source form (the secret is kept in your
 system keyring; Google does not treat a desktop client's secret as confidential), or build with `AMT_GOOGLE_CLIENT_ID` and
 `AMT_GOOGLE_CLIENT_SECRET` set to embed them. After you save the source, a browser window opens to sign in and ask for
-read-only access to your calendars and tasks; only a refresh token is kept. Details:
-[google-calendar-provider.md](docs/design/google-calendar-provider.md#oauth-client-and-verification-a-maintainer-task-not-code).
+read-only access to your calendars and tasks; only a refresh token is kept. Steps:
+[Create an OAuth client](docs/oauth-setup.md#google-create-an-oauth-client-in-google-cloud). Removing the source revokes the access at Google.
 A calendar-only alternative that needs no OAuth client is Google Calendar's secret iCal address, added as an iCalendar feed.
 
 ## Build and run

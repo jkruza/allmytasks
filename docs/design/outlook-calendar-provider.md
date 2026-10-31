@@ -97,6 +97,8 @@ fine; keeping it out of the repository only means forks do not share the maintai
 
 #### Register an app (once per maintainer or user)
 
+The current, fuller steps are in [../oauth-setup.md](../oauth-setup.md); how the id reaches a build is in [oauth-client-configuration.md](oauth-client-configuration.md).
+
 1. Sign in to the [Microsoft Entra admin center](https://entra.microsoft.com) and open
    **App registrations → New registration**. A personal Microsoft account without a directory first needs a
    free tenant; the portal offers to create one.

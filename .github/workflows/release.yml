@@ -40,11 +40,43 @@ jobs:
       - name: Test
         run: dotnet test --solution AllMyTasks.slnx -c Release
 
+      # The project's OAuth clients are supplied as repository secrets (a variable of the same name also works) and compiled
+      # into the build as assembly metadata. Any that are missing just mean the app asks the user for their own client; see
+      # docs/oauth-setup.md. Values are never printed.
+      - name: Check OAuth client settings
+        shell: bash
+        env:
+          AMT_MICROSOFT_CLIENT_ID: ${{ secrets.AMT_MICROSOFT_CLIENT_ID || vars.AMT_MICROSOFT_CLIENT_ID }}
+          AMT_GOOGLE_CLIENT_ID: ${{ secrets.AMT_GOOGLE_CLIENT_ID || vars.AMT_GOOGLE_CLIENT_ID }}
+          AMT_GOOGLE_CLIENT_SECRET: ${{ secrets.AMT_GOOGLE_CLIENT_SECRET }}
+        run: |
+          check() {
+            if [[ -n "${!1}" ]]; then
+              echo "- $1: embedded" >> "$GITHUB_STEP_SUMMARY"
+            else
+              echo "::notice title=$1 not set::This build has no built-in $2; users must enter their own client (docs/oauth-setup.md)."
+              echo "- $1: not set, users must enter their own" >> "$GITHUB_STEP_SUMMARY"
+            fi
+          }
+          echo "### OAuth clients (${{ matrix.rid }})" >> "$GITHUB_STEP_SUMMARY"
+          check AMT_MICROSOFT_CLIENT_ID "Microsoft client"
+          check AMT_GOOGLE_CLIENT_ID "Google client"
+          check AMT_GOOGLE_CLIENT_SECRET "Google client secret"
+          if [[ -n "$AMT_GOOGLE_CLIENT_ID" && -z "$AMT_GOOGLE_CLIENT_SECRET" ]]; then
+            echo "::warning title=Google client secret missing::AMT_GOOGLE_CLIENT_ID is set without AMT_GOOGLE_CLIENT_SECRET; Google rejects the token request. Set both or neither."
+          fi
+          if [[ -z "$AMT_GOOGLE_CLIENT_ID" && -n "$AMT_GOOGLE_CLIENT_SECRET" ]]; then
+            echo "::warning title=Google client id missing::AMT_GOOGLE_CLIENT_SECRET is set without AMT_GOOGLE_CLIENT_ID and will be ignored."
+          fi
+
       - name: Publish
         shell: bash
         env:
           TAG: ${{ github.ref_name }}
           RID: ${{ matrix.rid }}
+          AMT_MICROSOFT_CLIENT_ID: ${{ secrets.AMT_MICROSOFT_CLIENT_ID || vars.AMT_MICROSOFT_CLIENT_ID }}
+          AMT_GOOGLE_CLIENT_ID: ${{ secrets.AMT_GOOGLE_CLIENT_ID || vars.AMT_GOOGLE_CLIENT_ID }}
+          AMT_GOOGLE_CLIENT_SECRET: ${{ secrets.AMT_GOOGLE_CLIENT_SECRET }}
         run: |
           version="${TAG#v}"
           # Single-file publish adds an implicit Microsoft.NET.ILLink.Tasks reference whose

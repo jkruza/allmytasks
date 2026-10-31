@@ -103,6 +103,17 @@ public sealed class SourceRegistry(
             }
         }
 
+        if (factory is ISourceConfigValidator validator)
+        {
+            foreach (var error in validator.ValidateValues(values))
+            {
+                if (!errors.Any(e => e.Key == error.Key))
+                {
+                    errors.Add(error);
+                }
+            }
+        }
+
         return errors;
     }
 
@@ -146,9 +157,28 @@ public sealed class SourceRegistry(
     /// <summary>Removes the source, its cached data and its secrets together.</summary>
     public async Task RemoveAsync(string sourceId, CancellationToken cancellationToken = default)
     {
+        await CleanUpAtProviderAsync(sourceId, cancellationToken).ConfigureAwait(false);
         await secrets.DeleteAsync(sourceId, cancellationToken).ConfigureAwait(false);
         await repository.RemoveSourceAsync(sourceId, cancellationToken).ConfigureAwait(false);
         Invalidate(sourceId);
+    }
+
+    private async Task CleanUpAtProviderAsync(string sourceId, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var info = (await repository.GetSourcesAsync(cancellationToken).ConfigureAwait(false)).FirstOrDefault(s => s.Id == sourceId);
+            if (info is not null && await GetAsync(info, cancellationToken).ConfigureAwait(false) is ISourceCleanup cleanup)
+            {
+                using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                timeout.CancelAfter(TimeSpan.FromSeconds(10));
+                await cleanup.OnRemovingAsync(timeout.Token).ConfigureAwait(false);
+            }
+        }
+        catch (Exception ex) when (ex is not OutOfMemoryException)
+        {
+            // Best effort: removing the source must not depend on the provider being reachable.
+        }
     }
 
     private async Task SaveAsync(

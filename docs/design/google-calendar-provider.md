@@ -92,6 +92,8 @@ Non-secret config (`SourceConfig`): `account_email`, `account_sub`.
 
 ### OAuth client and verification (a maintainer task, not code)
 
+How the client reaches a build, what the form does without one, and revoke on removal are in [oauth-client-configuration.md](oauth-client-configuration.md); step-by-step Google Cloud setup is in [../oauth-setup.md](../oauth-setup.md).
+
 - The calendar scopes are **sensitive**, not restricted: Google verification (privacy policy, home page,
   verified domain, short demo video) is needed, but no paid security assessment.
 - Until the app is verified and set to "In production", Google shows an "unverified app" warning, caps users at 100

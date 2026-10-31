@@ -48,3 +48,10 @@ public interface ISourceFactory
 
 /// <summary>A problem with one field of a source form.</summary>
 public sealed record SourceConfigError(string Key, string Message);
+
+/// <summary>Optional: a factory that checks field values beyond what <see cref="SourceConfigField"/> can express.</summary>
+public interface ISourceConfigValidator
+{
+    /// <summary>Returns the problems with the (trimmed or untrimmed) form values; empty if they are fine.</summary>
+    IEnumerable<SourceConfigError> ValidateValues(IReadOnlyDictionary<string, string> values);
+}

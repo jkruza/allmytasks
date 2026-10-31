@@ -83,21 +83,15 @@ depends on nobody else being able to sign in as you.
 4. Approve the `release` environment deployment in the Actions run.
 5. Review the draft release it creates, then publish it.
 
-To give release builds a built-in Microsoft application (client) ID, set `AMT_MICROSOFT_CLIENT_ID` in the publish
-step's environment (a repository variable, not a secret: the id is public by design). Without it users enter their
-own id per source. Registration steps:
-[outlook-calendar-provider.md](design/outlook-calendar-provider.md#register-an-app-once-per-maintainer-or-user). The
-release workflow does not pass it yet; that is a change under `.github/` for a separate PR.
-
-The same applies to Google: `AMT_GOOGLE_CLIENT_ID` and `AMT_GOOGLE_CLIENT_SECRET` embed a default OAuth client (type
-*Desktop app*) in the build. Set the id as a repository variable and the secret as an Actions secret, so neither is ever
-committed; Google calls a desktop client's secret non-confidential, but secret scanning may still flag it. Without them
-users enter their own client ID and secret per source. The project's Google Cloud project, consent screen and verification
-(sensitive scopes: privacy policy, home page, verified domain, demo video) are a maintainer task; until the consent screen is
-*In production* it caps users at the listed test users and expires refresh tokens after 7 days, so alpha testers are added as
-test users and warned. See
+Release builds can embed the project's Microsoft and Google OAuth clients. Store `AMT_MICROSOFT_CLIENT_ID`,
+`AMT_GOOGLE_CLIENT_ID` and `AMT_GOOGLE_CLIENT_SECRET` as repository **Actions secrets** (a repository variable works as a
+fallback for the two IDs); `release.yml` passes them to the publish step and prints which were embedded in each build's
+job summary. Any that are missing are skipped without failing the release, and that build asks users for their own client.
+Creating the clients and storing the secrets step by step: [oauth-setup.md](oauth-setup.md#maintainers-build-the-clients-into-releases).
+The Google consent screen must be *In production* (and verified, for sensitive scopes) before a public release; until then
+it caps users at the listed test users and expires refresh tokens after 7 days, so alpha testers are added as test users and
+warned. See
 [google-calendar-provider.md](design/google-calendar-provider.md#oauth-client-and-verification-a-maintainer-task-not-code).
-The release workflow does not pass these yet either.
 
 Binaries are not code-signed yet, so Windows SmartScreen and macOS Gatekeeper will warn.
 macOS builds are plain executables, not `.app` bundles.

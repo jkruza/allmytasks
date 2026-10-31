@@ -322,4 +322,43 @@ public class AuthTests
         Assert.Equal([GoogleFactory.ClientIdField, GoogleFactory.ClientSecretField, GoogleFactory.CalendarField, GoogleFactory.TasksField, "refreshMinutes"], factory.ConfigSchema.Fields.Select(f => f.Key));
         Assert.Equal(FieldKind.Password, factory.ConfigSchema.Fields.Single(f => f.Key == GoogleFactory.ClientSecretField).Kind);
     }
+
+    [Fact]
+    public void Without_a_built_in_client_the_user_must_enter_their_own_and_with_one_it_is_optional()
+    {
+        var without = new GoogleFactory(new FakeHandler()).ConfigSchema.Fields;
+        Assert.True(without.Single(f => f.Key == GoogleFactory.ClientIdField).Required);
+        Assert.True(without.Single(f => f.Key == GoogleFactory.ClientSecretField).Required);
+
+        var with = new GoogleFactory(new FakeHandler(), defaultClientId: Setup.ClientId, defaultClientSecret: Setup.ClientSecret).ConfigSchema.Fields;
+        Assert.False(with.Single(f => f.Key == GoogleFactory.ClientIdField).Required);
+        Assert.False(with.Single(f => f.Key == GoogleFactory.ClientSecretField).Required);
+    }
+
+    [Fact]
+    public async Task Removing_the_source_revokes_the_refresh_token_at_google()
+    {
+        var handler = new FakeHandler { Respond = (_, _) => new HttpResponseMessage(HttpStatusCode.OK) };
+        var secrets = new InMemorySecretStore();
+        await secrets.SetAsync(Setup.SourceId, GoogleAuth.RefreshTokenField, Setup.RefreshToken, Ct);
+        var source = Create(handler, secrets, (_, _) => Task.CompletedTask);
+
+        await source.OnRemovingAsync(Ct);
+
+        var (request, body) = Assert.Single(handler.Requests);
+        Assert.Equal(GoogleAuth.RevokeUrl, request.RequestUri);
+        Assert.Equal(Setup.RefreshToken, Field(body, "token"));
+        Assert.DoesNotContain(Setup.ClientSecret, body);
+    }
+
+    [Fact]
+    public async Task Revoking_without_a_stored_token_sends_nothing()
+    {
+        var handler = new FakeHandler();
+        var source = Create(handler, new InMemorySecretStore(), (_, _) => Task.CompletedTask);
+
+        await source.OnRemovingAsync(Ct);
+
+        Assert.Empty(handler.Requests);
+    }
 }
