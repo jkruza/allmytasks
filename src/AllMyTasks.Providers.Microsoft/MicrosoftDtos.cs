@@ -259,6 +259,7 @@ internal sealed record TokenResponseDto
 [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase, PropertyNameCaseInsensitive = true, NumberHandling = JsonNumberHandling.AllowReadingFromString)]
 [JsonSerializable(typeof(GraphPage<CalendarDto>))]
 [JsonSerializable(typeof(GraphPage<EventDto>))]
+[JsonSerializable(typeof(EventDto))]
 [JsonSerializable(typeof(GraphPage<TodoListDto>))]
 [JsonSerializable(typeof(GraphPage<TodoTaskDto>))]
 [JsonSerializable(typeof(GraphErrorEnvelope))]
