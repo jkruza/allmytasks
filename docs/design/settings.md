@@ -68,6 +68,14 @@ Stored as JSON under the key `settings.app` in the existing `settings` table (se
   build reading a newer file does not fail.
 - Saving never throws into the UI (same rule as other preferences).
 
+Other persisted keys (written through `ViewStateStore` or `ISettingsStore`):
+
+| Key | Holds |
+| --- | --- |
+| `view.shell` | Selected view and the shared filter toggles |
+| `view.tasks` | The All tasks filter, sort and grouping, and the id of the saved filter in use (`FilterId`) |
+| `filters.tasks` | The user's [saved All tasks filters](search-and-saved-filters.md#saved-filters): `{"version":1,"filters":[...]}` |
+
 `AppSettings` (immutable record) is the single shape. `SettingsService` holds the current value,
 loads it at startup, saves on change and raises `Changed`. The shell subscribes and reloads the
 current view.

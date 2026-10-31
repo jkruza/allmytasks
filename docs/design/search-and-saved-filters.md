@@ -1,6 +1,7 @@
 # Search and saved filters
 
-Tracked in [#56](https://github.com/jkruza/allmytasks/issues/56).
+Tracked in [#56](https://github.com/jkruza/allmytasks/issues/56). Implemented; see [Implementation status](#implementation-status)
+for where the code differs from this design.
 
 Two related features: a **global search** that finds events and tasks from every source, and **saved filters** for
 the All tasks view.
@@ -118,6 +119,35 @@ notice instead of silently showing everything.
 [views.md](views.md#all-tasks) and [toolbar.md](toolbar.md#all-tasks-filter-bar), [settings.md](settings.md)
 (persisted keys), [storage-and-sync.md](storage-and-sync.md) (`SearchText`), the README and the
 [roadmap](roadmap.md).
+
+## Implementation status
+
+Core: `AllMyTasks.Core.Search` (`TextQuery`, `TextMatcher`, `SearchService`, the hit and result records) and
+`AllMyTasks.Core.Views` (`SavedTaskFilter`, `SavedFilterStore`). App: `SearchViewModel` and `SearchView`, the shell's
+`OpenSearchCommand`, and the *Filters* chip in `TasksView`. Differences from the design above:
+
+- **No `SearchText` column.** Search normalises fields as it scans. Nothing is stored, so there is no migration. Move to
+  the column or FTS5 only if measured latency on a large synthetic data set needs it.
+- **`ISearchService.SearchAsync` also takes the display zone**, which ordering needs. `SearchQuery.Collections` is a set
+  of `CollectionRef` (source and collection), since a collection id is only unique within its source.
+- **A recurring series is placed at its next occurrence** by asking the recurrence expander for the next three years, or
+  for the latest past occurrence when none is left. Overrides do not appear separately.
+- **Matching** is word-prefix over normalised words; a quoted phrase must start at a word and may end inside the last
+  one. Letters that do not decompose (ł, ø, đ, ß, æ, œ) are mapped by hand, so `zolc` finds `żółć` and `strasse` finds
+  `Straße`. Event matching also covers the organiser. The All tasks text filter uses the same rule over title and notes,
+  so it no longer matches in the middle of a word (`port` does not find `report`).
+- **Search results:** at most 100 events and 100 tasks. Events whose calendar is hidden are counted in the hint, not listed.
+- **Saved filters** are stored as `{"version":1,"filters":[...]}` (the version is on the document, not on each filter) under
+  `filters.tasks`. A filter that cannot be read is skipped. The filter bar has no collection control and only one due
+  option, so a saved filter may hold more than the controls show (several due options, a custom range, collections);
+  these are kept and applied while the filter is active, and dropped by *Clear* or by choosing a due option. Collections
+  that no longer exist are removed on load and apply, and the bar says so.
+- **Saving under a name that exists replaces that filter.** The name box in the menu is used for both *Save as new* and *Rename*.
+- The id of the saved filter in use is remembered between sessions (`view.tasks`, `FilterId`).
+
+Not done: view model tests for the debounce and the active/modified state (the app has no test project; the logic they
+rely on, `SavedTaskFilter.Matches`, is tested in Core), a collection control in the filter bar, and search in the calendar
+views.
 
 ## Open questions
 

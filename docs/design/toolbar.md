@@ -35,13 +35,16 @@ Two rows in one bordered strip.
 ## All tasks filter bar
 
 ```
-[ Search title and notes ..............................]  Open  Completed  Cancelled  All
-( Due date ⌄ ) ( Priority ⌄ ) ( Labels ⌄ ) Clear filters            12 tasks  Sort: Due date ↑ ⌄
+[ Filter this list by title and notes ................]  Open  Completed  Cancelled  All
+( Filters ⌄ ) ( Due date ⌄ ) ( Priority ⌄ ) ( Labels ⌄ ) Clear filters            12 tasks  Sort: Due date ↑ ⌄
 ```
 
 - **Row 1**: the search box takes the free width; status is the same segmented control as the
   toolbar (one choice, four options), since it is the filter people change most.
-- **Row 2**: one chip per filter. A chip opens a small flyout with only that filter's controls:
+- **Row 2**: the *Filters* chip, then one chip per filter. A chip opens a small flyout with only that filter's controls:
+  - *Filters*: the saved filters (click one to apply it; ↑ ↓ reorder, ✕ deletes), a name box with **Save as new**, and for
+    the active one **Update**, **Revert** (only while modified) and **Rename**, plus **Clear**. The chip shows the active
+    filter's name, with `(modified)` after a change. See [search-and-saved-filters.md](search-and-saved-filters.md#saved-filters).
   - *Due date*: the due options list.
   - *Priority*: High, Medium, Low, None as checkboxes.
   - *Labels*: comma-separated text and a "must have all of them" checkbox.
@@ -57,6 +60,13 @@ Two rows in one bordered strip.
 No filter semantics change: the same `TaskFilter` is built, and persisted state (`TasksState`) is
 unchanged. The view model only gained presentation properties (`PriorityChip`, `DueChip`,
 `LabelsChip`, `SortSummary`, `HasActiveFilters`, the status flags) and `ClearFiltersCommand`.
+
+## Search button and shortcut
+
+A magnifier button in the second toolbar row, left of Refresh, and **Ctrl+F** (**Cmd+F** on macOS) open
+[global search](search-and-saved-filters.md#global-search) in place of the current view, with the query box focused.
+**Esc** closes the details pane first, then the search. Choosing a view button, or pressing its key, leaves the search.
+Search works while typing in a text box, unlike the single-key shortcuts.
 
 ## Alternatives considered
 

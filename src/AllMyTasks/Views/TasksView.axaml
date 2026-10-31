@@ -9,7 +9,7 @@
          then sort and grouping on the right. See docs/design/all-tasks-filter.md. -->
     <StackPanel DockPanel.Dock="Top" Spacing="8" Margin="0,0,0,8">
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
-        <TextBox Text="{Binding SearchText}" PlaceholderText="Search title and notes" MinWidth="120" />
+        <TextBox Text="{Binding SearchText}" PlaceholderText="Filter this list by title and notes (Ctrl+F searches everything)" MinWidth="120" />
         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
           <ToggleButton Classes="seg" Content="Open" IsChecked="{Binding IsStatusOpen, Mode=OneWay}" Command="{Binding SetStatusCommand}" CommandParameter="Open" />
           <ToggleButton Classes="seg" Content="Completed" IsChecked="{Binding IsStatusCompleted, Mode=OneWay}" Command="{Binding SetStatusCommand}" CommandParameter="Completed" />
@@ -19,6 +19,46 @@
       </Grid>
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
         <WrapPanel Orientation="Horizontal">
+          <!-- Saved filters: named setups of the controls below; see docs/design/search-and-saved-filters.md. -->
+          <DropDownButton Classes="chip" Classes.active="{Binding HasActiveSaved}" Content="{Binding FiltersLabel}" Margin="0,0,6,4">
+            <DropDownButton.Flyout>
+              <Flyout>
+                <StackPanel Spacing="6" MinWidth="300">
+                  <TextBlock Text="Saved filters" FontWeight="SemiBold" />
+                  <TextBlock Text="None yet. Set up the list, give it a name below and save it." IsVisible="{Binding HasNoSavedFilters}"
+                             Opacity="0.7" TextWrapping="Wrap" />
+                  <ItemsControl ItemsSource="{Binding SavedFilters}">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate x:DataType="vm:SavedFilterItem">
+                        <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="2">
+                          <Button Classes="tool" Content="{Binding Label}" Command="{Binding ApplyCommand}"
+                                  HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" AutomationProperties.Name="{Binding Name}" />
+                          <Button Grid.Column="1" Classes="tool" Content="↑" Command="{Binding MoveUpCommand}" IsEnabled="{Binding CanMoveUp}"
+                                  AutomationProperties.Name="Move up" ToolTip.Tip="Move up" />
+                          <Button Grid.Column="2" Classes="tool" Content="↓" Command="{Binding MoveDownCommand}" IsEnabled="{Binding CanMoveDown}"
+                                  AutomationProperties.Name="Move down" ToolTip.Tip="Move down" />
+                          <Button Grid.Column="3" Classes="tool" Content="✕" Command="{Binding DeleteCommand}"
+                                  AutomationProperties.Name="Delete" ToolTip.Tip="Delete" />
+                        </Grid>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                  <Separator />
+                  <TextBox Text="{Binding FilterName}" PlaceholderText="Name" AutomationProperties.Name="Filter name" />
+                  <WrapPanel Orientation="Horizontal">
+                    <Button Content="Save as new" Command="{Binding SaveCurrentCommand}" Margin="0,0,6,4" />
+                    <Button Content="Update" Command="{Binding UpdateActiveCommand}" IsVisible="{Binding HasActiveSaved}" Margin="0,0,6,4"
+                            ToolTip.Tip="Replace the active filter with what the controls show now" />
+                    <Button Content="Revert" Command="{Binding RevertActiveCommand}" IsVisible="{Binding IsModified}" Margin="0,0,6,4"
+                            ToolTip.Tip="Go back to the active filter as saved" />
+                    <Button Content="Rename" Command="{Binding RenameActiveCommand}" IsVisible="{Binding HasActiveSaved}" Margin="0,0,6,4" />
+                  </WrapPanel>
+                  <Button Content="Clear" Command="{Binding ClearFiltersCommand}" IsVisible="{Binding HasActiveFilters}"
+                          ToolTip.Tip="Back to open tasks, any due date" />
+                </StackPanel>
+              </Flyout>
+            </DropDownButton.Flyout>
+          </DropDownButton>
           <DropDownButton Classes="chip" Classes.active="{Binding IsDueActive}" Content="{Binding DueChip}" Margin="0,0,6,4">
             <DropDownButton.Flyout>
               <Flyout>
@@ -67,6 +107,7 @@
           </DropDownButton>
         </StackPanel>
       </Grid>
+      <TextBlock Text="{Binding MissingNotice}" IsVisible="{Binding HasMissingNotice}" Foreground="DarkOrange" FontSize="12" TextWrapping="Wrap" />
     </StackPanel>
     <ListBox ItemsSource="{Binding Items}" SelectionMode="Single">
       <ListBox.DataTemplates>

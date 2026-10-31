@@ -74,6 +74,9 @@
                 <TextBlock Text="{Binding PendingText}" FontSize="12" Opacity="0.7" IsVisible="{Binding HasPendingText}" />
               </StackPanel>
             </Button>
+            <Button Classes="tool" Command="{Binding OpenSearchCommand}" IsVisible="{Binding CanSearch}" ToolTip.Tip="Search (Ctrl+F)" AutomationProperties.Name="Search">
+              <PathIcon Width="14" Height="14" Data="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+            </Button>
             <Button Classes="tool" Command="{Binding RefreshCommand}" ToolTip.Tip="Refresh (R)" AutomationProperties.Name="Refresh">
               <PathIcon Width="14" Height="14" Data="M17.65 6.35A7.958 7.958 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" />
             </Button>
@@ -116,6 +119,7 @@
         <DataTemplate DataType="vm:MonthViewModel"><views:MonthView /></DataTemplate>
         <DataTemplate DataType="vm:UpcomingViewModel"><views:UpcomingView /></DataTemplate>
         <DataTemplate DataType="vm:TasksViewModel"><views:TasksView /></DataTemplate>
+        <DataTemplate DataType="vm:SearchViewModel"><views:SearchView /></DataTemplate>
       </ContentControl.DataTemplates>
     </ContentControl>
   </DockPanel>
