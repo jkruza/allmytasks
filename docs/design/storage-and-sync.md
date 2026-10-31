@@ -232,7 +232,8 @@ Last successful sync time is always shown, so stale data is never mistaken for f
   is delayed (1, 2, 4... up to 30 s). Choosing Argon2id resolves the open question about the library.
 - **Not verified here.** The Windows and macOS backends compile on all platforms but were not run on those OSes
   during development; the Linux tool backend is tested against a stand-in script, not a real keyring.
-- **Preferences.** Shell and All tasks view state (mode, filters, sort, grouping) are saved as JSON in `settings`. App-wide preferences (week start) are one JSON object under `settings.app`, see [settings.md](settings.md#persistence).
+- **Search.** Global search scans the cache in memory (`SearchService`, see [search-and-saved-filters.md](search-and-saved-filters.md)); it adds no table, column or migration. The design's precomputed `SearchText` column is deferred until measured latency needs it.
+- **Preferences.** Shell and All tasks view state (mode, filters, sort, grouping) and the saved filters (`filters.tasks`) are saved as JSON in `settings`. App-wide preferences (week start) are one JSON object under `settings.app`, see [settings.md](settings.md#persistence).
 - **First run.** Until providers can be added, an empty database is seeded with sample data through the sync path.
 
 ## Implementation notes (M4)

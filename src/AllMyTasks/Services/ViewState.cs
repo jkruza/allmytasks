@@ -6,7 +6,7 @@ namespace AllMyTasks.Services;
 /// <summary>What the shell remembers between sessions.</summary>
 public sealed record ShellState(string Mode, bool ShowEvents, bool ShowTasks, bool ShowCompleted, bool HideWeekends);
 
-/// <summary>What the All tasks view remembers between sessions: filter, sort and grouping.</summary>
+/// <summary>What the All tasks view remembers between sessions: filter, sort and grouping, and which saved filter was in use.</summary>
 public sealed record TasksState(
     string Status,
     string? Due,
@@ -18,7 +18,8 @@ public sealed record TasksState(
     bool Low,
     bool NoPriority,
     string Labels,
-    bool AllLabels);
+    bool AllLabels,
+    string? FilterId = null);
 
 /// <summary>Reads and writes small JSON blobs in the settings store. Never throws: preferences are not worth a crash.</summary>
 public sealed class ViewStateStore(ISettingsStore settings)

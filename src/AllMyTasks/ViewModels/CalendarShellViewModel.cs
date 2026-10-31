@@ -3,6 +3,7 @@ using System.Globalization;
 using AllMyTasks.Core.Changes;
 using AllMyTasks.Core.Model;
 using AllMyTasks.Core.Reminders;
+using AllMyTasks.Core.Search;
 using AllMyTasks.Core.Settings;
 using AllMyTasks.Core.Storage;
 using AllMyTasks.Core.Sync;
@@ -30,6 +31,7 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
     private readonly MonthViewModel _month;
     private readonly UpcomingViewModel _upcoming;
     private readonly TasksViewModel _tasks;
+    private readonly SearchViewModel? _search;
     private readonly ITimer _midnightTimer;
     private readonly ViewStateStore? _state;
     private readonly SyncEngine? _engine;
@@ -58,7 +60,9 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
         Action? openSources = null,
         SettingsService? settings = null,
         Action? openSettings = null,
-        ITaskChangeService? changes = null)
+        ITaskChangeService? changes = null,
+        ISearchService? search = null,
+        SavedFilterStore? savedFilters = null)
     {
         _state = state;
         _changes = changes;
@@ -93,7 +97,8 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
         _week = new WeekViewModel(agenda);
         _month = new MonthViewModel(agenda, OpenDay);
         _upcoming = new UpcomingViewModel(agenda);
-        _tasks = new TasksViewModel(taskList, clock, state, ToggleTaskAsync);
+        _tasks = new TasksViewModel(taskList, clock, state, ToggleTaskAsync, savedFilters, ExistingCollectionsAsync);
+        _search = search is null ? null : new SearchViewModel(search, clock, ShowInCalendarAsync, CloseSearch);
         Content = _day;
 
         // Rolls the "today" boundary over at midnight without the user having to refresh.
@@ -166,6 +171,12 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
 
     public bool IsDetailsOpen => SelectedDetails is not null;
 
+    /// <summary>Whether global search is shown in place of the current view.</summary>
+    public bool IsSearching => Content is SearchViewModel;
+
+    /// <summary>Whether search is available (it needs the search service).</summary>
+    public bool CanSearch => _search is not null;
+
     public bool IsDay => Mode == ViewMode.Day;
 
     public bool IsWeek => Mode == ViewMode.Week;
@@ -177,7 +188,7 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
     public bool IsTasks => Mode == ViewMode.Tasks;
 
     /// <summary>Whether previous/next make sense for the current view.</summary>
-    public bool CanNavigate => Mode is ViewMode.Day or ViewMode.Week or ViewMode.Month;
+    public bool CanNavigate => !IsSearching && Mode is ViewMode.Day or ViewMode.Week or ViewMode.Month;
 
     /// <summary>Week view: hide Saturday and Sunday.</summary>
     public bool HideWeekends
@@ -197,14 +208,7 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
     {
         SaveState();
         CloseDetailsPane();
-        Content = value switch
-        {
-            ViewMode.Day => _day,
-            ViewMode.Week => _week,
-            ViewMode.Month => _month,
-            ViewMode.Upcoming => _upcoming,
-            _ => _tasks,
-        };
+        Content = ContentFor(value);
         OnPropertyChanged(nameof(IsDay));
         OnPropertyChanged(nameof(IsWeek));
         OnPropertyChanged(nameof(IsMonth));
@@ -212,6 +216,24 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
         OnPropertyChanged(nameof(IsTasks));
         OnPropertyChanged(nameof(CanNavigate));
         _ = ReloadAsync();
+    }
+
+    private async Task<IReadOnlySet<CollectionRef>> ExistingCollectionsAsync() =>
+        (await _sources.GetCollectionsAsync()).Select(c => new CollectionRef(c.SourceId, c.Id)).ToHashSet();
+
+    private ContentViewModel ContentFor(ViewMode mode) => mode switch
+    {
+        ViewMode.Day => _day,
+        ViewMode.Week => _week,
+        ViewMode.Month => _month,
+        ViewMode.Upcoming => _upcoming,
+        _ => _tasks,
+    };
+
+    partial void OnContentChanged(ContentViewModel value)
+    {
+        OnPropertyChanged(nameof(IsSearching));
+        OnPropertyChanged(nameof(CanNavigate));
     }
 
     partial void OnCurrentDateChanged(DateOnly value)
@@ -239,7 +261,72 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
     }
 
     [RelayCommand]
-    private void SetMode(ViewMode mode) => Mode = mode;
+    private void SetMode(ViewMode mode)
+    {
+        // Choosing the view that is already selected leaves search and returns to it.
+        if (mode == Mode)
+        {
+            CloseSearch();
+        }
+        else
+        {
+            Mode = mode;
+        }
+    }
+
+    /// <summary>Shows global search in place of the current view (Ctrl+F, Cmd+F), or moves focus to its box if it is already shown.</summary>
+    [RelayCommand]
+    private void OpenSearch()
+    {
+        if (_search is null)
+        {
+            return;
+        }
+
+        if (!IsSearching)
+        {
+            CloseDetailsPane();
+            Content = _search;
+            _ = ReloadAsync();
+        }
+
+        _search.RequestFocus();
+    }
+
+    /// <summary>Leaves global search and returns to the view that was selected.</summary>
+    public void CloseSearch()
+    {
+        if (!IsSearching)
+        {
+            return;
+        }
+
+        CloseDetailsPane();
+        Content = ContentFor(Mode);
+        _ = ReloadAsync();
+    }
+
+    /// <summary>Shows the details of an event found by search, as it is on its day. Read-only.</summary>
+    public async Task ShowEventAsync(EventHit hit)
+    {
+        ArgumentNullException.ThrowIfNull(hit);
+        var day = DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(hit.Start, _zone).DateTime);
+        var entries = await _agenda.GetEntriesAsync(new ViewQuery(day, day.AddDays(1), _zone, new ViewFilter()));
+        if (entries.OfType<EventEntry>().FirstOrDefault(e => e.Key.Master == hit.Event.Key.Master && e.Start == hit.Start) is { } entry)
+        {
+            await ShowDetailsAsync(entry);
+        }
+    }
+
+    // "Show in calendar" on a search result: the day view on the event's date, with its details open.
+    private async Task ShowInCalendarAsync(EventHit hit)
+    {
+        var day = DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(hit.Start, _zone).DateTime);
+        CloseSearch();
+        Mode = ViewMode.Day;
+        CurrentDate = day;
+        await ShowEventAsync(hit);
+    }
 
     [RelayCommand]
     private void GoToday() => CurrentDate = Today();
@@ -494,6 +581,7 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
 
         _midnightTimer.Dispose();
         _tasks.Dispose();
+        _search?.Dispose();
         _loading?.Cancel();
         _loading?.Dispose();
     }
@@ -670,6 +758,11 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
 
     private string FormatTitle(CultureInfo culture)
     {
+        if (IsSearching)
+        {
+            return "Search";
+        }
+
         switch (Mode)
         {
             case ViewMode.Day:

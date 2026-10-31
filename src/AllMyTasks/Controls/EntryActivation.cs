@@ -8,7 +8,7 @@ using Avalonia.VisualTree;
 namespace AllMyTasks.Controls;
 
 /// <summary>
-/// Makes an entry (a row, chip or bar bound to an <see cref="EntryItem"/>, or a row of the All tasks list bound to a <see cref="TaskRowItem"/>) open the details pane on click and on
+/// Makes an entry (a row, chip or bar bound to an <see cref="EntryItem"/>, a row of the All tasks list bound to a <see cref="TaskRowItem"/>, or a search result) open the details pane on click and on
 /// Enter or Space. Lives here so the entry view models do not need a reference to the shell.
 /// </summary>
 public static class EntryActivation
@@ -81,6 +81,14 @@ public static class EntryActivation
                 break;
             case TaskRowItem row:
                 _ = shell.ShowTaskDetailsAsync(row.Key);
+                e.Handled = true;
+                break;
+            case SearchEventItem found:
+                _ = shell.ShowEventAsync(found.Hit);
+                e.Handled = true;
+                break;
+            case SearchTaskItem foundTask:
+                _ = shell.ShowTaskDetailsAsync(foundTask.Key);
                 e.Handled = true;
                 break;
         }

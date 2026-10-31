@@ -127,12 +127,19 @@ public sealed partial class TasksViewModel(
     ITaskListService service,
     TimeProvider clock,
     ViewStateStore? state = null,
-    Func<ItemKey, bool, bool, string, Task>? toggle = null) : ContentViewModel, IDisposable
+    Func<ItemKey, bool, bool, string, Task>? toggle = null,
+    SavedFilterStore? savedFilters = null,
+    Func<Task<IReadOnlySet<CollectionRef>>>? existingCollections = null) : ContentViewModel, IDisposable
 {
     internal const string StateKey = "view.tasks";
     private bool _restoring;
     private ViewContext? _context;
     private CancellationTokenSource? _debounce;
+    private List<SavedTaskFilter> _saved = [];
+
+    // What a saved filter holds that the filter bar has no control for. They stay with the applied filter until the user clears it.
+    private DueFilter? _appliedDue;
+    private IReadOnlySet<CollectionRef> _appliedCollections = new HashSet<CollectionRef>();
 
     public static IReadOnlyList<Choice<TaskStatusFilter>> StatusChoices { get; } =
     [
@@ -222,6 +229,34 @@ public sealed partial class TasksViewModel(
     [ObservableProperty]
     public partial string Summary { get; set; } = string.Empty;
 
+    public ObservableCollection<SavedFilterItem> SavedFilters { get; } = [];
+
+    /// <summary>The saved filter in use, with collections that no longer exist removed; null when none is.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasActiveSaved), nameof(FiltersLabel), nameof(MissingNotice), nameof(HasMissingNotice), nameof(HasActiveFilters))]
+    public partial SavedTaskFilter? ActiveSaved { get; set; }
+
+    /// <summary>Whether a control was changed after the saved filter was applied.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(FiltersLabel))]
+    public partial bool IsModified { get; set; }
+
+    /// <summary>The name typed in the Filters menu, for saving and renaming.</summary>
+    [ObservableProperty]
+    public partial string FilterName { get; set; } = string.Empty;
+
+    public bool HasActiveSaved => ActiveSaved is not null;
+
+    public bool HasNoSavedFilters => SavedFilters.Count == 0;
+
+    public string FiltersLabel => ActiveSaved is null ? "Filters" : IsModified ? ActiveSaved.Name + " (modified)" : ActiveSaved.Name;
+
+    public string MissingNotice => ActiveSaved is { HasMissingCollections: true }
+        ? "Some calendars or lists in this saved filter no longer exist, so they are not part of it."
+        : string.Empty;
+
+    public bool HasMissingNotice => MissingNotice.Length > 0;
+
     public bool IsStatusOpen => Status.Value == TaskStatusFilter.Open;
 
     public bool IsStatusCompleted => Status.Value == TaskStatusFilter.Completed;
@@ -251,7 +286,8 @@ public sealed partial class TasksViewModel(
 
     /// <summary>Whether anything narrows the list beyond the default (open tasks, everything else open).</summary>
     public bool HasActiveFilters =>
-        Status.Value != TaskStatusFilter.Open || IsDueActive || IsPriorityActive || IsLabelsActive || SearchText.Trim().Length > 0;
+        Status.Value != TaskStatusFilter.Open || IsDueActive || IsPriorityActive || IsLabelsActive || SearchText.Trim().Length > 0
+        || _appliedDue is not null || _appliedCollections.Count > 0 || ActiveSaved is not null;
 
     [RelayCommand]
     private void ClearFilters()
@@ -265,12 +301,16 @@ public sealed partial class TasksViewModel(
             LabelsText = string.Empty;
             AllLabels = false;
             SearchText = string.Empty;
+            _appliedDue = null;
+            _appliedCollections = new HashSet<CollectionRef>();
+            ActiveSaved = null;
         }
         finally
         {
             _restoring = false;
         }
 
+        OnPropertyChanged(nameof(HasActiveFilters));
         Refresh();
     }
 
@@ -300,6 +340,185 @@ public sealed partial class TasksViewModel(
         return names;
     }
 
+    // Saved filters: see docs/design/search-and-saved-filters.md#saved-filters.
+
+    private void UpdateActiveState() =>
+        IsModified = ActiveSaved is { } active && !active.Matches(BuildFilter(), CurrentSort, Grouping.Value);
+
+    private void RefreshSavedItems()
+    {
+        SavedFilters.Clear();
+        for (var i = 0; i < _saved.Count; i++)
+        {
+            SavedFilters.Add(new SavedFilterItem(_saved[i], _saved[i].Id == ActiveSaved?.Id, i > 0, i < _saved.Count - 1, this));
+        }
+
+        OnPropertyChanged(nameof(HasNoSavedFilters));
+    }
+
+    private async Task StoreSavedAsync()
+    {
+        RefreshSavedItems();
+        if (savedFilters is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await savedFilters.SaveAsync(_saved);
+        }
+        catch (Exception ex) when (ex is IOException or InvalidOperationException)
+        {
+            System.Diagnostics.Trace.TraceWarning("Could not save the saved filters: {0}", ex.GetType().Name);
+        }
+    }
+
+    private SavedTaskFilter Snapshot(Guid id, string name) => new(id, name, BuildFilter(), CurrentSort, Grouping.Value);
+
+    /// <summary>Puts a saved filter's filter, sort and grouping into the controls and makes it the active one.</summary>
+    internal async Task ApplyAsync(SavedTaskFilter saved)
+    {
+        var pruned = await PruneAsync(saved);
+        _restoring = true;
+        try
+        {
+            var filter = pruned.Filter;
+            Status = StatusChoices.FirstOrDefault(c => c.Value == filter.Status) ?? StatusChoices[0];
+            Due = SingleDueChoice(filter.Due) ?? DueChoices[0];
+            _appliedDue = ExtraDue(filter.Due);
+            _appliedCollections = filter.Collections;
+            Sort = SortChoices.FirstOrDefault(c => c.Value == pruned.Sort.Field) ?? SortChoices[0];
+            Descending = pruned.Sort.Descending;
+            Grouping = GroupChoices.FirstOrDefault(c => c.Value == pruned.Grouping) ?? GroupChoices[0];
+            High = filter.Priorities.Contains(Priority.High);
+            Medium = filter.Priorities.Contains(Priority.Medium);
+            Low = filter.Priorities.Contains(Priority.Low);
+            NoPriority = filter.Priorities.Contains(Priority.None);
+            LabelsText = string.Join(", ", filter.Labels.Order(StringComparer.CurrentCultureIgnoreCase));
+            AllLabels = filter.AllLabels;
+            SearchText = filter.Text ?? string.Empty;
+            ActiveSaved = pruned;
+        }
+        finally
+        {
+            _restoring = false;
+        }
+
+        UpdateActiveState();
+        RefreshSavedItems();
+        OnPropertyChanged(nameof(HasActiveFilters));
+        Refresh();
+    }
+
+    /// <summary>Saves the current controls under the typed name; a filter that already has the name is replaced.</summary>
+    [RelayCommand]
+    private async Task SaveCurrentAsync()
+    {
+        var name = FilterName.Trim();
+        if (name.Length == 0)
+        {
+            name = "Saved filter";
+        }
+
+        var existing = _saved.FindIndex(f => string.Equals(f.Name, name, StringComparison.CurrentCultureIgnoreCase));
+        var saved = Snapshot(existing >= 0 ? _saved[existing].Id : Guid.NewGuid(), existing >= 0 ? _saved[existing].Name : name);
+        if (existing >= 0)
+        {
+            _saved[existing] = saved;
+        }
+        else
+        {
+            _saved.Add(saved);
+        }
+
+        ActiveSaved = saved;
+        FilterName = string.Empty;
+        UpdateActiveState();
+        PersistState();
+        await StoreSavedAsync();
+    }
+
+    /// <summary>Overwrites the active saved filter with the current controls.</summary>
+    [RelayCommand]
+    private async Task UpdateActiveAsync()
+    {
+        if (ActiveSaved is not { } active)
+        {
+            return;
+        }
+
+        var index = _saved.FindIndex(f => f.Id == active.Id);
+        if (index < 0)
+        {
+            return;
+        }
+
+        var saved = Snapshot(active.Id, active.Name);
+        _saved[index] = saved;
+        ActiveSaved = saved;
+        UpdateActiveState();
+        await StoreSavedAsync();
+    }
+
+    /// <summary>Drops changes made since the saved filter was applied.</summary>
+    [RelayCommand]
+    private async Task RevertActiveAsync()
+    {
+        if (ActiveSaved is { } active && _saved.FirstOrDefault(f => f.Id == active.Id) is { } stored)
+        {
+            await ApplyAsync(stored);
+        }
+    }
+
+    /// <summary>Gives the active saved filter the typed name.</summary>
+    [RelayCommand]
+    private async Task RenameActiveAsync()
+    {
+        var name = FilterName.Trim();
+        if (name.Length == 0 || ActiveSaved is not { } active)
+        {
+            return;
+        }
+
+        var index = _saved.FindIndex(f => f.Id == active.Id);
+        if (index < 0)
+        {
+            return;
+        }
+
+        _saved[index] = _saved[index] with { Name = name };
+        ActiveSaved = active with { Name = name };
+        FilterName = string.Empty;
+        await StoreSavedAsync();
+    }
+
+    internal async Task DeleteSavedAsync(SavedTaskFilter filter)
+    {
+        _saved.RemoveAll(f => f.Id == filter.Id);
+        if (ActiveSaved?.Id == filter.Id)
+        {
+            // The controls keep their values; they are just no longer a named filter.
+            ActiveSaved = null;
+            PersistState();
+        }
+
+        await StoreSavedAsync();
+    }
+
+    internal async Task MoveSavedAsync(SavedTaskFilter filter, int direction)
+    {
+        var index = _saved.FindIndex(f => f.Id == filter.Id);
+        var target = index + direction;
+        if (index < 0 || target < 0 || target >= _saved.Count)
+        {
+            return;
+        }
+
+        (_saved[index], _saved[target]) = (_saved[target], _saved[index]);
+        await StoreSavedAsync();
+    }
+
     public void Dispose()
     {
         _debounce?.Cancel();
@@ -309,6 +528,12 @@ public sealed partial class TasksViewModel(
     /// <summary>Restores the filter, sort and grouping from the previous session.</summary>
     public async Task RestoreAsync()
     {
+        if (savedFilters is not null)
+        {
+            _saved = [.. await savedFilters.LoadAsync()];
+            RefreshSavedItems();
+        }
+
         if (state is null || await state.LoadAsync<TasksState>(StateKey) is not { } saved)
         {
             return;
@@ -328,11 +553,41 @@ public sealed partial class TasksViewModel(
             NoPriority = saved.NoPriority;
             LabelsText = saved.Labels;
             AllLabels = saved.AllLabels;
+
+            // Keep the saved filter that was in use, so what it holds beyond the controls (several due options, collections) still applies.
+            if (Guid.TryParse(saved.FilterId, out var id) && _saved.FirstOrDefault(f => f.Id == id) is { } match)
+            {
+                var pruned = await PruneAsync(match);
+                _appliedCollections = pruned.Filter.Collections;
+                _appliedDue = ExtraDue(pruned.Filter.Due);
+                ActiveSaved = pruned;
+                UpdateActiveState();
+                RefreshSavedItems();
+            }
         }
         finally
         {
             _restoring = false;
         }
+    }
+
+    private static DueFilter? ExtraDue(DueFilter due) =>
+        due.Options.Count == 0 || SingleDueChoice(due) is not null ? null : due;
+
+    // A due filter the Due drop-down can show: one plain option.
+    private static Choice<DueOption?>? SingleDueChoice(DueFilter due) =>
+        due.Options.Count == 1 && due.From is null && due.To is null
+            ? DueChoices.FirstOrDefault(c => c.Value == due.Options.First())
+            : null;
+
+    private async Task<SavedTaskFilter> PruneAsync(SavedTaskFilter filter)
+    {
+        if (existingCollections is null || filter.Filter.Collections.Count == 0)
+        {
+            return filter;
+        }
+
+        return filter.WithoutMissing(await existingCollections());
     }
 
     public override Task LoadAsync(ViewContext context, CancellationToken cancellationToken)
@@ -343,7 +598,16 @@ public sealed partial class TasksViewModel(
 
     partial void OnStatusChanged(Choice<TaskStatusFilter> value) => Refresh();
 
-    partial void OnDueChanged(Choice<DueOption?> value) => Refresh();
+    partial void OnDueChanged(Choice<DueOption?> value)
+    {
+        if (!_restoring)
+        {
+            // The user picked a due option, which replaces whatever a saved filter held.
+            _appliedDue = null;
+        }
+
+        Refresh();
+    }
 
     partial void OnSortChanged(Choice<TaskSortField> value) => Refresh();
 
@@ -373,6 +637,22 @@ public sealed partial class TasksViewModel(
             return;
         }
 
+        UpdateActiveState();
+        PersistState();
+
+        if (_context is null)
+        {
+            return;
+        }
+
+        _debounce?.Cancel();
+        _debounce?.Dispose();
+        var cts = _debounce = new CancellationTokenSource();
+        _ = RefreshAsync(debounce, cts.Token);
+    }
+
+    private void PersistState()
+    {
         if (state is not null)
         {
             _ = state.SaveAsync(StateKey, new TasksState(
@@ -386,18 +666,9 @@ public sealed partial class TasksViewModel(
                 Low,
                 NoPriority,
                 LabelsText,
-                AllLabels));
+                AllLabels,
+                ActiveSaved?.Id.ToString()));
         }
-
-        if (_context is null)
-        {
-            return;
-        }
-
-        _debounce?.Cancel();
-        _debounce?.Dispose();
-        var cts = _debounce = new CancellationTokenSource();
-        _ = RefreshAsync(debounce, cts.Token);
     }
 
     private async Task RefreshAsync(bool debounce, CancellationToken cancellationToken)
@@ -417,9 +688,10 @@ public sealed partial class TasksViewModel(
         }
     }
 
-    private async Task RunAsync(CancellationToken cancellationToken)
+    private TaskSort CurrentSort => new(Sort.Value, Descending);
+
+    private TaskFilter BuildFilter()
     {
-        var context = _context!;
         var priorities = new HashSet<Priority>();
         if (High)
         {
@@ -443,9 +715,14 @@ public sealed partial class TasksViewModel(
 
         var labels = LabelsText.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var due = Due.Value is { } option ? new DueFilter(new HashSet<DueOption> { option }) : DueFilter.Any;
-        var filter = new TaskFilter(Status.Value, due, new HashSet<CollectionRef>(), priorities, labels, AllLabels, SearchText);
-        var query = new TaskListQuery(filter, new TaskSort(Sort.Value, Descending), Grouping.Value, context.Zone);
+        var due = _appliedDue ?? (Due.Value is { } option ? new DueFilter(new HashSet<DueOption> { option }) : DueFilter.Any);
+        return new TaskFilter(Status.Value, due, _appliedCollections, priorities, labels, AllLabels, SearchText);
+    }
+
+    private async Task RunAsync(CancellationToken cancellationToken)
+    {
+        var context = _context!;
+        var query = new TaskListQuery(BuildFilter(), CurrentSort, Grouping.Value, context.Zone);
 
         var groups = await service.GetAsync(query, cancellationToken);
         cancellationToken.ThrowIfCancellationRequested();
@@ -484,4 +761,36 @@ public sealed partial class TasksViewModel(
         DueBucket.NoDate => "No due date",
         _ => group.Priority is { } p ? $"{p} priority" : group.Label.Length > 0 ? group.Label : "No label",
     };
+}
+
+/// <summary>A row of the Filters menu.</summary>
+public sealed class SavedFilterItem
+{
+    public SavedFilterItem(SavedTaskFilter filter, bool isActive, bool canMoveUp, bool canMoveDown, TasksViewModel owner)
+    {
+        Name = filter.Name;
+        Label = isActive ? "✓ " + filter.Name : filter.Name;
+        CanMoveUp = canMoveUp;
+        CanMoveDown = canMoveDown;
+        ApplyCommand = new AsyncRelayCommand(() => owner.ApplyAsync(filter));
+        MoveUpCommand = new AsyncRelayCommand(() => owner.MoveSavedAsync(filter, -1));
+        MoveDownCommand = new AsyncRelayCommand(() => owner.MoveSavedAsync(filter, 1));
+        DeleteCommand = new AsyncRelayCommand(() => owner.DeleteSavedAsync(filter));
+    }
+
+    public string Name { get; }
+
+    public string Label { get; }
+
+    public bool CanMoveUp { get; }
+
+    public bool CanMoveDown { get; }
+
+    public ICommand ApplyCommand { get; }
+
+    public ICommand MoveUpCommand { get; }
+
+    public ICommand MoveDownCommand { get; }
+
+    public ICommand DeleteCommand { get; }
 }

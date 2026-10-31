@@ -1,4 +1,5 @@
 using AllMyTasks.Core.Model;
+using AllMyTasks.Core.Search;
 using AllMyTasks.Core.Tasks;
 using AllMyTasks.Core.Time;
 
@@ -120,8 +121,7 @@ public sealed record TaskFilter(
         return AllLabels ? Labels.All(has.Contains) : Labels.Any(has.Contains);
     }
 
+    // The same rule as global search: every word must start a word in the title or notes, ignoring case and accents.
     private bool MatchesText(TaskItem task) =>
-        string.IsNullOrWhiteSpace(Text)
-        || task.Title.Contains(Text.Trim(), StringComparison.CurrentCultureIgnoreCase)
-        || (task.Notes?.Contains(Text.Trim(), StringComparison.CurrentCultureIgnoreCase) ?? false);
+        string.IsNullOrWhiteSpace(Text) || TextQuery.Parse(Text).Matches([task.Title, task.Notes]);
 }

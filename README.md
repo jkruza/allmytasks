@@ -55,6 +55,15 @@ On Linux the tray needs a StatusNotifier/AppIndicator host. KDE, Xfce, Cinnamon 
 *AppIndicator and KStatusNotifierItem Support* extension. Without one the icon does not show, so turn the setting off and
 do not use `--tray`. See [docs/design/system-tray.md](docs/design/system-tray.md).
 
+### Search and saved filters
+
+**Ctrl+F** (**Cmd+F** on macOS), or the magnifier in the toolbar, searches every event and task in the local cache, with
+no network: type words, and every word must start a word in the title, notes or description, location, labels, calendar
+or list name, or attendee; ignoring case and accents (`zolc` finds `żółć`). Put words in quotes to match a phrase. Choose
+a result to see its details, or *Show in calendar* to jump to the day. In **All tasks**, the *Filters* chip saves the
+current filter, sort and grouping under a name, so you can switch between setups such as "Work, due this week". See
+[docs/design/search-and-saved-filters.md](docs/design/search-and-saved-filters.md).
+
 ### Launch at login
 
 Settings → Startup → *Launch All My Tasks when I log in* adds a per-user login entry (Windows Run key, macOS launchd

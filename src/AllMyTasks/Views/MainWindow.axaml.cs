@@ -25,11 +25,18 @@ public sealed partial class MainWindow : Window
         }
     }
 
-    // Keyboard shortcuts: T today, D/W/M/U/A switch view, ←/→ previous/next, R refresh.
-    // Ignored while typing in a text box.
+    // Keyboard shortcuts: Ctrl+F (Cmd+F) search, T today, D/W/M/U/A switch view, ←/→ previous/next, R refresh.
+    // All but search are ignored while typing in a text box.
     protected override void OnKeyDown(KeyEventArgs e)
     {
         base.OnKeyDown(e);
+        if (!e.Handled && e.Key == Key.F && (e.KeyModifiers is KeyModifiers.Control or KeyModifiers.Meta) && DataContext is CalendarShellViewModel searching)
+        {
+            searching.OpenSearchCommand.Execute(null);
+            e.Handled = true;
+            return;
+        }
+
         if (e.Handled || e.Source is TextBox || DataContext is not CalendarShellViewModel shell || e.KeyModifiers != KeyModifiers.None)
         {
             return;
@@ -40,23 +47,26 @@ public sealed partial class MainWindow : Window
             case Key.Escape when shell.IsDetailsOpen:
                 shell.CloseDetailsCommand.Execute(null);
                 break;
+            case Key.Escape when shell.IsSearching:
+                shell.CloseSearch();
+                break;
             case Key.T:
                 shell.GoTodayCommand.Execute(null);
                 break;
             case Key.D:
-                shell.Mode = ViewMode.Day;
+                shell.SetModeCommand.Execute(ViewMode.Day);
                 break;
             case Key.W:
-                shell.Mode = ViewMode.Week;
+                shell.SetModeCommand.Execute(ViewMode.Week);
                 break;
             case Key.M:
-                shell.Mode = ViewMode.Month;
+                shell.SetModeCommand.Execute(ViewMode.Month);
                 break;
             case Key.U:
-                shell.Mode = ViewMode.Upcoming;
+                shell.SetModeCommand.Execute(ViewMode.Upcoming);
                 break;
             case Key.A:
-                shell.Mode = ViewMode.Tasks;
+                shell.SetModeCommand.Execute(ViewMode.Tasks);
                 break;
             case Key.Left:
                 shell.PreviousCommand.Execute(null);

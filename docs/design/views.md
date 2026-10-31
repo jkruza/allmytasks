@@ -139,8 +139,10 @@ is filtered out is shown at top level so it never disappears. Clicking a row (or
 
 ### Filtering
 
-The controls (search, status switcher, one chip per filter, a sort and group menu) are
-described in [toolbar.md](toolbar.md#all-tasks-filter-bar).
+The controls (text filter, status switcher, a Filters menu of saved filters, one chip per filter, a sort and group menu) are
+described in [toolbar.md](toolbar.md#all-tasks-filter-bar). Named setups are described in
+[search-and-saved-filters.md](search-and-saved-filters.md#saved-filters); finding things across every view is
+[global search](search-and-saved-filters.md#global-search) (Ctrl+F, Cmd+F on macOS).
 
 Filters combine with AND; within one filter, multiple choices combine with OR.
 
@@ -151,7 +153,7 @@ Filters combine with AND; within one filter, multiple choices combine with OR.
 | Source / collection | Multi-select; follows the shared collection visibility |
 | Priority | Any, or one or more of High / Medium / Low / None |
 | Labels | Multi-select; any-of or all-of toggle |
-| Text | Case-insensitive substring over title and notes |
+| Text | Every word must start a word in the title or notes, ignoring case and accents; the same rule as [global search](search-and-saved-filters.md#matching) |
 
 ### Sorting and grouping
 

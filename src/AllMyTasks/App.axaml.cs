@@ -2,6 +2,7 @@ using AllMyTasks.Core.Autostart;
 using AllMyTasks.Core.Changes;
 using AllMyTasks.Core.Reminders;
 using AllMyTasks.Core.Samples;
+using AllMyTasks.Core.Search;
 using AllMyTasks.Core.Startup;
 using AllMyTasks.Core.Storage;
 using AllMyTasks.Core.Sync;
@@ -118,7 +119,9 @@ public sealed partial class App : Application
             () => dialogs.ShowSources(new SourcesViewModel(engine, registry, sources, clock, dialogs, () => shell!.OnCollectionsChangedAsync())),
             appSettings,
             () => _ = dialogs.ShowSettingsAsync(new SettingsViewModel(appSettings, autostart)),
-            changes);
+            changes,
+            new SearchService(viewItems, sources, new IcalRecurrenceExpander(), clock),
+            new SavedFilterStore(settings));
 
         var window = new MainWindow { DataContext = shell };
         window.Activated += (_, _) => _ = scheduler.OnWindowActivatedAsync();
