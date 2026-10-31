@@ -30,22 +30,28 @@ public sealed class GoogleFactory(
 
     public string DisplayName => "Google (Calendar, Tasks)";
 
-    public SourceConfigSchema ConfigSchema { get; } = new(
+    public SourceConfigSchema ConfigSchema => new(
     [
         new SourceConfigField(
             ClientIdField,
             "OAuth client ID",
             FieldKind.Text,
-            Help: "Only needed if this build of the app has none built in. Create a \"Desktop app\" OAuth client in your own Google Cloud project, enable the Calendar and Tasks APIs, and paste its client ID. See the docs."),
+            Required: !HasBuiltInClient,
+            Help: HasBuiltInClient
+                ? "This build includes a Google client. Leave blank to use it, or enter the client ID of your own Desktop-app client (docs/oauth-setup.md)."
+                : "This build of the app has no Google client built in, so enter your own: create a \"Desktop app\" OAuth client in your Google Cloud project, enable the Calendar and Tasks APIs, and paste its client ID. Step by step: docs/oauth-setup.md."),
         new SourceConfigField(
             ClientSecretField,
             "OAuth client secret",
             FieldKind.Password,
-            Help: "The secret of the same client. Google does not treat a desktop client's secret as confidential; it is stored in your system keyring anyway."),
+            Required: !HasBuiltInClient,
+            Help: "The secret of the same client; leave blank to keep the stored one when editing. Google does not treat a desktop client's secret as confidential; it is stored in your system keyring anyway."),
         new SourceConfigField(CalendarField, "Google Calendar", FieldKind.Bool, Help: "Leave both switches off to read both calendars and tasks."),
         new SourceConfigField(TasksField, "Google Tasks", FieldKind.Bool),
         new SourceConfigField(SyncScheduler.IntervalKey, "Refresh every (minutes)", FieldKind.Number, Help: "Leave blank for 15. After you save, a browser window opens to sign in to your Google account."),
     ]);
+
+    private bool HasBuiltInClient => !string.IsNullOrWhiteSpace(_defaultClientId);
 
     public void Dispose()
     {

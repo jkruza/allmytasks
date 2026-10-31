@@ -206,4 +206,18 @@ public class AuthTests
         Assert.Equal("microsoft", factory.Kind);
         Assert.Equal([MicrosoftFactory.ClientIdField, MicrosoftFactory.CalendarField, MicrosoftFactory.TodoField, "refreshMinutes"], factory.ConfigSchema.Fields.Select(f => f.Key));
     }
+
+    [Fact]
+    public void The_client_id_is_required_without_a_built_in_one_and_must_be_a_guid()
+    {
+        var without = new MicrosoftFactory(new FakeHandler());
+        Assert.True(without.ConfigSchema.Fields.Single(f => f.Key == MicrosoftFactory.ClientIdField).Required);
+
+        var with = new MicrosoftFactory(new FakeHandler(), defaultClientId: "11111111-2222-3333-4444-555555555555");
+        Assert.False(with.ConfigSchema.Fields.Single(f => f.Key == MicrosoftFactory.ClientIdField).Required);
+
+        Assert.Empty(without.ValidateValues(new Dictionary<string, string> { [MicrosoftFactory.ClientIdField] = "11111111-2222-3333-4444-555555555555" }));
+        Assert.Empty(without.ValidateValues(new Dictionary<string, string>()));
+        Assert.Single(without.ValidateValues(new Dictionary<string, string> { [MicrosoftFactory.ClientIdField] = "consumers" }));
+    }
 }

@@ -133,6 +133,69 @@ public class SourceRegistryTests
             new ScriptedSource(sourceId, List(sourceId));
     }
 
+    private sealed class CleaningSource(string id, List<string> log, bool fail) : ISource, ISourceCleanup
+    {
+        public string Id => id;
+
+        public string Kind => "clean";
+
+        public string DisplayName => "Clean";
+
+        public Task<IReadOnlyList<CollectionInfo>> GetCollectionsAsync(CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<CollectionInfo>>([]);
+
+        public Task OnRemovingAsync(CancellationToken cancellationToken = default)
+        {
+            log.Add("cleanup");
+            return fail ? throw new SourceUnavailableException("offline") : Task.CompletedTask;
+        }
+    }
+
+    private sealed class CleaningFactory(List<string> log, bool fail) : ISourceFactory, ISourceConfigValidator
+    {
+        public string Kind => "clean";
+
+        public string DisplayName => "Clean";
+
+        public SourceConfigSchema ConfigSchema { get; } = new([new SourceConfigField("id", "Id", FieldKind.Text)]);
+
+        public ISource Create(string sourceId, string displayName, SourceConfig config, ISecretStore secrets) =>
+            new CleaningSource(sourceId, log, fail);
+
+        public IEnumerable<SourceConfigError> ValidateValues(IReadOnlyDictionary<string, string> values)
+        {
+            if (values.GetValueOrDefault("id") == "bad")
+            {
+                yield return new SourceConfigError("id", "Bad id.");
+            }
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Remove_runs_provider_cleanup_first_and_survives_its_failure(bool fail)
+    {
+        var log = new List<string>();
+        var store = new InMemoryStore();
+        var registry = new SourceRegistry([new CleaningFactory(log, fail)], store, new InMemorySecretStore());
+        var info = await registry.AddAsync("clean", "C", new Dictionary<string, string>(), Ct);
+
+        await registry.RemoveAsync(info.Id, Ct);
+
+        Assert.Equal(["cleanup"], log);
+        Assert.Empty(await store.GetSourcesAsync(Ct));
+    }
+
+    [Fact]
+    public void Validation_includes_the_factorys_own_checks()
+    {
+        var factory = new CleaningFactory([], false);
+
+        Assert.Empty(SourceRegistry.Validate(factory, "n", new Dictionary<string, string> { ["id"] = "ok" }));
+        Assert.Contains(SourceRegistry.Validate(factory, "n", new Dictionary<string, string> { ["id"] = "bad" }), e => e.Message == "Bad id.");
+    }
+
     private static (SourceRegistry Registry, InMemoryStore Store, InMemorySecretStore Secrets) Create()
     {
         var store = new InMemoryStore();

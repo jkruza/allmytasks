@@ -14,7 +14,7 @@ public sealed class MicrosoftFactory(
     HttpMessageHandler? handler = null,
     ILogger? logger = null,
     TimeZoneInfo? displayZone = null,
-    string? defaultClientId = null) : ISourceFactory, IDisposable
+    string? defaultClientId = null) : ISourceFactory, ISourceConfigValidator, IDisposable
 {
     public const string ClientIdField = "clientId";
     public const string CalendarField = "calendar";
@@ -28,17 +28,28 @@ public sealed class MicrosoftFactory(
 
     public string DisplayName => "Microsoft (Outlook calendar, To Do)";
 
-    public SourceConfigSchema ConfigSchema { get; } = new(
+    public SourceConfigSchema ConfigSchema => new(
     [
         new SourceConfigField(
             ClientIdField,
             "Application (client) ID",
             FieldKind.Text,
-            Help: "Only needed if this build of the app has none built in. Register a free app in the Microsoft Entra admin center for personal accounts, with a \"Mobile and desktop\" redirect http://localhost, and paste its Application (client) ID. See the docs."),
+            Required: string.IsNullOrWhiteSpace(_defaultClientId),
+            Help: string.IsNullOrWhiteSpace(_defaultClientId)
+                ? "This build of the app has no Microsoft client built in, so enter your own: register a free app in the Microsoft Entra admin center (personal accounts, redirect type \"Mobile and desktop\", http://localhost) and paste its Application (client) ID. Step by step: docs/oauth-setup.md."
+                : "This build includes a Microsoft client. Leave blank to use it, or enter the Application (client) ID of your own app (docs/oauth-setup.md)."),
         new SourceConfigField(CalendarField, "Outlook calendar", FieldKind.Bool, Help: "Leave both switches off to read both calendar and tasks."),
         new SourceConfigField(TodoField, "Microsoft To Do", FieldKind.Bool),
         new SourceConfigField(SyncScheduler.IntervalKey, "Refresh every (minutes)", FieldKind.Number, Help: "Leave blank for 15. After you save, a browser window opens to sign in to your Microsoft account."),
     ]);
+
+    public IEnumerable<SourceConfigError> ValidateValues(IReadOnlyDictionary<string, string> values)
+    {
+        if (values.TryGetValue(ClientIdField, out var id) && id.Trim() is { Length: > 0 } trimmed && !MicrosoftAuth.IsClientId(trimmed))
+        {
+            yield return new SourceConfigError(ClientIdField, "The Application (client) ID is a GUID such as 00000000-0000-0000-0000-000000000000.");
+        }
+    }
 
     public void Dispose()
     {
