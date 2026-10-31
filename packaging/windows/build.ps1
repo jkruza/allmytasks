@@ -30,8 +30,7 @@ wix extension add --global "WixToolset.Util.wixext/$wixVersion"
 
 $arch = if ($Rid -eq 'win-arm64') { 'arm64' } else { 'x64' }
 $out = Join-Path $dist "AllMyTasks-$Version-windows-$($Rid.Substring(4)).msi"
-# ICE38/ICE64/ICE91 flag per-user installs into the profile, which is what this package is meant to do.
 wix build (Join-Path $PSScriptRoot 'AllMyTasks.wxs') -arch $arch -ext WixToolset.Util.wixext `
-    -d "Version=$msiVersion" -d "SourceDir=$publish" -sice ICE38 -sice ICE64 -sice ICE91 -o $out
+    -d "Version=$msiVersion" -d "SourceDir=$publish" -o $out
 if ($LASTEXITCODE -ne 0) { throw "wix build failed" }
 Get-Item $out
