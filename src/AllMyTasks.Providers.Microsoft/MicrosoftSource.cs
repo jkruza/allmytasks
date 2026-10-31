@@ -18,6 +18,7 @@ public sealed class MicrosoftSource : SourceBase, ICalendarSource, ITaskSource, 
     public const string KindName = "microsoft";
 
     internal const int MaxPages = 500;
+    internal const int MaxTitleReads = 50;
     internal static readonly TimeSpan SnapshotInterval = TimeSpan.FromHours(24);
 
     internal const string CalendarPrefer = "outlook.timezone=\"UTC\", outlook.body-content-type=\"text\", IdType=\"ImmutableId\", odata.maxpagesize=100";
@@ -116,6 +117,7 @@ public sealed class MicrosoftSource : SourceBase, ICalendarSource, ITaskSource, 
 
         var upserts = new List<CalendarEvent>();
         var deleted = new List<string>();
+        var titleReads = 0;
         foreach (var (id, dto) in latest)
         {
             if (dto.Removed is not null)
@@ -124,8 +126,24 @@ public sealed class MicrosoftSource : SourceBase, ICalendarSource, ITaskSource, 
             }
             else if (_calendarMapper.MapEvent(collection.Id, dto, warnings) is { } mapped)
             {
+                // Some calendars (seen with a subscribed holiday calendar) answer the delta query without a subject.
+                if (string.IsNullOrWhiteSpace(mapped.Title) && titleReads < MaxTitleReads)
+                {
+                    titleReads++;
+                    var subject = await ReadSubjectAsync(id, cancellationToken).ConfigureAwait(false);
+                    if (!string.IsNullOrWhiteSpace(subject))
+                    {
+                        mapped = mapped with { Title = subject };
+                    }
+                }
+
                 upserts.Add(mapped);
             }
+        }
+
+        if (titleReads == MaxTitleReads)
+        {
+            warnings.Add(new SyncWarning(null, "Some events had no title and only the first few were looked up; the rest will be tried on the next sync."));
         }
 
         var newState = new SyncState(JsonSerializer.Serialize(window with { DeltaLink = read.DeltaLink }, MicrosoftJson.Default.CalendarState));
@@ -258,6 +276,21 @@ public sealed class MicrosoftSource : SourceBase, ICalendarSource, ITaskSource, 
         }
 
         throw new SourceDataException("Microsoft Graph returned more pages than the app reads in one sync.") { Diagnostics = $"Stopped after {MaxPages} pages" };
+    }
+
+    /// <summary>Reads just the subject of one event. A failure is not fatal: the event keeps its empty title.</summary>
+    private async Task<string?> ReadSubjectAsync(string eventId, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var url = GraphClient.Api($"me/events/{Uri.EscapeDataString(eventId)}?$select=subject");
+            var reply = await RetryAsync(ct => _graph.GetAsync(url, MicrosoftJson.Default.EventDto, CalendarPrefer, ct), cancellationToken: cancellationToken).ConfigureAwait(false);
+            return reply.Subject;
+        }
+        catch (Exception ex) when (ex is SourceException and not SourceAuthException)
+        {
+            return null;
+        }
     }
 
     private async Task<List<T>> ReadAllAsync<T>(Uri first, System.Text.Json.Serialization.Metadata.JsonTypeInfo<GraphPage<T>> typeInfo, string? prefer, CancellationToken cancellationToken)

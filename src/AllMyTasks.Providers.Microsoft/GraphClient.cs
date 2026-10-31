@@ -63,7 +63,11 @@ internal sealed class GraphClient(
         return uri;
     }
 
-    public async Task<GraphPage<T>> GetPageAsync<T>(Uri url, JsonTypeInfo<GraphPage<T>> typeInfo, string? prefer, CancellationToken cancellationToken)
+    public Task<GraphPage<T>> GetPageAsync<T>(Uri url, JsonTypeInfo<GraphPage<T>> typeInfo, string? prefer, CancellationToken cancellationToken) =>
+        GetAsync(url, typeInfo, prefer, cancellationToken);
+
+    /// <summary>Reads one Graph object (not a collection page), with the same retry and size rules as a page.</summary>
+    public async Task<T> GetAsync<T>(Uri url, JsonTypeInfo<T> typeInfo, string? prefer, CancellationToken cancellationToken)
     {
         Pin(url.AbsoluteUri);
         for (var attempt = 1; ; attempt++)
@@ -97,7 +101,7 @@ internal sealed class GraphClient(
         }
     }
 
-    private async Task<GraphPage<T>> SendAsync<T>(Uri url, JsonTypeInfo<GraphPage<T>> typeInfo, string? prefer, string token, CancellationToken cancellationToken)
+    private async Task<T> SendAsync<T>(Uri url, JsonTypeInfo<T> typeInfo, string? prefer, string token, CancellationToken cancellationToken)
     {
         using var request = new HttpRequestMessage(HttpMethod.Get, url);
         request.Headers.Authorization = new("Bearer", token);
@@ -146,7 +150,7 @@ internal sealed class GraphClient(
         return header?.Date is { } date ? date - DateTimeOffset.UtcNow : null;
     }
 
-    private static GraphPage<T> Parse<T>(byte[] body, JsonTypeInfo<GraphPage<T>> typeInfo)
+    private static T Parse<T>(byte[] body, JsonTypeInfo<T> typeInfo)
     {
         try
         {

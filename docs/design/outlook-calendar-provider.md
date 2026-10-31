@@ -296,6 +296,10 @@ sync(collection, previous):
   `@removed`; all `@removed` entries are treated as deletions regardless of `reason`.
 - `$select` is not supported on `calendarView/delta`; we get full events and map what we need. Payload
   size is bounded by the page size (100) and a response cap (5 MB per page).
+- A subscribed holiday calendar ("Polskie święta") was reported (#67) to show events as "(no title)": the delta reply
+  appears to carry no `subject` for them. For any event that comes back without one, the sync reads that event on its
+  own with `GET me/events/{id}?$select=subject` (at most 50 such reads per sync; the rest wait for the next sync, with a
+  warning). A failed read keeps the event with an empty title. This is unverified against a live account.
 
 ### Refresh interval
 
@@ -308,7 +312,7 @@ calendar's events appear before the last finishes.
 | Graph `event` | `CalendarEvent` |
 | --- | --- |
 | `id` (immutable) | `Key.ItemId`; `Key.CollectionId` = calendar id; `RecurrenceId` stays `null` (see above) |
-| `subject` | `Title` (empty → empty string; the view adds the placeholder) |
+| `subject` | `Title` (empty → empty string; the view adds the placeholder). If the delta reply has no subject, it is read with `GET me/events/{id}?$select=subject`, see below |
 | `start`/`end` + `isAllDay` | `TimedEvent` or `AllDayEvent`, see below |
 | `originalStartTimeZone` | `TimedEvent.TimeZoneId` as IANA |
 | `body.content` (requested as text) | `Description` |
@@ -416,7 +420,7 @@ is configuration (#1 below). Microsoft still requires *some* registration; see [
 | 2 | Accept storing expanded occurrences with no `Recurrence`, or master + RRULE now? | Accepted for v1, add `SeriesId` later, revisit when calendar-wide delta reaches v1.0 |
 | 3 | Window size | -3/+13 months, rolled when under 9 months remain; a setting only if users ask |
 | 4 | Declined meetings | `Cancelled` |
-| 5 | Do birthday and holiday calendars support `calendarView/delta`? | Open; needs a live account. If not, fall back to a full read of the window and diff locally |
+| 5 | Do birthday and holiday calendars support `calendarView/delta`? | Open; needs a live account. Holiday events were reported without a subject in the delta reply (#67), worked around with a per-event read. If delta is not supported at all, fall back to a full read of the window and diff locally |
 | 6 | Shared calendars from other users (`Calendars.Read.Shared`) | Not in v1 |
 | 7 | Windows broker (WAM) for single sign-on | Later, optional |
 | 8 | `RetryAfter` on `SourceUnavailableException` | Done |

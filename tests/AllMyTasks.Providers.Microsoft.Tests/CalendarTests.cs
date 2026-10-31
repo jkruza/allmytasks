@@ -233,6 +233,36 @@ public class CalendarTests
         Assert.Equal("bad", Assert.Single(result.Warnings).ItemId);
     }
 
+    private const string NoSubject = """{"id":"h1","start":{"dateTime":"2026-11-01T00:00:00","timeZone":"UTC"},"end":{"dateTime":"2026-11-02T00:00:00","timeZone":"UTC"},"isAllDay":true}""";
+
+    [Fact]
+    public async Task An_event_the_delta_query_returned_without_a_subject_gets_it_from_a_single_read()
+    {
+        var (handler, source, _, _) = Setup.Create(request =>
+            request.RequestUri!.AbsolutePath.Contains("/me/events/", StringComparison.Ordinal)
+                ? FakeHandler.Json("""{"id":"h1","subject":"Wszystkich Świętych"}""")
+                : Setup.Page(NoSubject, delta: Delta1));
+
+        var result = await source.SyncEventsAsync(Setup.Calendar(), null, Ct);
+
+        Assert.Equal("Wszystkich Świętych", Assert.Single(result.Upserts).Title);
+        Assert.Empty(result.Warnings);
+        Assert.Contains(handler.GraphRequests, r => r.RequestUri!.AbsoluteUri.EndsWith("/me/events/h1?$select=subject", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task A_failed_subject_read_keeps_the_event_with_an_empty_title()
+    {
+        var (_, source, _, _) = Setup.Create(request =>
+            request.RequestUri!.AbsolutePath.Contains("/me/events/", StringComparison.Ordinal)
+                ? new HttpResponseMessage(HttpStatusCode.NotFound)
+                : Setup.Page(NoSubject, delta: Delta1));
+
+        var result = await source.SyncEventsAsync(Setup.Calendar(), null, Ct);
+
+        Assert.Equal(string.Empty, Assert.Single(result.Upserts).Title);
+    }
+
     [Fact]
     public async Task The_first_sync_reads_the_window_across_pages_and_is_a_snapshot()
     {
