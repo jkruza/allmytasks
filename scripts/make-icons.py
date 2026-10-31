@@ -2,6 +2,7 @@
 """Regenerates the app and tray icons in src/AllMyTasks/Assets from the three-lines logo.
 
 The logo is the three bars in the header of site/index.html (22/16/10 wide, 5 tall, 3 apart).
+Also writes packaging/linux/icons/<size>.png.
 Run: python3 scripts/make-icons.py   (needs Pillow). See docs/design/app-icon.md.
 """
 from pathlib import Path
@@ -11,7 +12,9 @@ BARS = [(22, "#3b82f6"), (16, "#10b981"), (10, "#f59e0b")]  # width, colour
 BAR_H, GAP, RADIUS = 5, 3, 2
 LOGO_W, LOGO_H = 22, 3 * BAR_H + 2 * GAP
 SS = 4  # supersampling factor
-OUT = Path(__file__).resolve().parent.parent / "src" / "AllMyTasks" / "Assets"
+ROOT = Path(__file__).resolve().parent.parent
+OUT = ROOT / "src" / "AllMyTasks" / "Assets"
+LINUX_ICONS = ROOT / "packaging" / "linux" / "icons"  # hicolor sizes for the AppImage, .deb and .rpm
 
 
 def draw_bars(d, x, y, scale):
@@ -37,3 +40,6 @@ OUT.mkdir(parents=True, exist_ok=True)
 render(64, tile=False).save(OUT / "tray.png")
 render(256, tile=True).save(OUT / "app.png")
 render(256, tile=True).save(OUT / "app.ico", sizes=[(s, s) for s in (16, 24, 32, 48, 64, 128, 256)])
+for size in (16, 32, 48, 64, 128, 256):
+    LINUX_ICONS.mkdir(parents=True, exist_ok=True)
+    render(size, tile=True).save(LINUX_ICONS / f"{size}.png")

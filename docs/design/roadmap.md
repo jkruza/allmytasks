@@ -98,7 +98,7 @@ incrementally.
 - Reminders and notifications: [reminders.md](reminders.md), [#55](https://github.com/jkruza/allmytasks/issues/55). Implemented with a Linux notifier and an in-app window; Windows and macOS native notifiers wait for the installers; not yet run on a real desktop. Compact upcoming widget is still open.
 - Global search and saved filters for All tasks: [search-and-saved-filters.md](search-and-saved-filters.md), [#56](https://github.com/jkruza/allmytasks/issues/56). Implemented; not yet used against large real data sets, and the saved-filter and search screens have not been looked at on every OS.
 - Meeting join links and attendees on events: [meeting-url-and-attendees.md](meeting-url-and-attendees.md), [#57](https://github.com/jkruza/allmytasks/issues/57). Implemented for Google, Outlook and iCalendar/CalDAV; not yet checked against live accounts.
-- Installers and signing: [packaging.md](packaging.md), Windows [#58](https://github.com/jkruza/allmytasks/issues/58), macOS [#59](https://github.com/jkruza/allmytasks/issues/59), Linux [#60](https://github.com/jkruza/allmytasks/issues/60).
+- Installers and signing: [packaging.md](packaging.md) (Windows MSI and Linux packages built, unsigned, not yet tried on a release; macOS open), Windows [#58](https://github.com/jkruza/allmytasks/issues/58), macOS [#59](https://github.com/jkruza/allmytasks/issues/59), Linux [#60](https://github.com/jkruza/allmytasks/issues/60).
 - Database encryption.
 
 ## Risks

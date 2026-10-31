@@ -1,0 +1,60 @@
+# One config for the .deb and the .rpm. Environment variables are set by packaging/linux/build.sh:
+# VERSION (semver, prerelease allowed) and ARCH (amd64 or arm64); the binary is staged at out/pkg-stage/AllMyTasks.
+name: allmytasks
+arch: ${ARCH}
+platform: linux
+version: ${VERSION}
+version_schema: semver
+maintainer: Jarosław Kruza and contributors <30356421+jkruza@users.noreply.github.com>
+description: |
+  Calendars and tasks from many providers in one place.
+  Cross-platform desktop app; data stays on your machine.
+homepage: https://allmytasks.jkruza.com
+license: MIT
+
+contents:
+  - src: out/pkg-stage/AllMyTasks
+    dst: /opt/allmytasks/AllMyTasks
+    file_info:
+      mode: 0755
+  - src: /opt/allmytasks/AllMyTasks
+    dst: /usr/bin/allmytasks
+    type: symlink
+  - src: packaging/linux/com.jkruza.allmytasks.desktop
+    dst: /usr/share/applications/com.jkruza.allmytasks.desktop
+  - src: packaging/linux/icons/16.png
+    dst: /usr/share/icons/hicolor/16x16/apps/com.jkruza.allmytasks.png
+  - src: packaging/linux/icons/32.png
+    dst: /usr/share/icons/hicolor/32x32/apps/com.jkruza.allmytasks.png
+  - src: packaging/linux/icons/48.png
+    dst: /usr/share/icons/hicolor/48x48/apps/com.jkruza.allmytasks.png
+  - src: packaging/linux/icons/64.png
+    dst: /usr/share/icons/hicolor/64x64/apps/com.jkruza.allmytasks.png
+  - src: packaging/linux/icons/128.png
+    dst: /usr/share/icons/hicolor/128x128/apps/com.jkruza.allmytasks.png
+  - src: packaging/linux/icons/256.png
+    dst: /usr/share/icons/hicolor/256x256/apps/com.jkruza.allmytasks.png
+  - src: LICENSE
+    dst: /usr/share/doc/allmytasks/LICENSE
+
+# The self-contained build brings .NET itself; these are the native libraries it and Avalonia load.
+# The list is checked by installing the packages in clean containers (packaging/linux/smoke.sh).
+overrides:
+  deb:
+    depends:
+      - libc6
+      - libfontconfig1
+      - libx11-6
+      - libice6
+      - libsm6
+      - libicu76 | libicu74 | libicu72 | libicu70 | libicu67
+      - libssl3t64 | libssl3 | libssl1.1
+  rpm:
+    depends:
+      - glibc
+      - fontconfig
+      - libX11
+      - libICE
+      - libSM
+      - libicu
+      - openssl-libs

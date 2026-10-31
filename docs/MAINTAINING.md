@@ -93,8 +93,20 @@ it caps users at the listed test users and expires refresh tokens after 7 days, 
 warned. See
 [google-calendar-provider.md](design/google-calendar-provider.md#oauth-client-and-verification-a-maintainer-task-not-code).
 
-Binaries are not code-signed yet, so Windows SmartScreen and macOS Gatekeeper will warn.
-macOS builds are plain executables, not `.app` bundles.
+Each release run builds, per platform (design: [packaging.md](design/packaging.md)):
+
+- Windows: a per-user MSI and the portable zip, for x64 and arm64.
+- Linux: AppImage, `.deb`, `.rpm` and the tarball, for x64 and arm64.
+- macOS: tarballs of the plain executable (no `.app` bundle or dmg yet, issue #59).
+
+x64 packages are installed and started once with `--version` in the build job (MSI on the Windows runner; deb and rpm in
+Debian, Ubuntu and Fedora containers). The draft release also gets `SHA256SUMS.txt` and GitHub build provenance
+attestations (verify with `gh attestation verify <file> --repo jkruza/allmytasks`). The same packages are built unsigned
+by the `package` job on every pull request and on `main`, and kept as workflow artifacts for 7 days.
+
+Binaries are not code-signed yet, so Windows SmartScreen and macOS Gatekeeper will warn. The Windows signing route
+(SignPath Foundation, or a Certum open-source certificate) is still to be decided; the release workflow has a placeholder
+step where signing goes.
 
 ## Project site
 

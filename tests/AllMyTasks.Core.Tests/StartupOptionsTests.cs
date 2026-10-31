@@ -19,4 +19,16 @@ public class StartupOptionsTests
     [InlineData("-tray")]
     [InlineData("--tray=true")]
     public void Only_the_exact_option_counts(string arg) => Assert.False(StartupOptions.FromArguments([arg]).StartInTray);
+
+    [Fact]
+    public void Version_argument_asks_for_the_version() => Assert.True(StartupOptions.FromArguments(["--version"]).ShowVersion);
+
+    [Fact]
+    public void Version_is_off_by_default() => Assert.False(StartupOptions.FromArguments(["--tray"]).ShowVersion);
+
+    [Theory]
+    [InlineData("--VERSION")]
+    [InlineData("-version")]
+    [InlineData("--version=1")]
+    public void Only_the_exact_version_option_counts(string arg) => Assert.False(StartupOptions.FromArguments([arg]).ShowVersion);
 }
