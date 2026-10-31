@@ -7,7 +7,8 @@
            Version="$(Version)"
            UpgradeCode="3f0a1c52-6d4e-4b8b-9a57-2c1d8e7f4a10"
            Scope="perUser"
-           Language="1033">
+           Language="1033"
+           Codepage="65001">
     <SummaryInformation Description="Calendars and tasks from many providers in one place" />
     <MajorUpgrade DowngradeErrorMessage="A newer version of All My Tasks is already installed." />
     <MediaTemplate EmbedCab="yes" />
