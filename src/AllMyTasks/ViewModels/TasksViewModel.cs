@@ -421,7 +421,7 @@ public sealed partial class TasksViewModel(
             name = "Saved filter";
         }
 
-        var existing = _saved.FindIndex(f => string.Equals(f.Name, name, StringComparison.CurrentCultureIgnoreCase));
+        var existing = _saved.FindIndex(f => string.Equals(f.Name, name, StringComparison.OrdinalIgnoreCase));
         var saved = Snapshot(existing >= 0 ? _saved[existing].Id : Guid.NewGuid(), existing >= 0 ? _saved[existing].Name : name);
         if (existing >= 0)
         {
