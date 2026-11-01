@@ -1,6 +1,6 @@
 # Download section on the project site
 
-Tracked in [#80](https://github.com/jkruza/allmytasks/issues/80); the file list was refined in [#88](https://github.com/jkruza/allmytasks/issues/88). Builds on [project-site.md](project-site.md).
+Tracked in [#80](https://github.com/jkruza/allmytasks/issues/80); the file list was refined in [#88](https://github.com/jkruza/allmytasks/issues/88) and a timing race fixed in [#92](https://github.com/jkruza/allmytasks/issues/92). Builds on [project-site.md](project-site.md).
 
 ## Goal
 
@@ -32,14 +32,20 @@ published, edited or deleted; nobody edits `site/index.html` for a release.
   only accepts deployments from `main`. So on a release event the workflow does not deploy; a small job runs
   `gh workflow run pages.yml --ref main` (permission `actions: write`; the event is exempt from the rule that
   `GITHUB_TOKEN` events do not start workflows) and the dispatched run deploys from `main`.
+- **Waiting for the API.** The release event can fire before the new release appears in the releases list (seen with
+  v0.7.0-alpha: the site kept the old release until Pages was re-run by hand). So `redeploy` passes the release tag and event
+  type (`release_tag`, `release_action` dispatch inputs) and `.github/pages/fetch_releases.py` polls the list every 15
+  seconds, for up to 6 minutes, until it agrees with the event: published or edited means the tag is there and not a draft;
+  deleted means it is gone; unpublished means it is gone or a draft. If it never agrees the run continues with a
+  warning and the daily run corrects the site. Runs started by a push, the schedule or by hand pass nothing and do not wait.
 - **Release events and drafts.** `release.yml` creates a *draft*. Drafts fire no event; publishing it by hand does,
   and that is what updates the site. Releases created by a workflow using `GITHUB_TOKEN` would not start the
   Pages workflow, which does not apply here because a person publishes the draft.
 
 ## Testing
 
-`.github/pages/test_render_downloads.py` (standard-library `unittest`) covers the selection rules, the empty
-fallback, escaping and link validation. The Pages workflow runs it before every deploy.
+`.github/pages/test_render_downloads.py` and `test_fetch_releases.py` (standard-library `unittest`) cover the selection rules, the empty
+fallback, escaping, link validation and the waiting logic. The Pages workflow runs it before every deploy.
 
 ## Not included
 
