@@ -1,9 +1,9 @@
 # Jira provider
 
 Project `AllMyTasks.Providers.Jira`, source kind `jira`. Implements `ITaskSource` only. Tracking issue:
-[#71](https://github.com/jkruza/allmytasks/issues/71). **Status: designed, not implemented.** Everything about
-Jira's API below comes from its public documentation and has not been tried against a live site; the
-[Unverified](#unverified) list says what to check first.
+[#71](https://github.com/jkruza/allmytasks/issues/71). **Status: implemented, read-only, not yet tried on a live site.** Everything about
+Jira's API below comes from its public documentation; the [Unverified](#unverified) list says what to check first.
+What the code does where it differs from the first design is under [Implementation notes](#implementation-notes).
 
 ## Scope
 
@@ -75,6 +75,26 @@ Decided by Jarek, 2026-11-01. The proposals of the earlier open questions are ac
 - Jira Server / Data Center is not in version 1.
 - Sprints and boards are not shown; the app is not a board.
 
+## Implementation notes
+
+- **Setup.** A source has three settings: the site address (https only; anything after the host is dropped), the Atlassian
+  account email, and the API token. The email and site are ordinary source settings; the token is in the secret store. The
+  credentials are sent as HTTP Basic to the configured host only, redirects are not followed, replies are capped at 16 MB
+  and the request times out after 30 seconds. Messages and diagnostics never contain the token, email or address.
+- **Every sync is a snapshot.** The design planned an `updated >=` delta plus a `key in (...)` check. The provider does
+  not see the cache, and one person's open assigned issues are few, so each sync instead runs the one JQL query,
+  pages through all results, and returns the complete list per project. An issue that is resolved or reassigned stops
+  appearing and the engine drops it. The sync position is only the time of the snapshot. If a site turns out to have
+  thousands of assigned issues, the delta design above is the way to bring the cost down.
+- **One request per refresh.** The engine syncs per project; the reply is remembered for two minutes so the projects share
+  one search. A failed request is not remembered.
+- **Collections** are keyed by the Jira project id and named `KEY Name`. A project with no open assigned issue is not listed.
+- **Descriptions** are flattened from Atlassian Document Format to text (paragraphs and list items on their own lines;
+  mentions, emoji and links as text).
+- **Parents** are linked only when the parent is also among the fetched issues.
+- **Page limit.** At most 200 pages of 100 issues are read; more is reported as an error.
+- Tests use a fake HTTP handler with fixture JSON for mapping, paging, errors and secret handling.
+
 ## Future refinements
 
 - An optional extra JQL field per source (for example "also issues I report", or one project), off by default.
@@ -84,5 +104,5 @@ Decided by Jarek, 2026-11-01. The proposals of the earlier open questions are ac
 
 ## Unverified
 
-Exact paging fields of the search endpoint, `Retry-After` behaviour, whether `statusCategory` can be used in JQL on
+Exact paging fields of the search endpoint (`nextPageToken` and `isLast` are what the code reads), `Retry-After` behaviour, whether `statusCategory` can be used in JQL on
 every site, and the API token header format all need a check against a real Cloud site before this is called done.
