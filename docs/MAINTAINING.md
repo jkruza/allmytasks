@@ -9,7 +9,7 @@ settings below. If a step fails, set it by hand here.
 | Setting | Value | Where |
 | --- | --- | --- |
 | Visibility | Public | Settings → General |
-| Merge methods | Squash and rebase only; delete branches after merge | Settings → General |
+| Merge methods | Squash only (rebase merges cannot keep signatures); delete branches after merge | Settings → General |
 | Require sign-off on web commits | On | Settings → General |
 | Secret scanning + push protection | On | Settings → Advanced Security |
 | Dependabot alerts + security updates | On | Settings → Advanced Security |
@@ -31,7 +31,8 @@ file in a PR and re-run the ruleset steps of `scripts/setup-github.sh`, or impor
 file in Settings → Rules → Rulesets → New ruleset → Import.
 
 - **main-protection**: PR required, 1 approval, code-owner review, approval of the
-  latest push, resolved conversations, linear history, no force-push or deletion, and
+  latest push, resolved conversations, linear history, signed commits (see
+  [Verified commits](#verified-commits)), squash merge only, no force-push or deletion, and
   `build (windows-latest)`, `build (ubuntu-latest)`, `build (macos-latest)` must pass.
   If you rename the CI job, update the required checks or every PR will be blocked.
 - **Docs-only changes skip build and test.** A `changes` job in `ci.yml` detects PRs and
@@ -59,6 +60,22 @@ account for Claude's PRs:
 Claude's PRs are authored by `jkruza-ai-bot` (Write access, not a code owner).
 Admin bypass-through-PR stays as a fallback for PRs you author yourself.
 - **protect-release-tags**: only admins can create, move or delete `v*` tags.
+
+### Verified commits
+
+`main` requires signed commits (`required_signatures` in `main-protection`), so every
+commit on `main` shows **Verified**. Design: [verified-commits.md](design/verified-commits.md).
+
+- Merge PRs with **Squash and merge** on GitHub. GitHub creates and signs the squash
+  commit itself. Rebase merges are off because they rewrite commits and drop signatures.
+  Dependabot commits are signed by GitHub, so they merge normally.
+- Claude's commits on PR branches stay **Unverified**: the cloud has no signing key, and
+  commits made with the GitHub MCP file tools turned out to be unsigned as well. This is
+  harmless, because only the squash commit reaches `main`. No signing key is stored in the cloud.
+- Sign your own commits with SSH (setup in [CONTRIBUTING.md](../CONTRIBUTING.md#signing-your-commits)),
+  and add the public key under Settings → SSH and GPG keys as a **Signing key**.
+- After this ruleset change, apply it: re-run the ruleset steps of `scripts/setup-github.sh`
+  (also turns off rebase merges in the repo options) or import the JSON in Settings → Rules.
 
 ### Your account
 
