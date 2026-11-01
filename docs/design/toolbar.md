@@ -9,7 +9,7 @@ view.
 ## Goals
 
 - The toolbar looks like the mockup on the site: the page title on the left, a quiet
-  segmented switcher (Day, Week, Month, Upcoming, All tasks) on the right, the active view
+  segmented switcher (Day, Week, Month, Upcoming, Inbox, All tasks) on the right, the active view
   shown by a soft background and semi-bold text, the others muted.
 - The All tasks filters are scannable at a glance and cost one click to change, instead of
   eleven controls in one wrapping row.

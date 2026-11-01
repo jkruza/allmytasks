@@ -90,6 +90,12 @@ public sealed record TaskFilter(
         AllLabels: false,
         Text: null);
 
+    /// <summary>
+    /// The Inbox preset: open tasks with no due date, from every visible collection. Built from existing values, so
+    /// the Inbox is the All tasks list with this filter (see docs/design/inbox-view.md).
+    /// </summary>
+    public static TaskFilter Inbox { get; } = Default with { Due = new DueFilter(new HashSet<DueOption> { DueOption.NoDueDate }) };
+
     /// <summary>A pure function of the task, the clock and the zone, so it runs the same in tests, the store and memory.</summary>
     public bool Matches(TaskItem task, DateTimeOffset now, TimeZoneInfo zone)
     {

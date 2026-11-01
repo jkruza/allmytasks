@@ -60,6 +60,19 @@ public sealed class TaskListService(IItemStore store, ISourceRepository sources,
         return Group(top, query.Grouping, now, zone);
     }
 
+    public async Task<int> CountAsync(TaskFilter filter, TimeZoneInfo displayZone, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(filter);
+        ArgumentNullException.ThrowIfNull(displayZone);
+        var tasks = await store.GetTasksAsync(cancellationToken).ConfigureAwait(false);
+        var collections = (await sources.GetCollectionsAsync(cancellationToken).ConfigureAwait(false))
+            .ToDictionary(c => (c.SourceId, c.Id));
+        var now = clock.GetUtcNow();
+        return tasks.Count(t =>
+            (!collections.TryGetValue((t.Key.SourceId, t.Key.CollectionId), out var c) || c.IsVisible)
+            && filter.Matches(t, now, displayZone));
+    }
+
     private static List<TaskItem> Sort(List<TaskItem> tasks, TaskSort sort, TimeZoneInfo zone, Dictionary<string, string> sourceNames)
     {
         string SourceOf(TaskItem t) => sourceNames.GetValueOrDefault(t.Key.SourceId, t.Key.SourceId);

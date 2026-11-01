@@ -78,6 +78,7 @@ internal sealed class TrayService : IDisposable
         menu.Items.Add(Item("Week", () => ShowView(ViewMode.Week)));
         menu.Items.Add(Item("Month", () => ShowView(ViewMode.Month)));
         menu.Items.Add(Item("Upcoming", () => ShowView(ViewMode.Upcoming)));
+        menu.Items.Add(Item("Inbox", () => ShowView(ViewMode.Inbox)));
         menu.Items.Add(Item("All tasks", () => ShowView(ViewMode.Tasks)));
         menu.Items.Add(new NativeMenuItemSeparator());
         menu.Items.Add(Item("Refresh", () => _ = _shell.RefreshAsync()));
