@@ -10,7 +10,7 @@
     <StackPanel DockPanel.Dock="Top" Spacing="8" Margin="0,0,0,8">
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
         <TextBox Text="{Binding SearchText}" PlaceholderText="Filter this list by title and notes (Ctrl+F searches everything)" MinWidth="120" />
-        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center" IsVisible="{Binding ShowStatusAndDue}">
           <ToggleButton Classes="seg" Content="Open" IsChecked="{Binding IsStatusOpen, Mode=OneWay}" Command="{Binding SetStatusCommand}" CommandParameter="Open" />
           <ToggleButton Classes="seg" Content="Completed" IsChecked="{Binding IsStatusCompleted, Mode=OneWay}" Command="{Binding SetStatusCommand}" CommandParameter="Completed" />
           <ToggleButton Classes="seg" Content="Cancelled" IsChecked="{Binding IsStatusCancelled, Mode=OneWay}" Command="{Binding SetStatusCommand}" CommandParameter="Cancelled" />
@@ -20,7 +20,7 @@
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
         <WrapPanel Orientation="Horizontal">
           <!-- Saved filters: named setups of the controls below; see docs/design/search-and-saved-filters.md. -->
-          <DropDownButton Classes="chip" Classes.active="{Binding HasActiveSaved}" Content="{Binding FiltersLabel}" Margin="0,0,6,4">
+          <DropDownButton Classes="chip" Classes.active="{Binding HasActiveSaved}" Content="{Binding FiltersLabel}" Margin="0,0,6,4" IsVisible="{Binding ShowStatusAndDue}">
             <DropDownButton.Flyout>
               <Flyout>
                 <StackPanel Spacing="6" MinWidth="300">
@@ -59,7 +59,7 @@
               </Flyout>
             </DropDownButton.Flyout>
           </DropDownButton>
-          <DropDownButton Classes="chip" Classes.active="{Binding IsDueActive}" Content="{Binding DueChip}" Margin="0,0,6,4">
+          <DropDownButton Classes="chip" Classes.active="{Binding IsDueActive}" Content="{Binding DueChip}" Margin="0,0,6,4" IsVisible="{Binding ShowStatusAndDue}">
             <DropDownButton.Flyout>
               <Flyout>
                 <ComboBox ItemsSource="{x:Static vm:TasksViewModel.DueChoices}" SelectedItem="{Binding Due}" MinWidth="180" />
@@ -109,6 +109,7 @@
       </Grid>
       <TextBlock Text="{Binding MissingNotice}" IsVisible="{Binding HasMissingNotice}" Foreground="DarkOrange" FontSize="12" TextWrapping="Wrap" />
     </StackPanel>
+    <TextBlock DockPanel.Dock="Top" Text="{Binding EmptyText}" IsVisible="{Binding IsEmpty}" Opacity="0.7" Margin="4,16" TextWrapping="Wrap" />
     <ListBox ItemsSource="{Binding Items}" SelectionMode="Single">
       <ListBox.DataTemplates>
         <DataTemplate DataType="vm:TaskGroupHeader">

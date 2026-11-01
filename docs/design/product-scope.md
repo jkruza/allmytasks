@@ -29,9 +29,9 @@ do here can damage data elsewhere. Version 2 revisits it deliberately, in a narr
    | Todoist | Tasks | Implemented (API token) | [todoist-provider.md](todoist-provider.md) |
    | Microsoft Outlook and To Do | Events, tasks (personal accounts) | Implemented | [outlook-calendar-provider.md](outlook-calendar-provider.md), [microsoft-todo-provider.md](microsoft-todo-provider.md) |
    | Google Calendar and Tasks | Events, tasks | Implemented | [google-calendar-provider.md](google-calendar-provider.md), [google-tasks-provider.md](google-tasks-provider.md) |
-   | Jira | Issues assigned to me | Designed, [#71](https://github.com/jkruza/allmytasks/issues/71) | [jira-provider.md](jira-provider.md) |
-   | GitHub | Issues and pull requests assigned to me or awaiting my review | Designed, [#72](https://github.com/jkruza/allmytasks/issues/72) | [github-provider.md](github-provider.md) |
-   | GitLab | Issues and merge requests assigned to me or awaiting my review | Implemented, [#73](https://github.com/jkruza/allmytasks/issues/73); not yet tried on a live instance | [gitlab-provider.md](gitlab-provider.md) |
+   | Jira | Issues assigned to me | Implemented, not yet tried on a live site, [#71](https://github.com/jkruza/allmytasks/issues/71) | [jira-provider.md](jira-provider.md) |
+   | GitHub | Issues and pull requests assigned to me or awaiting my review | Implemented (personal access token), [#72](https://github.com/jkruza/allmytasks/issues/72) | [github-provider.md](github-provider.md) |
+   | GitLab | Issues and merge requests assigned to me or awaiting my review | Implemented, not yet tried on a live instance, [#73](https://github.com/jkruza/allmytasks/issues/73) | [gitlab-provider.md](gitlab-provider.md) |
 
    iCalendar feeds and CalDAV calendars (events) are also in, as the generic calendar sources.
 3. **Useful views.**
@@ -41,7 +41,7 @@ do here can damage data elsewhere. Version 2 revisits it deliberately, in a narr
    | Calendar grids (day, week, month) | What is on, and when | Implemented, [views.md](views.md) |
    | Upcoming | What is next, events and tasks together | Implemented, [views.md](views.md#upcoming) |
    | All tasks | Everything open, with filters, sorting, grouping and saved filters | Implemented, [views.md](views.md#all-tasks) |
-   | Inbox | Tasks without a date, to triage | Designed, [#74](https://github.com/jkruza/allmytasks/issues/74), [inbox-view.md](inbox-view.md) |
+   | Inbox | Tasks without a date, to triage | Implemented, [#74](https://github.com/jkruza/allmytasks/issues/74), [inbox-view.md](inbox-view.md) |
 
 Also in version 1 but not a goal in itself: reminders, system tray, launch at login, search, installers.
 

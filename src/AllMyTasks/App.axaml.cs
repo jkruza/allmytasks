@@ -7,10 +7,12 @@ using AllMyTasks.Core.Startup;
 using AllMyTasks.Core.Storage;
 using AllMyTasks.Core.Sync;
 using AllMyTasks.Core.Views;
+using AllMyTasks.Providers.GitHub;
 using AllMyTasks.Providers.GitLab;
 using AllMyTasks.Providers.Google;
 using AllMyTasks.Providers.ICal;
 using AllMyTasks.Providers.ICal.CalDav;
+using AllMyTasks.Providers.Jira;
 using AllMyTasks.Providers.Microsoft;
 using AllMyTasks.Providers.Todoist;
 using AllMyTasks.Secrets;
@@ -74,8 +76,10 @@ public sealed partial class App : Application
         var todoistFactory = new TodoistFactory(logger: log, displayZone: zone);
         var microsoftFactory = new MicrosoftFactory(logger: log, displayZone: zone);
         var googleFactory = new GoogleFactory(logger: log);
+        var gitHubFactory = new GitHubFactory(logger: log);
         var gitlabFactory = new GitLabFactory(logger: log);
-        var registry = new SourceRegistry([feedFactory, davFactory, todoistFactory, googleFactory, microsoftFactory, gitlabFactory, new SampleSourceFactory(clock, zone)], sources, secrets);
+        var jiraFactory = new JiraFactory(logger: log);
+        var registry = new SourceRegistry([feedFactory, davFactory, todoistFactory, googleFactory, microsoftFactory, jiraFactory, gitHubFactory, gitlabFactory, new SampleSourceFactory(clock, zone)], sources, secrets);
         var engine = new SyncEngine(items, sources, registry, clock, logger: log, pendingChanges: pending);
         var changes = new TaskChangeService(pending, sources, registry, clock);
         changes.Changed += (_, e) =>
@@ -155,7 +159,9 @@ public sealed partial class App : Application
             feedFactory.Dispose();
             davFactory.Dispose();
             todoistFactory.Dispose();
+            jiraFactory.Dispose();
             googleFactory.Dispose();
+            gitHubFactory.Dispose();
             gitlabFactory.Dispose();
             microsoftFactory.Dispose();
             shell.Dispose();

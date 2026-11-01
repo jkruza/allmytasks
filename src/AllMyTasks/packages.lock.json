@@ -255,6 +255,13 @@
           "Microsoft.Extensions.Logging.Abstractions": "[10.0.0, )"
         }
       },
+      "allmytasks.providers.github": {
+        "type": "Project",
+        "dependencies": {
+          "AllMyTasks.Core": "[0.1.0, )",
+          "Microsoft.Extensions.Logging.Abstractions": "[10.0.0, )"
+        }
+      },
       "allmytasks.providers.gitlab": {
         "type": "Project",
         "dependencies": {
@@ -274,6 +281,13 @@
         "dependencies": {
           "AllMyTasks.Core": "[0.1.0, )",
           "Ical.Net": "[5.2.3, )",
+          "Microsoft.Extensions.Logging.Abstractions": "[10.0.0, )"
+        }
+      },
+      "allmytasks.providers.jira": {
+        "type": "Project",
+        "dependencies": {
+          "AllMyTasks.Core": "[0.1.0, )",
           "Microsoft.Extensions.Logging.Abstractions": "[10.0.0, )"
         }
       },
