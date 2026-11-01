@@ -17,6 +17,15 @@ on:
   schedule:
     - cron: "17 4 * * *"
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Tag of the release that changed (set by the release trigger); the run waits until the releases list shows it"
+        required: false
+        default: ""
+      release_action:
+        description: "Release event type: published, edited, deleted or unpublished"
+        required: false
+        default: ""
 
 # Read-only repository token; the two extra scopes are what actions/deploy-pages needs.
 permissions:
@@ -39,12 +48,16 @@ jobs:
     steps:
       - env:
           GH_TOKEN: ${{ github.token }}
-        run: gh workflow run pages.yml --ref main --repo "$GITHUB_REPOSITORY"
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          RELEASE_ACTION: ${{ github.event.action }}
+        run: |
+          gh workflow run pages.yml --ref main --repo "$GITHUB_REPOSITORY" \
+            -f release_tag="$RELEASE_TAG" -f release_action="$RELEASE_ACTION"
 
   deploy:
     if: github.event_name != 'release'
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -54,11 +67,15 @@ jobs:
           persist-credentials: false
       - name: Test the download renderer
         run: python3 -m unittest discover -s .github/pages
+      # After a release event the API can lag behind it, so wait until the list shows the change.
       - name: Fill in the download section from the GitHub releases
         env:
           GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.release_tag }}
+          RELEASE_ACTION: ${{ inputs.release_action }}
+        timeout-minutes: 8
         run: |
-          gh api "repos/$GITHUB_REPOSITORY/releases?per_page=100" --paginate --slurp > "$RUNNER_TEMP/releases.json"
+          python3 .github/pages/fetch_releases.py "$GITHUB_REPOSITORY" "$RUNNER_TEMP/releases.json" "$RELEASE_TAG" "$RELEASE_ACTION"
           python3 .github/pages/render_downloads.py "$RUNNER_TEMP/releases.json" site/index.html
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
