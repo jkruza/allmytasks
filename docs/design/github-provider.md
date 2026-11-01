@@ -60,11 +60,22 @@ Fixtures for issue, PR, draft PR, merged PR and milestone; fake HTTP handler for
 responses. The token never reaches logs or the database. Titles and bodies from repositories are untrusted text:
 displayed as plain text only.
 
-## Open questions
+## Decisions
 
-- Include issues I created, or mention me? Proposal: not in version 1, add as per-source options later.
-- GitHub Enterprise Server (custom base URL)? Proposal: later, same provider with a base URL setting like GitLab.
-- Group by repository only, or also by organisation? Proposal: repository only.
+Decided by Jarek, 2026-11-01. The proposals of the earlier open questions are accepted:
+
+- Version 1 shows items assigned to me and review requests only; issues I created or am mentioned in are not included.
+- GitHub Enterprise Server is not in version 1.
+- Items are grouped by repository only.
+
+## Future refinements
+
+- Per-source options to include issues I created and items that mention me.
+- GitHub Enterprise Server as a base URL setting on the same provider, like GitLab.
+- Grouping by organisation, if repository-only grouping proves too fine.
+- Device-flow OAuth, together with the other OAuth providers.
+- Real due dates from Projects (v2) date fields.
+
 
 ## Unverified
 

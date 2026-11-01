@@ -16,7 +16,7 @@ In version 1:
 - Each Jira project that has at least one such issue becomes a `TaskList` collection, named by project key and name.
 - Read-only.
 
-Not in version 1: issues the user only reports or watches (an optional extra JQL per source is an open question),
+Not in version 1: issues the user only reports or watches (an optional extra JQL per source is a possible later refinement),
 sprints and boards, comments, worklogs, custom fields, Jira Server / Data Center, OAuth sign-in, writing back.
 
 ## Authentication
@@ -67,11 +67,20 @@ Fixture JSON from the documentation for mapping and paging; a fake HTTP handler 
 429 handling and a bad token. The token must never appear in logs, exception text or the database
 (tested, as for every provider). The site URL is checked to be https.
 
-## Open questions
+## Decisions
 
-- Extra JQL per source ("also issues I report", "a given project")? Proposal: one optional JQL field, off by default.
-- Jira Server / Data Center with personal access tokens? Proposal: a later change to the same provider (API v2 paths).
-- Show the Jira sprint or board? Proposal: no, the app is not a board.
+Decided by Jarek, 2026-11-01. The proposals of the earlier open questions are accepted:
+
+- Version 1 has no extra JQL. The built-in query is the only one.
+- Jira Server / Data Center is not in version 1.
+- Sprints and boards are not shown; the app is not a board.
+
+## Future refinements
+
+- An optional extra JQL field per source (for example "also issues I report", or one project), off by default.
+- Jira Server / Data Center with personal access tokens, as a later change to the same provider (API v2 paths).
+- OAuth 2.0 (3LO) sign-in, once the project-level app decision is made.
+
 
 ## Unverified
 

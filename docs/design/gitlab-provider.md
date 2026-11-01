@@ -13,7 +13,7 @@ In version 1:
 - Each project with at least one such item becomes a `TaskList` collection named by its path with namespace.
 - Read-only.
 
-Not in version 1: To-Do list items, epics, pipelines, boards, writing back, OAuth.
+Not in version 1: To-Do list items other than review requests (those are covered by the reviewer query), epics, pipelines, boards, writing back, OAuth.
 
 ## Mapping
 
@@ -50,10 +50,25 @@ as for CalDAV). OAuth is deferred for the same reason as other providers.
 Fixtures for issue with and without due date, MR, draft MR and a self-managed base URL with a path prefix; fake
 HTTP handler for paging and 429. Token never in logs or database; instance text is shown as plain text.
 
-## Open questions
+## Decisions
 
-- Show To-Do list items (GitLab's own inbox of mentions and review requests)? Proposal: later, as an option.
-- Group-level scope for large instances (limit to given groups)? Proposal: only if volume demands it.
+Decided by Jarek, 2026-11-01.
+
+- **Review requests are part of version 1.** Merge requests where I am a requested reviewer are shown next to
+  assigned ones (the `reviewer_username` query above), labelled `review requested`. This is a requirement, not an
+  option, so how reviewer requests behave across GitLab versions is the first item to check
+  (see [Unverified](#unverified)).
+- The rest of GitLab's To-Do list (mentions, build failures, approvals) is not in version 1.
+- There is no group-level scope in version 1.
+
+## Future refinements
+
+- Optional display of the other To-Do list items (mentions and similar), as a per-source option. If review requests
+  turn out to be incomplete from `reviewer_username` alone, read To-Do items of the review-requested kind as well
+  and de-duplicate by merge request.
+- Limit a source to given groups, only if volume on large instances demands it.
+- OAuth, together with the other OAuth providers.
+
 
 ## Unverified
 
