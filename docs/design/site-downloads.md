@@ -1,6 +1,6 @@
 # Download section on the project site
 
-Tracked in [#80](https://github.com/jkruza/allmytasks/issues/80). Builds on [project-site.md](project-site.md).
+Tracked in [#80](https://github.com/jkruza/allmytasks/issues/80); the file list was refined in [#88](https://github.com/jkruza/allmytasks/issues/88). Builds on [project-site.md](project-site.md).
 
 ## Goal
 
@@ -21,7 +21,10 @@ published, edited or deleted; nobody edits `site/index.html` for a release.
   is the newest prerelease by `published_at`, shown only if it was published after the release (or if no
   release exists). A newer release therefore hides older prereleases on its own.
 - **Output.** Each card has the release name, date, a button to the GitHub release page ("Download from the GitHub
-  release" or "...prerelease") and the list of its files. All text is HTML-escaped and links must be
+  release" or "...prerelease") and a list of its files, one link per line. Only installable packages (`.msi`, `.AppImage`, `.deb`, `.rpm`,
+  and `.dmg`/`.pkg` once macOS packaging exists) and `SHA256SUMS.txt` are listed, checksums last. Archives
+  (`.zip`, `.tar.gz`) and build leftovers (such as `.wixpdb`) are left out; they remain on the release page, which the
+  button links to. macOS has no package yet, so it shows no macOS file until one exists ([#59](https://github.com/jkruza/allmytasks/issues/59)). All text is HTML-escaped and links must be
   `https://github.com/...`, otherwise they fall back to the releases page.
 - **Triggers.** Pages deploys on `release` (published, edited, deleted, unpublished), on pushes to `main` that touch
   `site/**` or `.github/pages/**`, on manual dispatch, and on a daily schedule as a safety net.
@@ -40,5 +43,5 @@ fallback, escaping and link validation. The Pages workflow runs it before every 
 
 ## Not included
 
-- Per-OS "best download" detection or direct links by platform; the file list on each card is enough for now.
+- Per-OS "best download" detection; the file list on each card is enough for now.
 - Release notes on the site.
