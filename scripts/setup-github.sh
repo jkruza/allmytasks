@@ -51,10 +51,10 @@ create_repo() {
 }
 step "Create public repo $FULL and push main" create_repo
 
-step "Repo options (squash/rebase only, delete merged branches)" \
+step "Repo options (squash only, delete merged branches)" \
   api -X PATCH "repos/$FULL" \
     -F has_wiki=false -F has_projects=false \
-    -F allow_merge_commit=false -F allow_squash_merge=true -F allow_rebase_merge=true \
+    -F allow_merge_commit=false -F allow_squash_merge=true -F allow_rebase_merge=false \
     -F allow_auto_merge=false -F delete_branch_on_merge=true \
     -F web_commit_signoff_required=true
 
