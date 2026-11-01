@@ -33,7 +33,7 @@ dotnet run --project src/AllMyTasks
 
 CI for pull requests from forks runs after a maintainer approves it. All checks
 (Windows, Linux, macOS) must pass and a code owner must approve before merging.
-PRs are squash- or rebase-merged; `main` has a linear history.
+PRs are squash-merged and `main` requires signed commits (GitHub signs the squash commit).
 PRs that only change documentation (`docs/`, `*.md`) skip the build and test steps,
 but the three checks still report, so they merge the same way.
 
@@ -51,6 +51,20 @@ git commit -s -m "Add Todoist provider"
 ```
 
 This adds `Signed-off-by: Your Name <you@example.com>` to the commit message.
+
+## Signing your commits
+
+Signing is optional for contributors: the squash commit that lands on `main` is signed by
+GitHub, so it shows Verified either way. To sign your own commits anyway, use an SSH key:
+
+```sh
+git config --global gpg.format ssh
+git config --global user.signingkey ~/.ssh/id_ed25519.pub
+git config --global commit.gpgsign true
+```
+
+Then add the same public key at GitHub → Settings → SSH and GPG keys → New SSH key, with
+key type **Signing key**. Combine with `-s` for the DCO sign-off (`git commit -s`).
 
 ## AI-assisted contributions
 
