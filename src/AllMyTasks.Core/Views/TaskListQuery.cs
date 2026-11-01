@@ -68,4 +68,10 @@ public interface ITaskListService
 {
     /// <summary>Filters, sorts, groups and nests the cached tasks. Supports cancellation for per-keystroke use.</summary>
     Task<IReadOnlyList<TaskGroup>> GetAsync(TaskListQuery query, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// How many tasks in visible collections match <paramref name="filter"/>, subtasks included, without building rows.
+    /// Used for the Inbox count on the view switcher.
+    /// </summary>
+    Task<int> CountAsync(TaskFilter filter, TimeZoneInfo displayZone, CancellationToken cancellationToken = default);
 }

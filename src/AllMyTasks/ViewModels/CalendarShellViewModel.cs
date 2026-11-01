@@ -31,6 +31,8 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
     private readonly MonthViewModel _month;
     private readonly UpcomingViewModel _upcoming;
     private readonly TasksViewModel _tasks;
+    private readonly TasksViewModel _inbox;
+    private readonly ITaskListService _taskList;
     private readonly SearchViewModel? _search;
     private readonly ITimer _midnightTimer;
     private readonly ViewStateStore? _state;
@@ -97,7 +99,9 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
         _week = new WeekViewModel(agenda);
         _month = new MonthViewModel(agenda, OpenDay);
         _upcoming = new UpcomingViewModel(agenda);
+        _taskList = taskList;
         _tasks = new TasksViewModel(taskList, clock, state, ToggleTaskAsync, savedFilters, ExistingCollectionsAsync);
+        _inbox = new TasksViewModel(taskList, clock, state, ToggleTaskAsync, null, ExistingCollectionsAsync, isInbox: true);
         _search = search is null ? null : new SearchViewModel(search, clock, ShowInCalendarAsync, CloseSearch);
         Content = _day;
 
@@ -187,6 +191,15 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
 
     public bool IsTasks => Mode == ViewMode.Tasks;
 
+    public bool IsInbox => Mode == ViewMode.Inbox;
+
+    /// <summary>Number of open tasks without a date, shown on the Inbox entry of the view switcher.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(InboxLabel))]
+    public partial int InboxCount { get; set; }
+
+    public string InboxLabel => InboxCount > 0 ? $"Inbox ({InboxCount})" : "Inbox";
+
     /// <summary>Whether previous/next make sense for the current view.</summary>
     public bool CanNavigate => !IsSearching && Mode is ViewMode.Day or ViewMode.Week or ViewMode.Month;
 
@@ -214,6 +227,7 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
         OnPropertyChanged(nameof(IsMonth));
         OnPropertyChanged(nameof(IsUpcoming));
         OnPropertyChanged(nameof(IsTasks));
+        OnPropertyChanged(nameof(IsInbox));
         OnPropertyChanged(nameof(CanNavigate));
         _ = ReloadAsync();
     }
@@ -227,6 +241,7 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
         ViewMode.Week => _week,
         ViewMode.Month => _month,
         ViewMode.Upcoming => _upcoming,
+        ViewMode.Inbox => _inbox,
         _ => _tasks,
     };
 
@@ -581,6 +596,7 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
 
         _midnightTimer.Dispose();
         _tasks.Dispose();
+        _inbox.Dispose();
         _search?.Dispose();
         _loading?.Cancel();
         _loading?.Dispose();
@@ -594,6 +610,7 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
         }
 
         await _tasks.RestoreAsync();
+        await _inbox.RestoreAsync();
         if (await _state.LoadAsync<ShellState>("view.shell") is not { } saved)
         {
             return;
@@ -741,6 +758,7 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
         try
         {
             await Content.LoadAsync(context, cts.Token);
+            InboxCount = await _taskList.CountAsync(TaskFilter.Inbox, _zone, cts.Token);
             LastRefreshed = $"Updated {TimeZoneInfo.ConvertTime(now, _zone).ToString("t", culture)}";
         }
         catch (OperationCanceledException)
@@ -777,6 +795,8 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
                 return CurrentDate.ToString("MMMM yyyy", culture);
             case ViewMode.Upcoming:
                 return "Upcoming";
+            case ViewMode.Inbox:
+                return "Inbox";
             default:
                 return "All tasks";
         }

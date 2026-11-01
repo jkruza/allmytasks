@@ -129,9 +129,13 @@ public sealed partial class TasksViewModel(
     ViewStateStore? state = null,
     Func<ItemKey, bool, bool, string, Task>? toggle = null,
     SavedFilterStore? savedFilters = null,
-    Func<Task<IReadOnlySet<CollectionRef>>>? existingCollections = null) : ContentViewModel, IDisposable
+    Func<Task<IReadOnlySet<CollectionRef>>>? existingCollections = null,
+    bool isInbox = false) : ContentViewModel, IDisposable
 {
     internal const string StateKey = "view.tasks";
+    internal const string InboxStateKey = "view.inbox";
+    private readonly bool _isInbox = isInbox;
+    private readonly string _stateKey = isInbox ? InboxStateKey : StateKey;
     private bool _restoring;
     private ViewContext? _context;
     private CancellationTokenSource? _debounce;
@@ -189,15 +193,15 @@ public sealed partial class TasksViewModel(
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(SortSummary))]
-    public partial Choice<TaskSortField> Sort { get; set; } = SortChoices[0];
+    public partial Choice<TaskSortField> Sort { get; set; } = isInbox ? SortChoices.First(c => c.Value == TaskSortField.LastModified) : SortChoices[0];
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(GroupSummary))]
-    public partial Choice<TaskGrouping> Grouping { get; set; } = GroupChoices[0];
+    public partial Choice<TaskGrouping> Grouping { get; set; } = isInbox ? GroupChoices.First(c => c.Value == TaskGrouping.Collection) : GroupChoices[0];
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(SortSummary))]
-    public partial bool Descending { get; set; }
+    public partial bool Descending { get; set; } = isInbox;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(PriorityChip), nameof(IsPriorityActive), nameof(HasActiveFilters))]
@@ -244,6 +248,20 @@ public sealed partial class TasksViewModel(
     /// <summary>The name typed in the Filters menu, for saving and renaming.</summary>
     [ObservableProperty]
     public partial string FilterName { get; set; } = string.Empty;
+
+    /// <summary>The Inbox: open tasks without a due date. Status and due are fixed; see docs/design/inbox-view.md.</summary>
+    public bool IsInbox => _isInbox;
+
+    /// <summary>Whether the status, due and saved-filter controls are shown (not in the Inbox, where they are fixed).</summary>
+    public bool ShowStatusAndDue => !_isInbox;
+
+    /// <summary>Whether the list has no rows; the view then shows <see cref="EmptyText"/>.</summary>
+    [ObservableProperty]
+    public partial bool IsEmpty { get; set; }
+
+    public string EmptyText => _isInbox
+        ? (HasActiveFilters ? "No undated task matches the filter." : "Nothing without a date. Everything open has one.")
+        : (HasActiveFilters ? "No task matches the filter." : "No tasks yet.");
 
     public bool HasActiveSaved => ActiveSaved is not null;
 
@@ -534,7 +552,7 @@ public sealed partial class TasksViewModel(
             RefreshSavedItems();
         }
 
-        if (state is null || await state.LoadAsync<TasksState>(StateKey) is not { } saved)
+        if (state is null || await state.LoadAsync<TasksState>(_stateKey) is not { } saved)
         {
             return;
         }
@@ -655,7 +673,7 @@ public sealed partial class TasksViewModel(
     {
         if (state is not null)
         {
-            _ = state.SaveAsync(StateKey, new TasksState(
+            _ = state.SaveAsync(_stateKey, new TasksState(
                 Status.Value.ToString(),
                 Due.Value?.ToString(),
                 Sort.Value.ToString(),
@@ -715,6 +733,11 @@ public sealed partial class TasksViewModel(
 
         var labels = LabelsText.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        if (_isInbox)
+        {
+            return TaskFilter.Inbox with { Priorities = priorities, Labels = labels, AllLabels = AllLabels, Text = SearchText };
+        }
+
         var due = _appliedDue ?? (Due.Value is { } option ? new DueFilter(new HashSet<DueOption> { option }) : DueFilter.Any);
         return new TaskFilter(Status.Value, due, _appliedCollections, priorities, labels, AllLabels, SearchText);
     }
@@ -743,6 +766,8 @@ public sealed partial class TasksViewModel(
         }
 
         Summary = count == 1 ? "1 task" : $"{count} tasks";
+        IsEmpty = count == 0;
+        OnPropertyChanged(nameof(EmptyText));
     }
 
     private int Add(TaskRow row, int depth, ViewContext context)
