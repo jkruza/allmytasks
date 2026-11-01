@@ -32,6 +32,24 @@ class PickTests(unittest.TestCase):
 
 
 class RenderTests(unittest.TestCase):
+    def test_lists_only_packages_and_checksums_one_per_line(self):
+        r = rel("v1.0.0", "2026-01-01T00:00:00Z")
+        base = "https://github.com/jkruza/allmytasks/releases/download/v1.0.0/"
+        r["assets"] = [{"name": n, "browser_download_url": base + n} for n in (
+            "AllMyTasks-v1.0.0-win-x64.zip", "AllMyTasks-v1.0.0-windows-x64.msi", "AllMyTasks.wixpdb",
+            "SHA256SUMS.txt", "AllMyTasks-v1.0.0-linux-x64.tar.gz", "AllMyTasks-v1.0.0-linux-x64.deb",
+            "AllMyTasks-v1.0.0-linux-x64.AppImage")]
+        out = render([r])
+        self.assertEqual(out.count("<li>"), 4)
+        for gone in (".zip", ".tar.gz", ".wixpdb"):
+            self.assertNotIn(gone, out)
+        self.assertLess(out.index("linux-x64.deb"), out.index("SHA256SUMS.txt"))
+
+    def test_no_files_list_when_nothing_qualifies(self):
+        r = rel("v1.0.0", "2026-01-01T00:00:00Z")
+        r["assets"] = [{"name": "a.zip", "browser_download_url": "https://github.com/x/a.zip"}]
+        self.assertNotIn("<ul", render([r]))
+
     def test_nothing_published_falls_back(self):
         out = render([])
         self.assertEqual(out.count("Not available now"), 2)

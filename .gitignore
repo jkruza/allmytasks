@@ -34,3 +34,5 @@ appsettings.*.local.json
 # Claude Code: personal settings stay local
 .claude/settings.local.json
 CLAUDE.local.md
+
+__pycache__/

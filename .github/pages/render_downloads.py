@@ -39,6 +39,20 @@ def pick(releases):
     return release, prerelease
 
 
+PACKAGE_SUFFIXES = (".msi", ".appimage", ".deb", ".rpm", ".dmg", ".pkg")
+CHECKSUMS = "sha256sums.txt"
+
+
+def is_listed(name):
+    """Installable packages and the checksums file; archives and build leftovers stay on the release page."""
+    lower = name.lower()
+    return lower.endswith(PACKAGE_SUFFIXES) or lower == CHECKSUMS
+
+
+def sort_key(name):
+    return (name.lower() == CHECKSUMS, name.lower())  # checksums last
+
+
 def safe_url(url):
     return url if re.fullmatch(r"https://github\.com/[^\s\"'<>]+", url or "") else ALL_RELEASES
 
@@ -51,13 +65,16 @@ def card(title, release, lead):
     else:
         name = release.get("name") or release["tag_name"]
         date = release["published_at"][:10]
-        assets = [a for a in release.get("assets", []) if a.get("browser_download_url")]
-        links = ", ".join(f'<a href="{e(safe_url(a["browser_download_url"]))}">{e(a["name"])}</a>'
-                          for a in assets)
+        assets = sorted((a for a in release.get("assets", [])
+                         if a.get("browser_download_url") and is_listed(a["name"])),
+                        key=lambda a: sort_key(a["name"]))
+        links = "".join(f'<li><a href="{e(safe_url(a["browser_download_url"]))}">{e(a["name"])}</a></li>'
+                        for a in assets)
         body = (f'<p style="margin: 0; {TEXT}">{e(name)}, published {e(date)}.</p>'
                 f'<a href="{e(safe_url(release["html_url"]))}" style="{BUTTON}">{e(lead)}</a>')
         if links:
-            body += f'<p style="margin: 0; font-size: 13px; line-height: 22px; color: var(--mut)">Files: {links}</p>'
+            body += (f'<ul style="margin: 0; padding: 0; list-style: none; font-size: 13px; line-height: 24px; '
+                     f'color: var(--mut)">{links}</ul>')
     return (f'<div style="{CARD}"><h3 style="margin: 0; font-size: 18px; line-height: 24px; '
             f'font-weight: 600">{e(title)}</h3>{body}</div>')
 
