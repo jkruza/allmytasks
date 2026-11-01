@@ -2,6 +2,8 @@
 
 Tracked in [#54](https://github.com/jkruza/allmytasks/issues/54).
 
+**Scope note (2026-11-01):** the product is now a read-only overview and write support is a version 2 goal ([product-scope.md](product-scope.md), [write-support.md](write-support.md)). This feature was built first and stays as an opt-in, off-by-default **preview of version 2**; it will not be extended to other providers before version 2.
+
 **Status: implemented** for Todoist. Where the implementation differs from the design below, "Implementation notes" at the end says so. Not yet verified against a live Todoist account (see [Unverified](#unverified)).
 
 The first write support: tick a Todoist task in the app to complete it, untick it to reopen it. This is
@@ -68,7 +70,7 @@ so the token itself cannot enforce read-only. The source gets a switch instead:
 
 | Field | Kind | Default | Notes |
 | --- | --- | --- | --- |
-| `allowChanges` | Boolean | off | *Allow All My Tasks to change tasks in Todoist (complete and reopen)* |
+| `allowChanges` | Boolean | off | *Allow All My Tasks to change tasks in Todoist (preview)*; help text says it is a preview of a version 2 feature |
 
 Existing sources keep working as before until the user switches it on. While off, the source does not expose
 `IWritableTaskSource` behaviour to the UI (no checkbox). The Security text in the Todoist doc changes from

@@ -4,6 +4,19 @@ Each milestone is shippable on its own and ends with tests green, `dotnet format
 --verify-no-changes` clean, and the docs here updated if the design moved. Sizes are
 rough: S ≈ a few days, M ≈ 1-2 weeks, L ≈ several weeks of part-time work.
 
+## Versions
+
+The goal is a **read-only overview** of tasks and events from many sources; see [product-scope.md](product-scope.md).
+
+| Version | Goals | State |
+| --- | --- | --- |
+| 1 | General framework; Todoist, Microsoft Outlook / To Do, Google Calendar / Tasks, Jira, GitHub, GitLab; views: calendar grids, Upcoming, All tasks, Inbox | Framework, Todoist, Microsoft, Google and all views except Inbox are in. Open: Jira [#71](https://github.com/jkruza/allmytasks/issues/71), GitHub [#72](https://github.com/jkruza/allmytasks/issues/72), GitLab [#73](https://github.com/jkruza/allmytasks/issues/73), Inbox [#74](https://github.com/jkruza/allmytasks/issues/74), and live-account checks of the providers |
+| 2 | More services (to be chosen); write support for completing tasks, changing task dates and rescheduling events | Planned: [write-support.md](write-support.md), [#75](https://github.com/jkruza/allmytasks/issues/75). Todoist completion exists as an opt-in preview |
+| Research | Runtime plug-ins, MCP support, AI summaries and planning with local models | Unscheduled: [research.md](research.md), [#76](https://github.com/jkruza/allmytasks/issues/76), [#77](https://github.com/jkruza/allmytasks/issues/77), [#78](https://github.com/jkruza/allmytasks/issues/78) |
+
+The milestones M1 to M6 below are the history of how the framework was built. The "Later" list that follows them
+is the working list of everything else; each item belongs to one of the versions above.
+
 ## Where we are
 
 M1 to M6 are implemented: the domain model, provider interfaces, in-memory sources, a fake
@@ -84,6 +97,17 @@ incrementally.
 
 ### Later (unordered, not committed)
 
+New since the refocus on a read-only overview (version 1 unless stated):
+
+- Jira provider: [jira-provider.md](jira-provider.md), [#71](https://github.com/jkruza/allmytasks/issues/71). Designed.
+- GitHub provider: [github-provider.md](github-provider.md), [#72](https://github.com/jkruza/allmytasks/issues/72). Designed.
+- GitLab provider: [gitlab-provider.md](gitlab-provider.md), [#73](https://github.com/jkruza/allmytasks/issues/73). Designed.
+- Inbox view of tasks without a date: [inbox-view.md](inbox-view.md), [#74](https://github.com/jkruza/allmytasks/issues/74). Designed.
+- Version 2: write support for completing tasks, changing task dates and rescheduling events, and more services: [write-support.md](write-support.md), [#75](https://github.com/jkruza/allmytasks/issues/75).
+- Research, unscheduled: [research.md](research.md).
+
+Earlier items:
+
 - `VTODO` tasks over CalDAV.
 - Todoist provider (first task-only provider; proves the model is not calendar-shaped). Implemented read-only with an API
   token; see [todoist-provider.md](todoist-provider.md), tracked in [#27](https://github.com/jkruza/allmytasks/issues/27).
@@ -92,7 +116,7 @@ incrementally.
   - Google Tasks: [google-tasks-provider.md](google-tasks-provider.md), [#26](https://github.com/jkruza/allmytasks/issues/26). Implemented read-only; same caveats.
   - Outlook calendar (Microsoft Graph, personal accounts): [outlook-calendar-provider.md](outlook-calendar-provider.md), [#32](https://github.com/jkruza/allmytasks/issues/32); the shared Microsoft sign-in is described there. Implemented read-only; not yet verified on a live account. Work and school accounts are deferred.
   - Microsoft To Do (personal accounts): [microsoft-todo-provider.md](microsoft-todo-provider.md), [#24](https://github.com/jkruza/allmytasks/issues/24). Implemented read-only, same source as Outlook; not yet verified on a live account.
-- Write support: complete tasks first (smallest, most valuable), then edit/create. Completing and reopening tasks is implemented for Todoist only, opt-in per source: [complete-tasks.md](complete-tasks.md), [#54](https://github.com/jkruza/allmytasks/issues/54); not yet verified on a live account. Google Tasks and Microsoft To Do follow, then edit/create.
+- Write support (version 2, see [write-support.md](write-support.md)): complete tasks first, then date changes and event rescheduling; create and edit are not planned. Completing and reopening tasks is implemented for Todoist only, as an opt-in, off-by-default preview of version 2: [complete-tasks.md](complete-tasks.md), [#54](https://github.com/jkruza/allmytasks/issues/54); not yet verified on a live account. Google Tasks and Microsoft To Do follow in version 2.
 - System tray icon with menu, `--tray` start and close-to-tray: [system-tray.md](system-tray.md), [#39](https://github.com/jkruza/allmytasks/issues/39). Implemented.
 - Launch at login with optional tray-only start: [launch-at-login.md](launch-at-login.md), [#52](https://github.com/jkruza/allmytasks/issues/52). Implemented; login launch not yet run on each OS.
 - Reminders and notifications: [reminders.md](reminders.md), [#55](https://github.com/jkruza/allmytasks/issues/55). Implemented with a Linux notifier and an in-app window; Windows and macOS native notifiers wait for the installers; not yet run on a real desktop. Compact upcoming widget is still open.
@@ -134,4 +158,4 @@ discussion or an issue, then record the outcome in the decision log in
 | 7 | Default refresh interval | 15 minutes, per-source override |
 | 8 | Separate projects per provider from the start, or one `Providers` project until there are two? | Own project for iCal (it brings a dependency); decide again at provider two |
 | 9 | UI localisation and culture | Use OS culture for dates and week start from day one; translations later |
-| 10 | App name (README says "working title") | Not blocking; namespaces would need renaming if it changes, so decide before M3 |
+| 10 | App name | Decided 2026-11-01: "All My Tasks" is the official name |

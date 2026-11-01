@@ -140,7 +140,7 @@ on the source status.
 
 ## Write support (later)
 
-Read-only v1 does not block writing. When added, writing is separate interfaces so a
+Version 1 is a read-only overview; version 2 adds a narrow set of writes ([write-support.md](write-support.md)). Read-only v1 does not block writing. When added, writing is separate interfaces so a
 read-only source simply does not implement them:
 
 ```csharp
