@@ -270,6 +270,13 @@
           "Microsoft.Extensions.Logging.Abstractions": "[10.0.0, )"
         }
       },
+      "allmytasks.providers.jira": {
+        "type": "Project",
+        "dependencies": {
+          "AllMyTasks.Core": "[0.1.0, )",
+          "Microsoft.Extensions.Logging.Abstractions": "[10.0.0, )"
+        }
+      },
       "allmytasks.providers.microsoft": {
         "type": "Project",
         "dependencies": {
