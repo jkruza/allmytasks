@@ -2,15 +2,30 @@
 
 > Working title.
 
-An open-source, cross-platform desktop app that brings your calendars and tasks
-from many providers into one place. Built with .NET and [Avalonia](https://avaloniaui.net/),
-it runs on Windows, macOS and Linux.
+An open-source, cross-platform desktop app that gives you a single, **read-only** place to see the tasks and
+events from many task and calendar sources, for a better overview of the work to be done. You keep working in
+Todoist, Outlook, Google, Jira, GitHub and GitLab; this app only looks. Built with .NET and
+[Avalonia](https://avaloniaui.net/), it runs on Windows, macOS and Linux.
 
 **Website:** <https://allmytasks.jkruza.com/>
 
-**Status:** early. Read-only providers so far (Todoist tasks can also be completed and reopened from the app once you switch on "Allow All My Tasks to change tasks" for that source; not yet verified against a live account): iCalendar feeds, CalDAV calendars, Todoist tasks
+**Status:** early, and read-only. Working today: iCalendar feeds, CalDAV calendars, Todoist tasks
 (add one with a Todoist API token), personal Microsoft accounts (Outlook calendar and Microsoft To Do) and Google
-accounts (Google Calendar and Google Tasks). The Microsoft and Google providers are not yet verified against a live account. More providers are planned, see the [roadmap](docs/design/roadmap.md).
+accounts (Google Calendar and Google Tasks). The Microsoft and Google providers are not yet verified against a live account. Jira, GitHub, GitLab and the Inbox view are designed but not built yet, see the [roadmap](docs/design/roadmap.md).
+Todoist tasks can also be completed and reopened from the app once you switch on "Allow All My Tasks to change tasks" for that source. That is an early preview of version 2 write support, off by default, and not yet verified against a live account.
+
+## Roadmap
+
+- **Version 1 (read-only overview):** a general framework; Todoist, Microsoft Outlook / To Do, Google Calendar /
+  Tasks, Jira, GitHub and GitLab; views: calendar grids (day, week, month), Upcoming, All tasks and Inbox (tasks
+  without a date).
+- **Version 2:** more services (to be chosen), and write support for completing tasks, changing task dates and
+  rescheduling events.
+- **Further research:** runtime plug-in support, MCP support, and AI summaries and planning with local models.
+
+Details: [product scope](docs/design/product-scope.md) and [roadmap](docs/design/roadmap.md).
+
+## Connecting accounts
 
 ### Microsoft accounts
 

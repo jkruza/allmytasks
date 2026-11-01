@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
-<meta name="description" content="All My Tasks is an open-source, cross-platform desktop app that gathers calendars and task lists from many providers into one view.">
+<meta name="description" content="All My Tasks is an open-source, cross-platform desktop app that gives you one read-only overview of the tasks and events from many task and calendar sources.">
 <title>All My Tasks</title>
 <style>
 :root{--s100:#f3f3f3;--s000:#ffffff;--s200:#e6e6e6;--bd:#d6d6d6;--ink:#1b1b1b;--mut:#5c5c5c}
@@ -45,13 +45,13 @@ html{scroll-behavior:smooth}
 <section style="max-width: 1120px; margin: 0 auto; padding: 64px 24px 16px; box-sizing: border-box; display: flex; flex-wrap: wrap; align-items: center; gap: 48px">
 <div style="flex: 1 1 460px; min-width: 0; display: flex; flex-direction: column; gap: 20px; align-items: flex-start">
 <span style="font-size: 12px; line-height: 16px; background: var(--s200); border-radius: 8px; padding: 4px 10px">Open source · MIT · Working title</span>
-<h1 style="margin: 0; font-size: 44px; line-height: 52px; font-weight: 600; letter-spacing: -0.5px">All your calendars and tasks, in one calm place.</h1>
-<p style="margin: 0; font-size: 18px; line-height: 28px; color: var(--mut)">All My Tasks is a cross-platform desktop app that gathers calendars and task lists from many providers into a single view. Built with .NET and Avalonia for Windows, macOS and Linux.</p>
+<h1 style="margin: 0; font-size: 44px; line-height: 52px; font-weight: 600; letter-spacing: -0.5px">One read-only overview of everything you have to do.</h1>
+<p style="margin: 0; font-size: 18px; line-height: 28px; color: var(--mut)">All My Tasks shows the tasks and events from your task and calendar services side by side, so you can see the work ahead in one place. It only looks: you keep working in the tools you already use. Built with .NET and Avalonia for Windows, macOS and Linux.</p>
 <div style="display: flex; flex-wrap: wrap; gap: 12px">
 <a href="https://github.com/jkruza/allmytasks" style="display: inline-block; padding: 12px 20px; border-radius: 6px; background: var(--ink); color: var(--s100); text-decoration: none; font-weight: 600; font-size: 14px; line-height: 20px">View on GitHub</a>
 <a href="#start" style="display: inline-block; padding: 12px 20px; border-radius: 6px; border: 1px solid var(--bd); background: var(--s000); text-decoration: none; font-weight: 600; font-size: 14px; line-height: 20px">Build from source</a>
 </div>
-<p style="margin: 0; font-size: 14px; line-height: 20px; color: var(--mut)"><strong style="color: var(--ink)">Status: early.</strong> Providers are read-only so far: iCalendar feeds, CalDAV calendars, Todoist tasks and personal Microsoft accounts.</p>
+<p style="margin: 0; font-size: 14px; line-height: 20px; color: var(--mut)"><strong style="color: var(--ink)">Status: early, and read-only.</strong> Working today: iCalendar feeds, CalDAV calendars, Todoist, Microsoft and Google accounts (the last two not yet tried against a live account). Jira, GitHub, GitLab and an Inbox view are next.</p>
 </div>
 
 <!-- Illustration of the app -->
@@ -129,20 +129,20 @@ html{scroll-behavior:smooth}
 
 <!-- Features -->
 <section id="features" style="max-width: 1120px; margin: 0 auto; padding: 80px 24px 0; box-sizing: border-box">
-<h2 style="margin: 0 0 8px; font-size: 26px; line-height: 32px; font-weight: 600">One view over everything you already use</h2>
+<h2 style="margin: 0 0 8px; font-size: 26px; line-height: 32px; font-weight: 600">One view over everything you already use, read-only</h2>
 <p style="margin: 0 0 32px; max-width: 640px; color: var(--mut)">You keep your calendars and task lists where they are. All My Tasks reads them, stores a local copy and lays them out side by side.</p>
 <div style="display: flex; flex-wrap: wrap; gap: 16px">
 
 <div style="flex: 1 1 320px; min-width: 0; background: var(--s000); border: 1px solid var(--bd); border-radius: 6px; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; gap: 8px">
 <span aria-hidden="true" style="width: 28px; height: 4px; border-radius: 2px; background: #3b82f6"></span>
 <h3 style="margin: 0; font-size: 18px; line-height: 24px; font-weight: 600">Day, week, month and upcoming</h3>
-<p style="margin: 0; font-size: 14px; line-height: 22px; color: var(--mut)">Four calendar views with filter toggles, plus an All tasks view with filtering, sorting and grouping. Click any entry or task to open its details and subtasks.</p>
+<p style="margin: 0; font-size: 14px; line-height: 22px; color: var(--mut)">Day, week and month grids and an Upcoming list, plus an All tasks view with filtering, sorting and grouping. An Inbox for tasks without a date is planned. Click any entry or task to open its details and subtasks.</p>
 </div>
 
 <div style="flex: 1 1 320px; min-width: 0; background: var(--s000); border: 1px solid var(--bd); border-radius: 6px; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; gap: 8px">
 <span aria-hidden="true" style="width: 28px; height: 4px; border-radius: 2px; background: #10b981"></span>
-<h3 style="margin: 0; font-size: 18px; line-height: 24px; font-weight: 600">Many providers, one model</h3>
-<p style="margin: 0; font-size: 14px; line-height: 22px; color: var(--mut)">iCalendar feeds, CalDAV, Todoist, personal Microsoft accounts and Google accounts work today, the last two not yet tried against a live account. Events and tasks stay separate types, so task-only services fit naturally.</p>
+<h3 style="margin: 0; font-size: 18px; line-height: 24px; font-weight: 600">Many sources, one model</h3>
+<p style="margin: 0; font-size: 14px; line-height: 22px; color: var(--mut)">iCalendar feeds, CalDAV, Todoist, personal Microsoft accounts and Google accounts work today, the last two not yet tried against a live account. Jira, GitHub and GitLab are planned. Events and tasks stay separate types, so task-only services fit naturally.</p>
 </div>
 
 <div style="flex: 1 1 320px; min-width: 0; background: var(--s000); border: 1px solid var(--bd); border-radius: 6px; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; gap: 8px">
@@ -174,7 +174,7 @@ html{scroll-behavior:smooth}
 <!-- Providers -->
 <section id="providers" style="max-width: 1120px; margin: 0 auto; padding: 80px 24px 0; box-sizing: border-box">
 <h2 style="margin: 0 0 8px; font-size: 26px; line-height: 32px; font-weight: 600">Providers</h2>
-<p style="margin: 0 0 24px; max-width: 640px; color: var(--mut)">All providers are read-only in this first stage. Write support starts with completing tasks.</p>
+<p style="margin: 0 0 24px; max-width: 640px; color: var(--mut)">Version 1 is a read-only overview. Jira, GitHub and GitLab are planned for version 1; writing back is a version 2 goal.</p>
 <div style="background: var(--s000); border: 1px solid var(--bd); border-radius: 6px; overflow: hidden">
 
 <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding: 16px 20px; border-bottom: 1px solid var(--bd)">
@@ -191,7 +191,7 @@ html{scroll-behavior:smooth}
 
 <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding: 16px 20px; border-bottom: 1px solid var(--bd)">
 <span style="flex: 1 1 200px; display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 14px; line-height: 20px"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 9999px; background: #ef4444"></span>Todoist</span>
-<span style="flex: 1 1 360px; font-size: 14px; line-height: 20px; color: var(--mut)">Tasks, using a personal API token.</span>
+<span style="flex: 1 1 360px; font-size: 14px; line-height: 20px; color: var(--mut)">Tasks, using a personal API token. Completing tasks is an early, opt-in preview of version 2 write support.</span>
 <span style="display: flex; align-items: center; gap: 6px; font-size: 12px; line-height: 16px; background: var(--s200); border-radius: 8px; padding: 4px 10px"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 9999px; background: #10b981"></span>Available</span>
 </div>
 
@@ -199,6 +199,24 @@ html{scroll-behavior:smooth}
 <span style="flex: 1 1 200px; display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 14px; line-height: 20px"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 9999px; background: #f59e0b"></span>Google Calendar and Tasks</span>
 <span style="flex: 1 1 360px; font-size: 14px; line-height: 20px; color: var(--mut)">Read-only, one sign-in for both through OAuth in your browser. For now you create your own OAuth client and paste its ID and secret; not yet tried against a live account.</span>
 <span style="display: flex; align-items: center; gap: 6px; font-size: 12px; line-height: 16px; background: var(--s200); border-radius: 8px; padding: 4px 10px"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 9999px; background: #f59e0b"></span>Experimental</span>
+</div>
+
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding: 16px 20px; border-bottom: 1px solid var(--bd)">
+<span style="flex: 1 1 200px; display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 14px; line-height: 20px"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 9999px; background: #6b7280"></span>Jira</span>
+<span style="flex: 1 1 360px; font-size: 14px; line-height: 20px; color: var(--mut)">Issues assigned to you on Jira Cloud, with their due dates.</span>
+<span style="display: flex; align-items: center; gap: 6px; font-size: 12px; line-height: 16px; background: var(--s200); border-radius: 8px; padding: 4px 10px"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 9999px; background: #6b7280"></span>Planned</span>
+</div>
+
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding: 16px 20px; border-bottom: 1px solid var(--bd)">
+<span style="flex: 1 1 200px; display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 14px; line-height: 20px"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 9999px; background: #6b7280"></span>GitHub</span>
+<span style="flex: 1 1 360px; font-size: 14px; line-height: 20px; color: var(--mut)">Issues and pull requests assigned to you or waiting for your review.</span>
+<span style="display: flex; align-items: center; gap: 6px; font-size: 12px; line-height: 16px; background: var(--s200); border-radius: 8px; padding: 4px 10px"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 9999px; background: #6b7280"></span>Planned</span>
+</div>
+
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding: 16px 20px; border-bottom: 1px solid var(--bd)">
+<span style="flex: 1 1 200px; display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 14px; line-height: 20px"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 9999px; background: #6b7280"></span>GitLab</span>
+<span style="flex: 1 1 360px; font-size: 14px; line-height: 20px; color: var(--mut)">Issues and merge requests assigned to you or waiting for your review, on gitlab.com or your own server.</span>
+<span style="display: flex; align-items: center; gap: 6px; font-size: 12px; line-height: 16px; background: var(--s200); border-radius: 8px; padding: 4px 10px"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 9999px; background: #6b7280"></span>Planned</span>
 </div>
 
 <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding: 16px 20px">
@@ -246,35 +264,41 @@ html{scroll-behavior:smooth}
 <!-- Roadmap -->
 <section id="roadmap" style="max-width: 1120px; margin: 0 auto; padding: 80px 24px 0; box-sizing: border-box">
 <h2 style="margin: 0 0 8px; font-size: 26px; line-height: 32px; font-weight: 600">Roadmap</h2>
-<p style="margin: 0 0 32px; max-width: 640px; color: var(--mut)">Each milestone ships on its own with tests green and the design docs kept current.</p>
+<p style="margin: 0 0 32px; max-width: 640px; color: var(--mut)">The goal is a single, read-only place to see tasks and events from many sources, for a better overview of the work to be done.</p>
 <div style="display: flex; flex-wrap: wrap; gap: 16px">
 
-<div style="flex: 1 1 420px; min-width: 0; background: var(--s000); border: 1px solid var(--bd); border-radius: 6px; padding: 20px; box-sizing: border-box">
-<h3 style="margin: 0 0 12px; font-size: 16px; line-height: 22px; font-weight: 600; display: flex; align-items: center; gap: 8px"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 9999px; background: #10b981"></span>Done</h3>
+<div style="flex: 1 1 320px; min-width: 0; background: var(--s000); border: 1px solid var(--bd); border-radius: 6px; padding: 20px; box-sizing: border-box">
+<h3 style="margin: 0 0 12px; font-size: 16px; line-height: 22px; font-weight: 600; display: flex; align-items: center; gap: 8px"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 9999px; background: #10b981"></span>Version 1: read-only overview</h3>
 <ul style="margin: 0; padding: 0 0 0 20px; font-size: 14px; line-height: 24px">
-<li>Domain model and provider abstraction</li>
-<li>Calendar views and All tasks over sample data</li>
-<li>Local SQLite storage and per-OS secret stores</li>
-<li>Sync engine with scheduling, backoff and source status</li>
-<li>iCalendar feed provider with recurrence expansion</li>
-<li>Read-only CalDAV, Todoist, Microsoft (personal accounts), Google and a system tray icon</li>
-<li>Reminders before events and when tasks are due (Linux notifications and an in-app window)</li>
+<li>General framework: model, providers, local storage, sync (built)</li>
+<li>Todoist, Microsoft Outlook and To Do, Google Calendar and Tasks (built)</li>
+<li>Jira, GitHub and GitLab (planned)</li>
+<li>Views: calendar grids (day, week, month), Upcoming and All tasks (built)</li>
+<li>Inbox: tasks without a date (planned)</li>
+<li>Verified Google client, live-account checks, installers</li>
 </ul>
 </div>
 
-<div style="flex: 1 1 420px; min-width: 0; background: var(--s000); border: 1px solid var(--bd); border-radius: 6px; padding: 20px; box-sizing: border-box">
-<h3 style="margin: 0 0 12px; font-size: 16px; line-height: 22px; font-weight: 600; display: flex; align-items: center; gap: 8px"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 9999px; background: #6b7280"></span>Later, not committed</h3>
+<div style="flex: 1 1 320px; min-width: 0; background: var(--s000); border: 1px solid var(--bd); border-radius: 6px; padding: 20px; box-sizing: border-box">
+<h3 style="margin: 0 0 12px; font-size: 16px; line-height: 22px; font-weight: 600; display: flex; align-items: center; gap: 8px"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 9999px; background: #f59e0b"></span>Version 2</h3>
 <ul style="margin: 0; padding: 0 0 0 20px; font-size: 14px; line-height: 24px">
-<li>A verified Google client so no setup is needed, and Microsoft work and school accounts</li>
-<li>VTODO tasks over CalDAV</li>
-<li>Write support, starting with completing tasks</li>
-<li>Native Windows and macOS notifications and a compact upcoming widget</li>
-<li>Saved filters and global search</li>
-<li>Database encryption</li>
+<li>More services (to be chosen)</li>
+<li>Write support: complete tasks, change task dates, reschedule events</li>
+<li>Todoist task completion already exists as an opt-in preview</li>
 </ul>
 </div>
+
+<div style="flex: 1 1 320px; min-width: 0; background: var(--s000); border: 1px solid var(--bd); border-radius: 6px; padding: 20px; box-sizing: border-box">
+<h3 style="margin: 0 0 12px; font-size: 16px; line-height: 22px; font-weight: 600; display: flex; align-items: center; gap: 8px"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 9999px; background: #8b5cf6"></span>Further research</h3>
+<ul style="margin: 0; padding: 0 0 0 20px; font-size: 14px; line-height: 24px">
+<li>Runtime plug-in support</li>
+<li>MCP support</li>
+<li>AI summaries and planning with local models</li>
+</ul>
 </div>
-<p style="margin: 16px 0 0; font-size: 14px; line-height: 22px"><a href="https://github.com/jkruza/allmytasks/blob/main/docs/design/roadmap.md">Read the full roadmap and design docs</a></p>
+
+</div>
+<p style="margin: 16px 0 0; font-size: 14px; line-height: 22px"><a href="https://github.com/jkruza/allmytasks/blob/main/docs/design/product-scope.md">Read the product scope</a> · <a href="https://github.com/jkruza/allmytasks/blob/main/docs/design/roadmap.md">Full roadmap and design docs</a></p>
 </section>
 
 <!-- Get started -->

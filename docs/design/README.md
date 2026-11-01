@@ -1,7 +1,8 @@
 # Design docs
 
 Design for **All My Tasks**: one desktop app that shows calendars and tasks from many
-providers in a single place, stored locally, with no backend of our own.
+providers in a single read-only overview, stored locally, with no backend of our own.
+Start with [product-scope.md](product-scope.md) for the goal and the version 1 / version 2 / research split.
 
 These docs describe the intended design. They are not a spec of what exists today; the
 [roadmap](roadmap.md) says what is built and in which order. When code and docs disagree,
@@ -37,29 +38,43 @@ fix whichever is wrong in the same pull request.
 | [settings.md](settings.md) | Settings dialog, persistence of app preferences, week start |
 | [ci-docs-only-changes.md](ci-docs-only-changes.md) | How CI skips build and test for docs-only changes while required checks still report |
 | [project-site.md](project-site.md) | The static project page published on GitHub Pages and how it is deployed |
+| [product-scope.md](product-scope.md) | The goal (a read-only overview), version 1 and 2 goals, research topics |
+| [jira-provider.md](jira-provider.md) | Jira Cloud issues assigned to me (designed, version 1) |
+| [github-provider.md](github-provider.md) | GitHub issues and pull requests assigned to me or awaiting review (designed, version 1) |
+| [gitlab-provider.md](gitlab-provider.md) | GitLab issues and merge requests, gitlab.com and self-managed (designed, version 1) |
+| [inbox-view.md](inbox-view.md) | Inbox view of tasks without a date (designed, version 1) |
+| [write-support.md](write-support.md) | Version 2: complete tasks, change dates, reschedule events; how the Todoist preview fits |
+| [research.md](research.md) | Unscheduled topics: runtime plug-ins, MCP support, local-model AI summaries |
 | [roadmap.md](roadmap.md) | Milestones and open questions |
 
 ## Goals
 
 - One **common model** for calendar events and one for tasks, whatever the provider.
-- A **provider interface** so adding Todoist, Google, Microsoft or CalDAV does not touch
+- A **read-only overview**: see tasks and events from many sources in one place to get a
+  better picture of the work to be done. Changing things is version 2, narrowly
+  ([write-support.md](write-support.md)).
+- A **provider interface** so adding Todoist, Google, Microsoft, Jira, GitHub, GitLab or CalDAV does not touch
   views or storage.
-- Four **calendar views**: day agenda, week, month, upcoming; plus a separate
-  **All tasks** view with filtering.
+- **Views**: the calendar grids (day agenda, week, month), upcoming, **All tasks** with filtering, and an
+  **Inbox** of tasks without a date ([inbox-view.md](inbox-view.md)).
 - **Local-first**: all data and credentials stay on the user's machine. No cloud backend,
   no account with us, no telemetry.
-- First calendar provider is **iCalendar / WebDAV (CalDAV), read-only**.
+- First calendar provider was **iCalendar / WebDAV (CalDAV), read-only**.
 
 ## Non-goals (for now)
 
-- Writing back to providers (create, edit, delete, complete). The design leaves room for
-  it, see [providers.md](providers.md#write-support-later), but v1 is read-only.
+- Writing back to providers (create, edit, delete, complete). Version 1 is a read-only overview.
+  Version 2 adds only completing tasks, changing task dates and rescheduling events
+  ([write-support.md](write-support.md)); the design leaves room for it, see
+  [providers.md](providers.md#write-support-later). Todoist completion, built earlier, stays as an
+  opt-in preview.
 - **Local-only items.** Every event and task comes from a configured provider; the app
   has no built-in store of its own items and no "Local" provider.
 - Sync between a user's own devices.
 - Attendee management, invitations, free/busy scheduling.
 - Mobile or web builds.
-- Reminders and notifications: added after v1, see [reminders.md](reminders.md).
+- Reminders and notifications: added alongside v1, see [reminders.md](reminders.md).
+- Runtime plug-ins, MCP support and AI features: research only, see [research.md](research.md).
 
 ## Decision log
 
@@ -80,3 +95,5 @@ and the doc it points to.
 | 10 | First provider handles both plain `.ics` URLs and CalDAV | `.ics` is the simplest useful thing; CalDAV reuses the same parsing | [ical-caldav-provider.md](ical-caldav-provider.md) |
 | 11 | Week start is Sunday or Monday, default follows the OS culture (Monday when the culture starts elsewhere) | Right for most users on first run; two options is all that was asked for | [settings.md](settings.md#week-start) |
 | 12 | Details of a clicked entry open in a docked right pane, not a popover or dialog; one host shows any kind of details | Same behaviour in every view, no window ownership issues, room for long text | [details-pane.md](details-pane.md) |
+| 13 | The product is a read-only overview of tasks and events. Version 1: framework, Todoist, Microsoft, Google, Jira, GitHub, GitLab, and the calendar grids, Upcoming, All tasks and Inbox views. Version 2: more services and write support limited to completing tasks, changing task dates and rescheduling events | Jarek, 2026-11-01. Seeing everything in one place is the value; writing multiplies risk and conflict handling | [product-scope.md](product-scope.md), [write-support.md](write-support.md) |
+| 14 | Todoist completion (built before decision 13) is kept as an opt-in, off-by-default preview of version 2, not extended to other providers until version 2 | Keeps the proven write path without widening version 1 | [write-support.md](write-support.md#todoist-completion-today) |

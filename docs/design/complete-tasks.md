@@ -2,6 +2,8 @@
 
 Tracked in [#54](https://github.com/jkruza/allmytasks/issues/54).
 
+**Scope note (2026-11-01):** the product is now a read-only overview and write support is a version 2 goal ([product-scope.md](product-scope.md), [write-support.md](write-support.md)). This feature was built first and stays as an opt-in, off-by-default **preview of version 2**; it will not be extended to other providers before version 2.
+
 **Status: implemented** for Todoist. Where the implementation differs from the design below, "Implementation notes" at the end says so. Not yet verified against a live Todoist account (see [Unverified](#unverified)).
 
 The first write support: tick a Todoist task in the app to complete it, untick it to reopen it. This is
