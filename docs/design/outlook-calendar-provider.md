@@ -301,7 +301,7 @@ sync(collection, previous):
 - A subscribed holiday calendar ("Polskie święta") was reported (#67) to show events as "(no title)": the delta reply
   appears to carry no `subject` for them. For any event that comes back without one, the sync reads that event on its
   own with `GET me/events/{id}?$select=subject` (at most 50 such reads per sync; the rest wait for the next sync, with a
-  warning). A failed read keeps the event with an empty title. This is unverified against a live account.
+  warning). A failed read keeps the event with an empty title. The fallback itself has not been confirmed separately on a real account.
 
 ### Refresh interval
 
@@ -384,10 +384,9 @@ made-up data:
   refresh with token rotation, revoked token deleted, no client id, per-source client id wins, tokens never in
   messages or diagnostics, bearer token only to `graph.microsoft.com`.
 
-**Not yet done, needed before calling this finished:** a manual run against a throwaway personal account
-(consent screen, a recurring series with exceptions, an all-day event created in another zone, birthday and
-holiday calendars for question 5, behaviour of `calendarView/delta` on them). No Graph response from a real
-account has been seen by the code yet; the fixtures follow the documented shapes.
+**Manual run:** the provider has been run against a real personal account. The points below were not
+recorded individually, so confirm or close them: (consent screen, a recurring series with exceptions, an all-day event created in another zone, birthday and
+holiday calendars for question 5, behaviour of `calendarView/delta` on them). The fixtures follow the documented shapes.
 
 ## Security and privacy
 

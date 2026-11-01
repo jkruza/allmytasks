@@ -7,6 +7,15 @@ on:
     paths:
       - "site/**"
       - ".github/workflows/pages.yml"
+      - ".github/pages/**"
+  # A release changed: redeploy so the download section follows. The release event runs on the
+  # tag, which the github-pages environment does not accept, so the `redeploy` job below only
+  # dispatches this workflow on main. See docs/design/site-downloads.md.
+  release:
+    types: [published, edited, deleted, unpublished]
+  # Safety net if a release event is ever missed.
+  schedule:
+    - cron: "17 4 * * *"
   workflow_dispatch:
 
 # Read-only repository token; the two extra scopes are what actions/deploy-pages needs.
@@ -21,7 +30,19 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  redeploy:
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: write
+    steps:
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run pages.yml --ref main --repo "$GITHUB_REPOSITORY"
+
   deploy:
+    if: github.event_name != 'release'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     environment:
@@ -31,6 +52,14 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      - name: Test the download renderer
+        run: python3 -m unittest discover -s .github/pages
+      - name: Fill in the download section from the GitHub releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/releases?per_page=100" --paginate --slurp > "$RUNNER_TEMP/releases.json"
+          python3 .github/pages/render_downloads.py "$RUNNER_TEMP/releases.json" site/index.html
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
           path: site

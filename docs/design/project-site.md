@@ -10,6 +10,8 @@ repository link; it is not a docs portal. The design docs stay in `docs/` on Git
 
 ## Design
 
+- **Downloads**: the download section is filled in at deploy time from the GitHub releases, see
+  [site-downloads.md](site-downloads.md).
 - **Content** lives in `site/index.html`: one hand-written static page with inline CSS and no
   JavaScript, scripts, fonts or third-party requests. It follows the OS light or dark theme.
   The page was designed in Claude Design and exported to plain HTML.
@@ -42,4 +44,4 @@ Settings → Pages; the older `jkruza.github.io/allmytasks/` address redirects t
 
 - A custom domain, analytics or a blog.
 - Generated API or design docs on the site.
-- A build step; the page is served as written.
+- A build step beyond filling in the download section; otherwise the page is served as written.

@@ -402,7 +402,7 @@ design that is not task-specific are in the
 - Tasks with an unreadable due date are skipped with a warning; an unknown status is open with a warning; a completion time on
   an open task is dropped with a warning; a task that is its own parent loses the parent with a warning.
 - Hand-written client; no `Google.Apis.*` packages. No package was added.
-- Not tried against a live account: whether the API ever sends a due time, how Chat/Docs-assigned tasks appear, and the exact
+- Not individually confirmed on a real account (the provider as a whole has been tried): whether the API ever sends a due time, how Chat/Docs-assigned tasks appear, and the exact
   tombstone behaviour of `showDeleted` with `updatedMin`.
 
 ## Open questions

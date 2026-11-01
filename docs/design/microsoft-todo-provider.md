@@ -7,8 +7,8 @@ for **personal Microsoft accounts** (outlook.com, hotmail, live), through the Mi
 
 Status: implemented for personal accounts, read-only. **Work and school accounts are not supported yet**; the
 reasons and what they need are in
-[outlook-calendar-provider.md](outlook-calendar-provider.md#work-and-school-accounts-not-in-v1). The code has
-only been exercised with fixtures, not a live account (see [Testing](#testing)).
+[outlook-calendar-provider.md](outlook-calendar-provider.md#work-and-school-accounts-not-in-v1). The code is covered by fixture tests and has been tried on a real
+account (see [Testing](#testing)).
 
 It lives in the shared Microsoft project, `AllMyTasks.Providers.Microsoft`, next to the
 Outlook calendar provider. A source of kind `microsoft` implements `ITaskSource`,
@@ -293,8 +293,8 @@ Not designed in detail. Notes so nothing in v1 blocks it:
   the Outlook test suite.
 - **Throttling**: a short `Retry-After` is waited out in the client, a long one reaches the engine as
   `SourceUnavailableException.RetryAfter`.
-- **Not yet done, needed before calling this finished:** a manual run against a throwaway personal account.
-  Check the due-date round trip with the To Do app (date-only, time zones around midnight), checklist-only
+- **Manual run:** the provider has been tried on a real personal account. These points were not recorded
+  individually, so confirm or close them: check the due-date round trip with the To Do app (date-only, time zones around midnight), checklist-only
   edits appearing in the next delta (open question 2), recurring task completion, the default and a shared
   list, and that `$expand=checklistItems` is accepted by `tasks/delta`. Only fixtures have been used so far.
 
@@ -321,4 +321,4 @@ Not designed in detail. Notes so nothing in v1 blocks it:
 - [x] Keeps secrets out of config, logs and exception text (tested)
 - [x] Per-item errors become warnings, not sync failures
 - [x] Unsupported fields documented (this doc)
-- [ ] Verified against a live account
+- [x] Tried on a real account (individual edge cases in this doc may still be open)

@@ -122,6 +122,10 @@ Design: [docs/design/project-site.md](design/project-site.md).
    (a DNS CNAME for `allmytasks` pointing at `jkruza.github.io`, with Enforce HTTPS on). A
    workflow deployment ignores a `CNAME` file, so there is none in `site/`.
 
+The download section needs no manual update: publishing (or editing or deleting) a release redeploys the
+site, and a daily run catches anything missed. If it looks stale, run the `Pages` workflow by hand. See
+[docs/design/site-downloads.md](design/site-downloads.md).
+
 When the README or roadmap changes provider status or build steps, update `site/index.html`
 in the same PR.
 
