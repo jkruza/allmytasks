@@ -10,7 +10,7 @@ Todoist, Outlook, Google, Jira, GitHub and GitLab; this app only looks. Built wi
 **Status:** early, and read-only. Working today: iCalendar feeds, CalDAV calendars, Todoist tasks
 (add one with a Todoist API token), personal Microsoft accounts (Outlook calendar and Microsoft To Do) and Google
 accounts (Google Calendar and Google Tasks). The Microsoft and Google providers are not yet verified against a live account. Jira, GitHub, GitLab and the Inbox view are designed but not built yet, see the [roadmap](docs/design/roadmap.md).
-Todoist tasks can also be completed and reopened from the app once you switch on "Allow All My Tasks to change tasks" for that source. That is an early preview of version 2 write support, off by default, and not yet verified against a live account.
+Todoist tasks can also be completed and reopened from the app once you switch on "Allow All My Tasks to change tasks in Todoist (preview)" for that source. That is an early preview of version 2 write support, off by default, and not yet verified against a live account.
 
 ## Roadmap
 

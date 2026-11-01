@@ -53,8 +53,7 @@ Completing and reopening Todoist tasks ([#54](https://github.com/jkruza/allmytas
   Version 1 documentation describes the app as read-only unless a source's "Allow changes" is switched on.
 - **No extension in version 1**: no completion for other providers and no new write actions until version 2 starts.
 
-Open for the maintainer: whether the "Allow All My Tasks to change tasks" option should also be labelled
-"Preview" in the app itself. That is a small code and UI-text change, kept out of this documentation change.
+Decided 2026-11-01: the option is labelled "(preview)" in the app, and its help text says it previews a version 2 feature.
 
 ## More services
 

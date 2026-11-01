@@ -28,9 +28,9 @@ public sealed class TodoistFactory(HttpMessageHandler? handler = null, ILogger? 
             Help: "In Todoist open Settings, Integrations, Developer and copy the API token. It gives full access to your account, so the app only reads with it unless you allow changes below. It is stored in your system keyring."),
         new SourceConfigField(
             AllowChangesField,
-            "Allow All My Tasks to change tasks in Todoist",
+            "Allow All My Tasks to change tasks in Todoist (preview)",
             FieldKind.Bool,
-            Help: "Lets you complete and reopen tasks from the app. Off by default: the app then only reads."),
+            Help: "Preview of a version 2 feature: lets you complete and reopen tasks from the app. Off by default: the app then only reads."),
         new SourceConfigField(SyncScheduler.IntervalKey, "Refresh every (minutes)", FieldKind.Number, Help: "Leave blank for 15."),
     ]);
 

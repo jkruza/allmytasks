@@ -70,7 +70,7 @@ so the token itself cannot enforce read-only. The source gets a switch instead:
 
 | Field | Kind | Default | Notes |
 | --- | --- | --- | --- |
-| `allowChanges` | Boolean | off | *Allow All My Tasks to change tasks in Todoist (complete and reopen)* |
+| `allowChanges` | Boolean | off | *Allow All My Tasks to change tasks in Todoist (preview)*; help text says it is a preview of a version 2 feature |
 
 Existing sources keep working as before until the user switches it on. While off, the source does not expose
 `IWritableTaskSource` behaviour to the UI (no checkbox). The Security text in the Todoist doc changes from
