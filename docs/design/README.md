@@ -40,10 +40,10 @@ fix whichever is wrong in the same pull request.
 | [project-site.md](project-site.md) | The static project page published on GitHub Pages and how it is deployed |
 | [site-downloads.md](site-downloads.md) | The download section of the site, filled from the latest release and prerelease at deploy time |
 | [product-scope.md](product-scope.md) | The goal (a read-only overview), version 1 and 2 goals, research topics |
-| [jira-provider.md](jira-provider.md) | Jira Cloud issues assigned to me (designed, version 1) |
+| [jira-provider.md](jira-provider.md) | Jira Cloud issues assigned to me (implemented, version 1; not yet tried on a live site) |
 | [github-provider.md](github-provider.md) | GitHub issues and pull requests assigned to me or awaiting review (implemented read-only, version 1) |
 | [gitlab-provider.md](gitlab-provider.md) | GitLab issues and merge requests, gitlab.com and self-managed (designed, version 1) |
-| [inbox-view.md](inbox-view.md) | Inbox view of tasks without a date (designed, version 1) |
+| [inbox-view.md](inbox-view.md) | Inbox view of tasks without a date (implemented, version 1) |
 | [write-support.md](write-support.md) | Version 2: complete tasks, change dates, reschedule events; how the Todoist preview fits |
 | [research.md](research.md) | Unscheduled topics: runtime plug-ins, MCP support, local-model AI summaries |
 | [roadmap.md](roadmap.md) | Milestones and open questions |

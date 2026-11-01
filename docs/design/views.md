@@ -1,7 +1,7 @@
 # Views
 
 Four calendar views of the same data: **day agenda**, **week**, **month**, **upcoming**,
-plus a separate list view, [**All tasks**](#all-tasks), that is not tied to dates, and an [**Inbox**](inbox-view.md) of open tasks with no date (designed, [#74](https://github.com/jkruza/allmytasks/issues/74)).
+plus a separate list view, [**All tasks**](#all-tasks), that is not tied to dates, and an [**Inbox**](inbox-view.md) of open tasks with no date ([#74](https://github.com/jkruza/allmytasks/issues/74)).
 All share the same inputs (cached events and tasks), the same filters, and the same
 `AgendaEntry` output type. They differ only in the date range queried and how entries are
 arranged.
@@ -67,7 +67,7 @@ Sections, in order:
 3. **Overdue** (today only): open tasks past due.
 
 Undated tasks are not shown in any calendar view; they appear only in
-[All tasks](#all-tasks) and, once built, the [Inbox](inbox-view.md).
+[All tasks](#all-tasks) and the [Inbox](inbox-view.md).
 
 Behaviour:
 

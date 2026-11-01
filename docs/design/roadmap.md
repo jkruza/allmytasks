@@ -10,7 +10,7 @@ The goal is a **read-only overview** of tasks and events from many sources; see 
 
 | Version | Goals | State |
 | --- | --- | --- |
-| 1 | General framework; Todoist, Microsoft Outlook / To Do, Google Calendar / Tasks, Jira, GitHub, GitLab; views: calendar grids, Upcoming, All tasks, Inbox | Framework, Todoist, Microsoft, Google, GitHub ([#72](https://github.com/jkruza/allmytasks/issues/72), not yet tried on a live account) and all views except Inbox are in. Open: Jira [#71](https://github.com/jkruza/allmytasks/issues/71), GitLab [#73](https://github.com/jkruza/allmytasks/issues/73), Inbox [#74](https://github.com/jkruza/allmytasks/issues/74), and live-account checks of the providers |
+| 1 | General framework; Todoist, Microsoft Outlook / To Do, Google Calendar / Tasks, Jira, GitHub, GitLab; views: calendar grids, Upcoming, All tasks, Inbox | Framework, Todoist, Microsoft, Google, Jira ([#71](https://github.com/jkruza/allmytasks/issues/71), not yet tried on a live site), GitHub ([#72](https://github.com/jkruza/allmytasks/issues/72), not yet tried on a live account) and all views including the Inbox ([#74](https://github.com/jkruza/allmytasks/issues/74)) are in. Open: GitLab [#73](https://github.com/jkruza/allmytasks/issues/73), and live-account checks of the providers |
 | 2 | More services (to be chosen); write support for completing tasks, changing task dates and rescheduling events | Planned: [write-support.md](write-support.md), [#75](https://github.com/jkruza/allmytasks/issues/75). Todoist completion exists as an opt-in preview |
 | Research | Runtime plug-ins, MCP support, AI summaries and planning with local models | Unscheduled: [research.md](research.md), [#76](https://github.com/jkruza/allmytasks/issues/76), [#77](https://github.com/jkruza/allmytasks/issues/77), [#78](https://github.com/jkruza/allmytasks/issues/78) |
 
@@ -99,10 +99,10 @@ incrementally.
 
 New since the refocus on a read-only overview (version 1 unless stated):
 
-- Jira provider: [jira-provider.md](jira-provider.md), [#71](https://github.com/jkruza/allmytasks/issues/71). Designed.
+- Jira provider: [jira-provider.md](jira-provider.md), [#71](https://github.com/jkruza/allmytasks/issues/71). Implemented read-only with an API token; not yet tried on a live Jira Cloud site.
 - GitHub provider: [github-provider.md](github-provider.md), [#72](https://github.com/jkruza/allmytasks/issues/72). Implemented read-only with a personal access token; not yet tried on a live account.
 - GitLab provider: [gitlab-provider.md](gitlab-provider.md), [#73](https://github.com/jkruza/allmytasks/issues/73). Designed.
-- Inbox view of tasks without a date: [inbox-view.md](inbox-view.md), [#74](https://github.com/jkruza/allmytasks/issues/74). Designed.
+- Inbox view of tasks without a date: [inbox-view.md](inbox-view.md), [#74](https://github.com/jkruza/allmytasks/issues/74). Implemented.
 - Version 2: write support for completing tasks, changing task dates and rescheduling events, and more services: [write-support.md](write-support.md), [#75](https://github.com/jkruza/allmytasks/issues/75).
 - Research, unscheduled: [research.md](research.md).
 
