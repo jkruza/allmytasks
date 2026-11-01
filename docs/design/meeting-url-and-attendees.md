@@ -1,7 +1,7 @@
 # Meeting links and attendees
 
-Tracked in [#57](https://github.com/jkruza/allmytasks/issues/57). **Implemented**; not yet checked against live
-Google or Microsoft accounts (see [Unverified](#unverified)).
+Tracked in [#57](https://github.com/jkruza/allmytasks/issues/57). **Implemented**; Google and Microsoft accounts have
+been tried, the points in [Unverified](#unverified) are not individually confirmed.
 
 Add a join link and the people on an event to the model, fill them from the providers that have them, and show them
 in the [details pane](details-pane.md). The meeting link was accepted as a small model change in the Google Calendar

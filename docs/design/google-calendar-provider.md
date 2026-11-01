@@ -3,7 +3,7 @@
 Tracking issue: [#28](https://github.com/jkruza/allmytasks/issues/28).
 
 Status: implemented read-only, together with Google Tasks, in one PR; see [Implementation notes](#implementation-notes) for
-where the code differs from this design and what has not been tried against a live account. Project: `AllMyTasks.Providers.Google`. It signs in
+where the code differs from this design and what is still open. The provider has been tried on a real account. Project: `AllMyTasks.Providers.Google`. It signs in
 to a Google account with OAuth and syncs events from the user's Google calendars into the
 common model, using the Google Calendar API v3 and its incremental sync tokens.
 
@@ -346,7 +346,7 @@ Differences from the sections above, all deliberate:
 - **Not done:** revoking the token at Google when a source is removed, the "Sign in again" button, the link to
   `myaccount.google.com/permissions`, `include_granted_scopes`.
 
-Unverified against a live account (please check when a throwaway account exists): the exact `scope` string Google returns in the
+Not individually confirmed yet, although the provider as a whole has been tried on a real account: the exact `scope` string Google returns in the
 token reply, `prompt=consent select_account` behaviour, that `fields` does not disturb sync tokens, the response shape of a
 cancelled single occurrence in a delta, and whether `calendarList` `selected` hides holiday calendars as expected.
 
