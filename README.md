@@ -9,7 +9,7 @@ Todoist, Outlook, Google, Jira, GitHub and GitLab; this app only looks. Built wi
 
 **Status:** early, and read-only. Working today: iCalendar feeds, CalDAV calendars, Todoist tasks
 (add one with a Todoist API token), personal Microsoft accounts (Outlook calendar and Microsoft To Do) and Google
-accounts (Google Calendar and Google Tasks). The Microsoft and Google providers have been tried on real accounts. Jira, GitHub, GitLab and the Inbox view are designed but not built yet, see the [roadmap](docs/design/roadmap.md).
+accounts (Google Calendar and Google Tasks). The Microsoft and Google providers have been tried on real accounts. GitHub issues and pull requests assigned to you or awaiting your review work too (add one with a personal access token); that provider has not been tried on a live account yet. Jira, GitLab and the Inbox view are designed but not built yet, see the [roadmap](docs/design/roadmap.md).
 Todoist tasks can also be completed and reopened from the app once you switch on "Allow All My Tasks to change tasks in Todoist (preview)" for that source. That is an early preview of version 2 write support, off by default, and not yet verified against a live account.
 
 ## Roadmap
@@ -100,6 +100,7 @@ the corner of the screen is used. See [docs/design/reminders.md](docs/design/rem
 | `src/AllMyTasks.Core` | UI-independent logic: tasks, providers, aggregation |
 | `src/AllMyTasks.Providers.ICal` | iCalendar feed and CalDAV providers |
 | `src/AllMyTasks.Providers.Todoist` | Todoist task provider (API token; read-only unless changes are allowed) |
+| `src/AllMyTasks.Providers.GitHub` | GitHub issues and pull requests assigned to you or awaiting your review (personal access token, read-only) |
 | `src/AllMyTasks.Providers.Google` | Google Calendar and Google Tasks (OAuth, read-only) |
 | `src/AllMyTasks.Providers.Microsoft` | Outlook calendar and Microsoft To Do for personal accounts (Microsoft Graph, read-only) |
 | `site/` | The static project page published on GitHub Pages |
