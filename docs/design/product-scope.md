@@ -31,7 +31,7 @@ do here can damage data elsewhere. Version 2 revisits it deliberately, in a narr
    | Google Calendar and Tasks | Events, tasks | Implemented | [google-calendar-provider.md](google-calendar-provider.md), [google-tasks-provider.md](google-tasks-provider.md) |
    | Jira | Issues assigned to me | Implemented, not yet tried on a live site, [#71](https://github.com/jkruza/allmytasks/issues/71) | [jira-provider.md](jira-provider.md) |
    | GitHub | Issues and pull requests assigned to me or awaiting my review | Implemented (personal access token), [#72](https://github.com/jkruza/allmytasks/issues/72) | [github-provider.md](github-provider.md) |
-   | GitLab | Issues and merge requests assigned to me or awaiting my review | Designed, [#73](https://github.com/jkruza/allmytasks/issues/73) | [gitlab-provider.md](gitlab-provider.md) |
+   | GitLab | Issues and merge requests assigned to me or awaiting my review | Implemented, not yet tried on a live instance, [#73](https://github.com/jkruza/allmytasks/issues/73) | [gitlab-provider.md](gitlab-provider.md) |
 
    iCalendar feeds and CalDAV calendars (events) are also in, as the generic calendar sources.
 3. **Useful views.**
