@@ -1,6 +1,6 @@
 # Inbox view (tasks without a date)
 
-Tracked in [#74](https://github.com/jkruza/allmytasks/issues/74). **Status: designed, not implemented.**
+Tracked in [#74](https://github.com/jkruza/allmytasks/issues/74). **Status: implemented.**
 
 ## Goal
 
@@ -27,6 +27,15 @@ view of its own, because "what has no date yet" is one of the three questions th
   filtered out.
 - Empty state: "Nothing without a date. Everything open has one."
 - Read-only: the checkbox appears only when a source has opted in to changes ([write-support.md](write-support.md)).
+
+## Implementation notes
+
+- `ViewMode.Inbox`, key `I`, an entry in the tray menu, and the title "Inbox" in the window.
+- The Inbox is a second `TasksViewModel` in inbox mode, sharing `TasksView`. Its status, due and saved-filter
+  controls are hidden; search text, priority and label filters stay. Its own state is stored under `view.inbox`.
+- The switcher entry reads "Inbox (N)" while N is above zero. N comes from `ITaskListService.CountAsync`, which
+  applies the same filter and collection visibility as the list; it is refreshed with every reload (after a sync,
+  a change, or a collection toggle).
 
 ## Core changes
 

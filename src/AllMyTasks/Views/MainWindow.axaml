@@ -26,6 +26,8 @@
                           Command="{Binding SetModeCommand}" CommandParameter="{x:Static vm:ViewMode.Month}" ToolTip.Tip="Month (M)" />
             <ToggleButton Classes="seg" Content="Upcoming" IsChecked="{Binding IsUpcoming, Mode=OneWay}"
                           Command="{Binding SetModeCommand}" CommandParameter="{x:Static vm:ViewMode.Upcoming}" ToolTip.Tip="Upcoming (U)" />
+            <ToggleButton Classes="seg" Content="{Binding InboxLabel}" IsChecked="{Binding IsInbox, Mode=OneWay}"
+                          Command="{Binding SetModeCommand}" CommandParameter="{x:Static vm:ViewMode.Inbox}" ToolTip.Tip="Inbox: open tasks without a date (I)" />
             <ToggleButton Classes="seg" Content="All tasks" IsChecked="{Binding IsTasks, Mode=OneWay}"
                           Command="{Binding SetModeCommand}" CommandParameter="{x:Static vm:ViewMode.Tasks}" ToolTip.Tip="All tasks (A)" />
           </StackPanel>

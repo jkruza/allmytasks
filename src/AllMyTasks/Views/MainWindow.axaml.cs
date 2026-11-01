@@ -65,6 +65,9 @@ public sealed partial class MainWindow : Window
             case Key.U:
                 shell.SetModeCommand.Execute(ViewMode.Upcoming);
                 break;
+            case Key.I:
+                shell.SetModeCommand.Execute(ViewMode.Inbox);
+                break;
             case Key.A:
                 shell.SetModeCommand.Execute(ViewMode.Tasks);
                 break;

@@ -41,7 +41,7 @@ do here can damage data elsewhere. Version 2 revisits it deliberately, in a narr
    | Calendar grids (day, week, month) | What is on, and when | Implemented, [views.md](views.md) |
    | Upcoming | What is next, events and tasks together | Implemented, [views.md](views.md#upcoming) |
    | All tasks | Everything open, with filters, sorting, grouping and saved filters | Implemented, [views.md](views.md#all-tasks) |
-   | Inbox | Tasks without a date, to triage | Designed, [#74](https://github.com/jkruza/allmytasks/issues/74), [inbox-view.md](inbox-view.md) |
+   | Inbox | Tasks without a date, to triage | Implemented, [#74](https://github.com/jkruza/allmytasks/issues/74), [inbox-view.md](inbox-view.md) |
 
 Also in version 1 but not a goal in itself: reminders, system tray, launch at login, search, installers.
 
