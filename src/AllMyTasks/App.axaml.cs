@@ -7,6 +7,7 @@ using AllMyTasks.Core.Startup;
 using AllMyTasks.Core.Storage;
 using AllMyTasks.Core.Sync;
 using AllMyTasks.Core.Views;
+using AllMyTasks.Providers.GitHub;
 using AllMyTasks.Providers.Google;
 using AllMyTasks.Providers.ICal;
 using AllMyTasks.Providers.ICal.CalDav;
@@ -74,8 +75,9 @@ public sealed partial class App : Application
         var todoistFactory = new TodoistFactory(logger: log, displayZone: zone);
         var microsoftFactory = new MicrosoftFactory(logger: log, displayZone: zone);
         var googleFactory = new GoogleFactory(logger: log);
+        var gitHubFactory = new GitHubFactory(logger: log);
         var jiraFactory = new JiraFactory(logger: log);
-        var registry = new SourceRegistry([feedFactory, davFactory, todoistFactory, googleFactory, microsoftFactory, jiraFactory, new SampleSourceFactory(clock, zone)], sources, secrets);
+        var registry = new SourceRegistry([feedFactory, davFactory, todoistFactory, googleFactory, microsoftFactory, jiraFactory, gitHubFactory, new SampleSourceFactory(clock, zone)], sources, secrets);
         var engine = new SyncEngine(items, sources, registry, clock, logger: log, pendingChanges: pending);
         var changes = new TaskChangeService(pending, sources, registry, clock);
         changes.Changed += (_, e) =>
@@ -157,6 +159,7 @@ public sealed partial class App : Application
             todoistFactory.Dispose();
             jiraFactory.Dispose();
             googleFactory.Dispose();
+            gitHubFactory.Dispose();
             microsoftFactory.Dispose();
             shell.Dispose();
             changes.Dispose();

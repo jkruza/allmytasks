@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/AllMyTasks.Core/AllMyTasks.Core.csproj" />
+    <Project Path="src/AllMyTasks.Providers.GitHub/AllMyTasks.Providers.GitHub.csproj" />
     <Project Path="src/AllMyTasks.Providers.Google/AllMyTasks.Providers.Google.csproj" />
     <Project Path="src/AllMyTasks.Providers.ICal/AllMyTasks.Providers.ICal.csproj" />
     <Project Path="src/AllMyTasks.Providers.Jira/AllMyTasks.Providers.Jira.csproj" />
@@ -12,6 +13,7 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/AllMyTasks.Core.Tests/AllMyTasks.Core.Tests.csproj" />
+    <Project Path="tests/AllMyTasks.Providers.GitHub.Tests/AllMyTasks.Providers.GitHub.Tests.csproj" />
     <Project Path="tests/AllMyTasks.Providers.Google.Tests/AllMyTasks.Providers.Google.Tests.csproj" />
     <Project Path="tests/AllMyTasks.Providers.ICal.Tests/AllMyTasks.Providers.ICal.Tests.csproj" />
     <Project Path="tests/AllMyTasks.Providers.Jira.Tests/AllMyTasks.Providers.Jira.Tests.csproj" />
