@@ -158,4 +158,4 @@ discussion or an issue, then record the outcome in the decision log in
 | 7 | Default refresh interval | 15 minutes, per-source override |
 | 8 | Separate projects per provider from the start, or one `Providers` project until there are two? | Own project for iCal (it brings a dependency); decide again at provider two |
 | 9 | UI localisation and culture | Use OS culture for dates and week start from day one; translations later |
-| 10 | App name (README says "working title") | Not blocking; namespaces would need renaming if it changes, so decide before M3 |
+| 10 | App name | Decided 2026-11-01: "All My Tasks" is the official name |

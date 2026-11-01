@@ -1,7 +1,5 @@
 # All My Tasks
 
-> Working title.
-
 An open-source, cross-platform desktop app that gives you a single, **read-only** place to see the tasks and
 events from many task and calendar sources, for a better overview of the work to be done. You keep working in
 Todoist, Outlook, Google, Jira, GitHub and GitLab; this app only looks. Built with .NET and
