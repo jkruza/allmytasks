@@ -35,7 +35,15 @@ model chooses it. The count comes from the same `ITaskListService` with a count-
 excludes dated, completed and cancelled tasks; includes tasks from every visible collection; respects hidden
 collections; subtask rule.
 
-## Open questions
+## Decisions
 
-- Should a task with a start date but no due date count as undated? Proposal: yes, the Inbox is about due dates.
-- Should a task that stays in the Inbox for a long time be marked as stale? Proposal: not in the first cut.
+Decided by Jarek, 2026-11-01. The proposals of the earlier open questions are accepted:
+
+- A task with a start date but no due date counts as undated, because the Inbox is about due dates.
+- No staleness marking in the first cut.
+
+## Future refinements
+
+- Mark tasks that have stayed in the Inbox for a long time as stale, with a threshold setting.
+- Reconsider the start-date rule if a source (for example Todoist or Jira) makes start dates common.
+
