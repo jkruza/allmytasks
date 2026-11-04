@@ -1,0 +1,46 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <!-- Design tokens, see docs/design/design-system.md. Surfaces and text follow the system theme variant. -->
+  <ResourceDictionary.ThemeDictionaries>
+    <ResourceDictionary x:Key="Light">
+      <Color x:Key="AmtCanvasColor">#F3F3F3</Color>
+      <Color x:Key="AmtSurfaceColor">#FFFFFF</Color>
+      <Color x:Key="AmtRaisedColor">#E6E6E6</Color>
+      <Color x:Key="AmtBorderColor">#D6D6D6</Color>
+      <Color x:Key="AmtInkColor">#1B1B1B</Color>
+      <Color x:Key="AmtMutedColor">#5C5C5C</Color>
+      <Color x:Key="AmtAccentColor">#3B82F6</Color>
+      <Color x:Key="AmtOverdueColor">#C62828</Color>
+    </ResourceDictionary>
+    <ResourceDictionary x:Key="Dark">
+      <Color x:Key="AmtCanvasColor">#202020</Color>
+      <Color x:Key="AmtSurfaceColor">#2D2D2D</Color>
+      <Color x:Key="AmtRaisedColor">#3A3A3A</Color>
+      <Color x:Key="AmtBorderColor">#454545</Color>
+      <Color x:Key="AmtInkColor">#F3F3F3</Color>
+      <Color x:Key="AmtMutedColor">#B3B3B3</Color>
+      <Color x:Key="AmtAccentColor">#3B82F6</Color>
+      <Color x:Key="AmtOverdueColor">#F07178</Color>
+    </ResourceDictionary>
+  </ResourceDictionary.ThemeDictionaries>
+
+  <SolidColorBrush x:Key="AmtCanvasBrush" Color="{DynamicResource AmtCanvasColor}" />
+  <SolidColorBrush x:Key="AmtSurfaceBrush" Color="{DynamicResource AmtSurfaceColor}" />
+  <SolidColorBrush x:Key="AmtRaisedBrush" Color="{DynamicResource AmtRaisedColor}" />
+  <SolidColorBrush x:Key="AmtBorderBrush" Color="{DynamicResource AmtBorderColor}" />
+  <SolidColorBrush x:Key="AmtInkBrush" Color="{DynamicResource AmtInkColor}" />
+  <SolidColorBrush x:Key="AmtMutedBrush" Color="{DynamicResource AmtMutedColor}" />
+  <SolidColorBrush x:Key="AmtAccentBrush" Color="{DynamicResource AmtAccentColor}" />
+  <SolidColorBrush x:Key="AmtOverdueBrush" Color="{DynamicResource AmtOverdueColor}" />
+
+  <CornerRadius x:Key="AmtRadiusChip">3</CornerRadius>
+  <CornerRadius x:Key="AmtRadiusCard">6</CornerRadius>
+  <CornerRadius x:Key="AmtRadiusPill">12</CornerRadius>
+
+  <x:Double x:Key="AmtFontSizeMeta">11</x:Double>
+  <x:Double x:Key="AmtFontSizeSmall">12</x:Double>
+  <x:Double x:Key="AmtFontSizeBody">13</x:Double>
+  <x:Double x:Key="AmtFontSizeTitle">15</x:Double>
+  <x:Double x:Key="AmtFontSizeHeading">20</x:Double>
+  <x:Double x:Key="AmtFontSizeDisplay">28</x:Double>
+</ResourceDictionary>

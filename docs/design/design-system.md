@@ -1,7 +1,7 @@
 # Design system
 
-Tracked in [#94](https://github.com/jkruza/allmytasks/issues/94). **Status: proposal.** Nothing here changes
-the app yet; the first implementation step is listed under [Rollout](#rollout).
+Tracked in [#94](https://github.com/jkruza/allmytasks/issues/94). **Status: proposal, rollout step 1 started.** The tokens and
+classes exist; the views move over one by one, see [Rollout](#rollout).
 
 ## Goal
 
@@ -43,6 +43,8 @@ Neutrals come from the site, which already matches Fluent's greys; accents come 
 | `amber` | `#f59e0b` | Due soon, warnings |
 | `red` | `#ef4444` | Overdue, errors |
 | Collection palette | `#3b82f6 #10b981 #f59e0b #8b5cf6 #14b8a6 #ec4899 #ef4444 #6b7280` | Per-collection colour (source identity) |
+
+Overdue *text* uses `AmtOverdueBrush` (`#c62828` light, `#f07178` dark) rather than the `red` accent, so it keeps 4.5:1 on `s000`; `red` stays for dots and bars.
 
 Rules: text on a tint uses `ink`, never the accent. Collection colour is shown as a 3 px bar or 8 px dot, and as a 15 %
 tint for event chips, never as large solid fills. Overdue is the only red in normal use, so it keeps its meaning.
@@ -113,7 +115,7 @@ colour alone: overdue adds text ("Overdue 2d"), tasks add a glyph. High contrast
 
 ## Rollout
 
-1. Add `Styles/Tokens.axaml` and move `seg`, `tool`, `chip` onto the tokens. No visual change beyond the accent.
+1. Add `Styles/Tokens.axaml` and `Styles/Controls.axaml` (done, with `EntryRow` as the first user: `small`, `meta`, `overdue`, `badge`). Still to do: move `seg`, `tool`, `chip` onto the tokens and set the Fluent accent.
 2. Replace literal font sizes and brush lookups in views with tokens, one view per pull request.
 3. Apply the per-view changes above in this order: Day, Upcoming, Week, Month, All tasks / Inbox.
 4. Keep `site/index.html` variables in sync with the token table (same names where possible).
