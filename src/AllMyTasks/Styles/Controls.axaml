@@ -135,7 +135,7 @@
     <Setter Property="Background" Value="{DynamicResource AmtAccentBrush}" />
   </Style>
   <Style Selector="Border.daynum.today > TextBlock">
-    <Setter Property="Foreground" Value="White" />
+    <Setter Property="Foreground" Value="{DynamicResource AmtOnAccentBrush}" />
   </Style>
   <Style Selector="Border.daynum > TextBlock">
     <Setter Property="HorizontalAlignment" Value="Center" />

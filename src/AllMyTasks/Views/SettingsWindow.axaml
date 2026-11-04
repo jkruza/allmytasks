@@ -8,7 +8,24 @@
   <StackPanel Margin="20" Spacing="16">
     <TextBlock Classes="title" Text="Settings" />
     <StackPanel Spacing="8">
-      <TextBlock Text="Calendar" FontWeight="SemiBold" />
+      <TextBlock Classes="section" Text="Appearance" />
+      <StackPanel Spacing="4">
+        <TextBlock Text="Accent colour" />
+        <ComboBox ItemsSource="{Binding AccentOptions}" SelectedItem="{Binding SelectedAccent}" HorizontalAlignment="Stretch">
+          <ComboBox.ItemTemplate>
+            <DataTemplate x:DataType="vm:AccentChoice">
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <Border Classes="dot" Background="{Binding Swatch}" IsVisible="{Binding Swatch, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                <TextBlock Text="{Binding Label}" />
+              </StackPanel>
+            </DataTemplate>
+          </ComboBox.ItemTemplate>
+        </ComboBox>
+        <TextBlock Classes="small" TextWrapping="Wrap" Text="System accent follows your operating system and falls back to blue where it does not provide one. Calendar and list colours, and overdue red, do not change." />
+      </StackPanel>
+    </StackPanel>
+    <StackPanel Spacing="8">
+      <TextBlock Classes="section" Text="Calendar" />
       <StackPanel Spacing="4">
         <TextBlock Text="Week starts on" />
         <ComboBox ItemsSource="{Binding WeekStartOptions}" SelectedItem="{Binding SelectedWeekStart}" HorizontalAlignment="Stretch">
@@ -19,7 +36,7 @@
       </StackPanel>
     </StackPanel>
     <StackPanel Spacing="8">
-      <TextBlock Text="Notifications" FontWeight="SemiBold" />
+      <TextBlock Classes="section" Text="Notifications" />
       <CheckBox IsChecked="{Binding RemindersEnabled}">
         <TextBlock Text="Show reminders" TextWrapping="Wrap" />
       </CheckBox>
@@ -49,7 +66,7 @@
       </StackPanel>
     </StackPanel>
     <StackPanel Spacing="8">
-      <TextBlock Text="Startup" FontWeight="SemiBold" />
+      <TextBlock Classes="section" Text="Startup" />
       <CheckBox IsChecked="{Binding LaunchAtLogin}" IsEnabled="{Binding CanChangeLaunchAtLogin}">
         <TextBlock Text="Launch All My Tasks when I log in" TextWrapping="Wrap" />
       </CheckBox>

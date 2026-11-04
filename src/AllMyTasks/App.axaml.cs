@@ -104,6 +104,8 @@ public sealed partial class App : Application
         var appSettings = new SettingsService(viewState);
         appSettings.LoadAsync().GetAwaiter().GetResult();
 
+        new AccentService(application, appSettings).Apply();
+
         // Rewrite the login entry from the settings so it follows the executable if the app was moved or updated.
         var autostart = AutostartManager.ForCurrentProcess(dataDirectoryOption);
         if (appSettings.Current.LaunchAtLogin)

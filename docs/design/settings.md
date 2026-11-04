@@ -58,7 +58,7 @@ Stored as JSON under the key `settings.app` in the existing `settings` table (se
 
 ```json
 {
-  "weekStart": "System", "closeToTray": true, "launchAtLogin": false, "startInTrayAtLogin": false,
+  "weekStart": "System", "accent": "blue", "closeToTray": true, "launchAtLogin": false, "startInTrayAtLogin": false,
   "remindersEnabled": true, "eventReminderMinutes": 10, "remindAboutTasks": true,
   "dateOnlyTaskReminderTime": "09:00", "snoozeMinutes": 10
 }
@@ -88,7 +88,8 @@ window included). Opened from a toolbar button next to Sources.
 
 - Changes apply as they are made; one **Close** button. No Save/Cancel, so there is no
   half-applied state.
-- Rows are grouped under headings (**Calendar**, **Notifications**, **Startup** and **Window**; later sections get their own heading).
+- Rows are grouped under headings (**Appearance**, **Calendar**, **Notifications**, **Startup** and **Window**; later sections get their own heading).
+- **Appearance** has *Accent colour*: Blue (default), System accent, or a colour of the collection palette (`accent`, see [design-system.md](design-system.md#decisions)). It applies immediately: `AccentService` swaps `AmtAccentColor` and Fluent's palette accent. System accent reads the OS value and falls back to blue where the platform gives none; `AccentColors.Resolve` in Core holds the rules. Collection colours and overdue red are unaffected.
 - **Notifications** has *Show reminders*, how long before events, whether to remind about tasks, the time for tasks with a date but no time, and the snooze length. See [reminders.md](reminders.md).
 - **Startup** has *Launch All My Tasks when I log in* and its sub-option *Start minimized to tray*. See [launch-at-login.md](launch-at-login.md).
 - **Window** has one checkbox, *Keep running in the system tray when the window is closed* (`closeToTray`, default on). See [system-tray.md](system-tray.md).
