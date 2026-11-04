@@ -1,6 +1,6 @@
 # Design system
 
-Tracked in the issue linked from the pull request that adds this doc. **Status: proposal.** Nothing here changes
+Tracked in [#94](https://github.com/jkruza/allmytasks/issues/94). **Status: proposal.** Nothing here changes
 the app yet; the first implementation step is listed under [Rollout](#rollout).
 
 ## Goal
@@ -107,7 +107,7 @@ radius 2, `#3b82f6`, `#10b981`, `#f59e0b`. `scripts/make-icons.py` remains the g
 
 ## Accessibility
 
-Text contrast at least 4.5:1 on its surface in both variants (`mut` on `s000` is 6.9:1 light, 8.5:1 dark). Status never relies on
+Text contrast at least 4.5:1 on its surface in both variants (`mut` on `s000` is 6.9:1 light, 6.6:1 dark). Status never relies on
 colour alone: overdue adds text ("Overdue 2d"), tasks add a glyph. High contrast themes fall back to Fluent's own
 `SystemControl*` brushes because the `Amt*` keys also define a `HighContrast` dictionary pointing at them.
 
