@@ -74,7 +74,7 @@
                               c:EntryActivation.Enabled="True">
                         <StackPanel>
                           <TextBlock Text="{Binding Title}" FontSize="{DynamicResource AmtFontSizeMeta}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
-                          <TextBlock Classes="meta" Text="{Binding TimeText}" Foreground="{DynamicResource AmtInkBrush}" Opacity="0.75" />
+                          <TextBlock Classes="meta" Text="{Binding TimeText}" />
                         </StackPanel>
                       </Border>
                     </DataTemplate>

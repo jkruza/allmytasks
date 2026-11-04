@@ -5,8 +5,8 @@
         Topmost="True" ShowInTaskbar="False" ShowActivated="False"
         WindowStartupLocation="Manual">
   <StackPanel Margin="16" Spacing="10">
-    <TextBlock x:Name="Heading" FontSize="16" FontWeight="SemiBold" TextWrapping="Wrap" />
-    <TextBlock x:Name="Body" TextWrapping="Wrap" Opacity="0.8" />
+    <TextBlock x:Name="Heading" Classes="title" TextWrapping="Wrap" />
+    <TextBlock x:Name="Body" Classes="small" TextWrapping="Wrap" />
     <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
       <Button x:Name="OpenButton" Content="Open" Click="OnOpen" />
       <Button x:Name="SnoozeButton" Content="Snooze" Click="OnSnooze" />

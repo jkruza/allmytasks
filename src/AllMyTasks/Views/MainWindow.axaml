@@ -8,14 +8,14 @@
         Icon="/Assets/app.png"
         Width="1100" Height="760" MinWidth="640" MinHeight="420">
   <DockPanel>
-    <Border DockPanel.Dock="Top" Padding="16,10" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
+    <Border DockPanel.Dock="Top" Classes="hairline-bottom" Padding="16,10">
       <!-- Two rows, as in the project site's mockup: title left and view switcher right, then
            navigation left and filter/sync/settings right. The title column shrinks and trims,
            and each row's groups fit at the minimum window width, so nothing overlaps.
            See docs/design/toolbar.md. -->
       <StackPanel Spacing="6">
         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
-          <TextBlock Text="{Binding Title}" FontSize="22" FontWeight="SemiBold" VerticalAlignment="Center"
+          <TextBlock Classes="heading" Text="{Binding Title}" VerticalAlignment="Center"
                      TextTrimming="CharacterEllipsis" />
           <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
             <ToggleButton Classes="seg" Content="Day" IsChecked="{Binding IsDay, Mode=OneWay}"
@@ -46,19 +46,19 @@
               <Button.Flyout>
                 <Flyout>
                   <StackPanel Spacing="6" MinWidth="220">
-                    <TextBlock Text="Show" FontWeight="SemiBold" />
+                    <TextBlock Classes="section" Text="Show" />
                     <CheckBox Content="Events" IsChecked="{Binding ShowEvents}" />
                     <CheckBox Content="Tasks" IsChecked="{Binding ShowTasks}" />
                     <CheckBox Content="Completed tasks" IsChecked="{Binding ShowCompleted}" />
                     <CheckBox Content="Hide weekends (week view)" IsChecked="{Binding HideWeekends}" />
                     <Separator />
-                    <TextBlock Text="Calendars and lists" FontWeight="SemiBold" />
+                    <TextBlock Classes="section" Text="Calendars and lists" />
                     <ItemsControl ItemsSource="{Binding Collections}">
                       <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="vm:CollectionToggle">
                           <CheckBox IsChecked="{Binding IsVisible}">
                             <StackPanel Orientation="Horizontal" Spacing="6">
-                              <Border Width="10" Height="10" CornerRadius="5" Background="{Binding Accent}" VerticalAlignment="Center" />
+                              <Border Classes="dot" Background="{Binding Accent}" />
                               <TextBlock Text="{Binding Name}" />
                             </StackPanel>
                           </CheckBox>
@@ -71,9 +71,9 @@
             </Button>
             <Button Classes="tool" Command="{Binding OpenSourcesCommand}" ToolTip.Tip="Sources" AutomationProperties.Name="Sources">
               <StackPanel Orientation="Horizontal" Spacing="6">
-                <Border Width="8" Height="8" CornerRadius="4" Background="IndianRed" VerticalAlignment="Center" IsVisible="{Binding HasProblems}" />
-                <TextBlock Text="{Binding SyncSummary}" FontSize="12" />
-                <TextBlock Text="{Binding PendingText}" FontSize="12" Opacity="0.7" IsVisible="{Binding HasPendingText}" />
+                <Border Classes="dot" Background="{DynamicResource AmtDangerBrush}" IsVisible="{Binding HasProblems}" />
+                <TextBlock Classes="small" Text="{Binding SyncSummary}" />
+                <TextBlock Classes="small" Text="{Binding PendingText}" IsVisible="{Binding HasPendingText}" />
               </StackPanel>
             </Button>
             <Button Classes="tool" Command="{Binding OpenSearchCommand}" IsVisible="{Binding CanSearch}" ToolTip.Tip="Search (Ctrl+F)" AutomationProperties.Name="Search">
@@ -90,20 +90,20 @@
       </StackPanel>
     </Border>
     <!-- Short message after a change, with Undo; see docs/design/complete-tasks.md. -->
-    <Border DockPanel.Dock="Top" IsVisible="{Binding HasNotice}" Padding="16,6" Background="{DynamicResource SystemControlBackgroundBaseLowBrush}">
+    <Border DockPanel.Dock="Top" IsVisible="{Binding HasNotice}" Padding="16,6" Background="{DynamicResource AmtRaisedBrush}">
       <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
         <TextBlock Text="{Binding Notice}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
-        <Button Grid.Column="1" Content="Undo" Command="{Binding UndoCommand}" IsVisible="{Binding CanUndo}" />
-        <Button Grid.Column="2" Content="✕" Command="{Binding DismissNoticeCommand}" AutomationProperties.Name="Dismiss" />
+        <Button Grid.Column="1" Classes="tool" Content="Undo" Command="{Binding UndoCommand}" IsVisible="{Binding CanUndo}" />
+        <Button Grid.Column="2" Classes="tool" Content="✕" Command="{Binding DismissNoticeCommand}" AutomationProperties.Name="Dismiss" />
       </Grid>
     </Border>
     <!-- Details pane: one host for every kind of details; see docs/design/details-pane.md. -->
-    <Border DockPanel.Dock="Right" Width="340" Padding="16,12" IsVisible="{Binding IsDetailsOpen}"
-            BorderThickness="1,0,0,0" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
+    <Border DockPanel.Dock="Right" Classes="hairline-left" Width="340" Padding="16,12" IsVisible="{Binding IsDetailsOpen}"
+            Background="{DynamicResource AmtSurfaceBrush}">
       <DockPanel>
         <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="0,0,0,8">
-          <TextBlock Text="Details" FontWeight="SemiBold" VerticalAlignment="Center" />
-          <Button x:Name="CloseDetailsButton" Grid.Column="1" Content="✕" Command="{Binding CloseDetailsCommand}"
+          <TextBlock Classes="section" Text="Details" VerticalAlignment="Center" />
+          <Button x:Name="CloseDetailsButton" Grid.Column="1" Classes="tool" Content="✕" Command="{Binding CloseDetailsCommand}"
                   AutomationProperties.Name="Close details" ToolTip.Tip="Close (Esc)" />
         </Grid>
         <ContentControl Content="{Binding SelectedDetails}">

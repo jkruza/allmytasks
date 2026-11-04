@@ -53,7 +53,7 @@
     <Setter Property="Foreground" Value="{DynamicResource AmtWarningBrush}" />
     <Setter Property="TextWrapping" Value="Wrap" />
   </Style>
-  <Style Selector="TextBlock.mono">
+  <Style Selector="TextBlock.mono, TextBox.mono">
     <Setter Property="FontFamily" Value="Cascadia Mono, Consolas, Menlo, monospace" />
     <Setter Property="FontSize" Value="{DynamicResource AmtFontSizeSmall}" />
   </Style>
