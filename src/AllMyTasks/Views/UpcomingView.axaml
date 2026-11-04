@@ -5,7 +5,7 @@
              x:Class="AllMyTasks.Views.UpcomingView"
              x:DataType="vm:UpcomingViewModel">
   <Grid RowDefinitions="*,Auto">
-    <TextBlock Text="Nothing coming up" IsVisible="{Binding IsEmpty}" Opacity="0.6" FontSize="16"
+    <TextBlock Classes="empty" Text="Nothing coming up" IsVisible="{Binding IsEmpty}"
                HorizontalAlignment="Center" VerticalAlignment="Center" />
     <!-- The only unbounded list, so it is virtualised. -->
     <ScrollViewer Grid.Row="0" Margin="24,12">
@@ -15,13 +15,13 @@
       </ItemsControl.ItemsPanel>
       <ItemsControl.DataTemplates>
         <DataTemplate DataType="vm:DayGroupHeader">
-          <TextBlock Text="{Binding Text}" FontSize="16" FontWeight="SemiBold" Margin="0,12,0,2" />
+          <TextBlock Classes="section" Text="{Binding Text}" Margin="0,16,0,4" />
         </DataTemplate>
         <DataTemplate DataType="vm:EntryItem"><views:EntryRow /></DataTemplate>
       </ItemsControl.DataTemplates>
     </ItemsControl>
     </ScrollViewer>
-    <Button Grid.Row="1" Content="Load more" Command="{ReflectionBinding $parent[Window].DataContext.LoadMoreCommand}"
+    <Button Grid.Row="1" Classes="tool" Content="Load more" Command="{ReflectionBinding $parent[Window].DataContext.LoadMoreCommand}"
             HorizontalAlignment="Center" Margin="0,0,0,12" IsVisible="{Binding !IsEmpty}" />
   </Grid>
 </UserControl>
