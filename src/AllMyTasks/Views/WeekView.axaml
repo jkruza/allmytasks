@@ -14,14 +14,20 @@
         </ItemsControl.ItemsPanel>
         <ItemsControl.ItemTemplate>
           <DataTemplate x:DataType="vm:WeekDayViewModel">
-            <TextBlock Text="{Binding Header}" HorizontalAlignment="Center" FontWeight="SemiBold" Margin="0,4" />
+            <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center" Margin="0,4"
+                        AutomationProperties.Name="{Binding Header}">
+              <TextBlock Classes="small" Text="{Binding WeekdayText}" VerticalAlignment="Center" />
+              <Border Classes="daynum" Classes.today="{Binding IsToday}">
+                <TextBlock Text="{Binding DayNumber}" />
+              </Border>
+            </StackPanel>
           </DataTemplate>
         </ItemsControl.ItemTemplate>
       </ItemsControl>
     </Grid>
     <!-- All-day strip -->
     <Grid DockPanel.Dock="Top" ColumnDefinitions="56,*" IsVisible="{Binding HasAllDay}" Margin="0,0,0,4">
-      <TextBlock Text="All day" FontSize="11" Opacity="0.7" VerticalAlignment="Top" />
+      <TextBlock Classes="meta" Text="All day" VerticalAlignment="Top" />
       <ItemsControl Grid.Column="1" ItemsSource="{Binding AllDayBars}">
         <ItemsControl.ItemsPanel>
           <ItemsPanelTemplate><c:SpanBarPanel ColumnCount="{ReflectionBinding $parent[UserControl].DataContext.ColumnCount}" LaneHeight="22" /></ItemsPanelTemplate>
@@ -30,7 +36,7 @@
           <DataTemplate x:DataType="vm:SpanBarItem">
             <Border Classes="chip-box" Background="{Binding ChipBackground}" BorderBrush="{Binding Accent}" ToolTip.Tip="{Binding Spoken}"
                     AutomationProperties.Name="{Binding Spoken}" c:EntryActivation.Enabled="True">
-              <TextBlock Text="{Binding BarText}" FontSize="12" TextTrimming="CharacterEllipsis" />
+              <TextBlock Text="{Binding BarText}" TextTrimming="CharacterEllipsis" />
             </Border>
           </DataTemplate>
         </ItemsControl.ItemTemplate>
@@ -42,7 +48,7 @@
         <ItemsControl ItemsSource="{Binding HourLabels}">
           <ItemsControl.ItemTemplate>
             <DataTemplate x:DataType="x:String">
-              <TextBlock Text="{Binding}" Height="48" FontSize="11" Opacity="0.7" HorizontalAlignment="Right" Margin="0,0,6,0" />
+              <TextBlock Classes="meta" Text="{Binding}" Height="48" HorizontalAlignment="Right" Margin="0,0,6,0" />
             </DataTemplate>
           </ItemsControl.ItemTemplate>
         </ItemsControl>
@@ -52,7 +58,7 @@
           </ItemsControl.ItemsPanel>
           <ItemsControl.ItemTemplate>
             <DataTemplate x:DataType="vm:WeekDayViewModel">
-              <Border BorderThickness="1,0,0,0" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
+              <Border Classes="cell" Classes.today="{Binding IsToday}" BorderThickness="1,0,0,0">
                 <ItemsControl ItemsSource="{Binding Entries}">
                   <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
@@ -67,8 +73,8 @@
                               ToolTip.Tip="{Binding Spoken}" AutomationProperties.Name="{Binding Spoken}" ClipToBounds="True"
                               c:EntryActivation.Enabled="True">
                         <StackPanel>
-                          <TextBlock Text="{Binding Title}" FontSize="11" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
-                          <TextBlock Text="{Binding TimeText}" FontSize="10" Opacity="0.85" />
+                          <TextBlock Text="{Binding Title}" FontSize="{DynamicResource AmtFontSizeMeta}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                          <TextBlock Classes="meta" Text="{Binding TimeText}" Foreground="{DynamicResource AmtInkBrush}" Opacity="0.75" />
                         </StackPanel>
                       </Border>
                     </DataTemplate>
