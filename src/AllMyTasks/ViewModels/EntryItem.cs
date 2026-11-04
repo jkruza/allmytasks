@@ -1,6 +1,7 @@
 using System.Globalization;
 using AllMyTasks.Core.Views;
 using Avalonia.Media;
+using Avalonia.Media.Immutable;
 
 namespace AllMyTasks.ViewModels;
 
@@ -44,8 +45,7 @@ public class EntryItem
         HasMeeting = entry is EventEntry { HasMeeting: true };
         var color = ColorUtil.OrDefault(entry.Color);
         Accent = Brush.Parse(color);
-        ChipBackground = Brush.Parse(color);
-        ChipForeground = Brush.Parse(ColorUtil.ContrastingText(color));
+        ChipBackground = Tint(color);
         Glyph = !IsTask ? string.Empty : IsCompleted ? "☑" : "☐";
         CollectionName = entry.CollectionName;
         Spoken = entry.SpokenText(zone);
@@ -78,13 +78,18 @@ public class EntryItem
 
     public IBrush Accent { get; }
 
+    /// <summary>The collection colour at 15 % opacity, the calendar chip fill; text on it is the theme's ink colour.</summary>
     public IBrush ChipBackground { get; }
-
-    public IBrush ChipForeground { get; }
 
     public string Spoken { get; }
 
     public double Opacity { get; }
+
+    private static ImmutableSolidColorBrush Tint(string color)
+    {
+        var parsed = Color.Parse(color);
+        return new ImmutableSolidColorBrush(Color.FromArgb(0x26, parsed.R, parsed.G, parsed.B));
+    }
 
     public bool HasLocation => !string.IsNullOrEmpty(Location);
 
