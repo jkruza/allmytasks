@@ -9,6 +9,21 @@ public class DayAgendaTests
     private static readonly DateTimeOffset Now = Utc_(2026, 10, 19, 12);
 
     [Fact]
+    public void Summary_counts_events_tasks_and_overdue()
+    {
+        var entries = new AgendaEntry[]
+        {
+            Event("morning", Utc_(2026, 10, 19, 9), Utc_(2026, 10, 19, 10)),
+            Event("afternoon", Utc_(2026, 10, 19, 14), Utc_(2026, 10, 19, 15)),
+            Task("due today", Mon),
+            Task("old", Mon.AddDays(-3), overdue: true),
+        };
+
+        Assert.Equal("2 events · 1 task · 1 overdue", DayAgenda.Build(Mon, entries, Now, Utc).Summary);
+        Assert.Equal(string.Empty, DayAgenda.Build(Mon, [], Now, Utc).Summary);
+    }
+
+    [Fact]
     public void Splits_all_day_timed_and_overdue_and_marks_now()
     {
         var entries = new AgendaEntry[]

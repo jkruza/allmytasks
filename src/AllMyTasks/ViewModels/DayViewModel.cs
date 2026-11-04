@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Globalization;
 using AllMyTasks.Core.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 
@@ -17,6 +18,15 @@ public sealed partial class DayViewModel(IAgendaService agenda) : ContentViewMod
 
     [ObservableProperty]
     public partial string EmptyText { get; set; } = string.Empty;
+
+    [ObservableProperty]
+    public partial string DayNumber { get; set; } = string.Empty;
+
+    [ObservableProperty]
+    public partial string WeekdayText { get; set; } = string.Empty;
+
+    [ObservableProperty]
+    public partial string SummaryText { get; set; } = string.Empty;
 
     public bool HasAllDay => AllDay.Count > 0;
 
@@ -57,6 +67,11 @@ public sealed partial class DayViewModel(IAgendaService agenda) : ContentViewMod
             Overdue.Add(new EntryItem(s, context.Now, context.Zone));
         }
 
+        var culture = CultureInfo.CurrentCulture;
+        var date = context.Date.ToDateTime(TimeOnly.MinValue);
+        DayNumber = date.Day.ToString(culture);
+        WeekdayText = date.ToString("dddd, MMMM yyyy", culture);
+        SummaryText = day.Summary;
         IsEmpty = day.IsEmpty;
         EmptyText = "Nothing planned";
         OnPropertyChanged(nameof(HasAllDay));
