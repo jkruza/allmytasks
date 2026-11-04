@@ -117,7 +117,7 @@ colour alone: overdue adds text ("Overdue 2d"), tasks add a glyph. Avalonia 12 h
 
 1. Add `Styles/Tokens.axaml` and `Styles/Controls.axaml`, move `seg`, `tool`, `chip` onto the tokens, set the Fluent accent, migrate `EntryRow` and `EntryChip` ([#97](https://github.com/jkruza/allmytasks/issues/97), done). Shared classes: text roles `meta small title heading display section empty overdue error warning mono`; surfaces `card badge hairline-bottom hairline-left selected`; identity `dot bar chip-box`.
 2. Replace literal font sizes and brush lookups in views with tokens, one view per pull request.
-3. Apply the per-view changes above in this order: Day, Upcoming, Week, Month, All tasks / Inbox.
+3. Apply the per-view changes above in this order: Day ([#98](https://github.com/jkruza/allmytasks/issues/98), done), Upcoming, Week, Month, All tasks / Inbox.
 4. Keep `site/index.html` variables in sync with the token table (same names where possible).
 5. Add the accent setting: a Settings choice (Blue, OS accent, palette colours), applied by swapping `AmtAccentColor` and the Fluent accent at runtime.
 

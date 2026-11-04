@@ -5,12 +5,20 @@
              x:Class="AllMyTasks.Views.DayView"
              x:DataType="vm:DayViewModel">
   <ScrollViewer>
-    <StackPanel Margin="24,12" Spacing="12" MaxWidth="900" HorizontalAlignment="Stretch">
-      <TextBlock Text="{Binding EmptyText}" IsVisible="{Binding IsEmpty}" Opacity="0.6" FontSize="16"
-                 HorizontalAlignment="Center" Margin="0,48" />
+    <StackPanel Margin="24,16" Spacing="16" MaxWidth="900" HorizontalAlignment="Stretch">
+      <!-- Date header: the question this view answers is "what do I do today?", so the date leads. -->
+      <StackPanel Orientation="Horizontal" Spacing="12">
+        <TextBlock Classes="display" Text="{Binding DayNumber}" VerticalAlignment="Center" />
+        <StackPanel VerticalAlignment="Center">
+          <TextBlock Classes="title" Text="{Binding WeekdayText}" />
+          <TextBlock Classes="small" Text="{Binding SummaryText}" />
+        </StackPanel>
+      </StackPanel>
+
+      <TextBlock Classes="empty" Text="{Binding EmptyText}" IsVisible="{Binding IsEmpty}" HorizontalAlignment="Center" Margin="0,48" />
 
       <StackPanel IsVisible="{Binding HasOverdue}" Spacing="2">
-        <TextBlock Text="Overdue" FontWeight="SemiBold" Foreground="IndianRed" />
+        <TextBlock Classes="overdue" Text="Overdue" />
         <ItemsControl ItemsSource="{Binding Overdue}">
           <ItemsControl.ItemTemplate>
             <DataTemplate x:DataType="vm:EntryItem"><views:EntryRow /></DataTemplate>
@@ -19,7 +27,7 @@
       </StackPanel>
 
       <StackPanel IsVisible="{Binding HasAllDay}" Spacing="2">
-        <TextBlock Text="All day" FontWeight="SemiBold" />
+        <TextBlock Classes="section" Text="All day and due" />
         <ItemsControl ItemsSource="{Binding AllDay}">
           <ItemsControl.ItemTemplate>
             <DataTemplate x:DataType="vm:EntryItem"><views:EntryRow /></DataTemplate>
@@ -32,8 +40,8 @@
           <DataTemplate DataType="vm:EntryItem"><views:EntryRow /></DataTemplate>
           <DataTemplate DataType="vm:NowMarker">
             <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8" Margin="0,4" AutomationProperties.Name="Now">
-              <TextBlock Text="Now" Foreground="IndianRed" FontWeight="SemiBold" FontSize="12" />
-              <Border Grid.Column="1" Height="2" Background="IndianRed" VerticalAlignment="Center" />
+              <TextBlock Text="Now" Foreground="{DynamicResource AmtAccentBrush}" FontWeight="SemiBold" FontSize="{DynamicResource AmtFontSizeSmall}" />
+              <Border Grid.Column="1" Height="2" Background="{DynamicResource AmtAccentBrush}" VerticalAlignment="Center" />
             </Grid>
           </DataTemplate>
         </ItemsControl.DataTemplates>
