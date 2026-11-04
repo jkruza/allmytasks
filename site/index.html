@@ -7,7 +7,7 @@
 <meta name="description" content="All My Tasks is an open-source, cross-platform desktop app that gives you one read-only overview of the tasks and events from many task and calendar sources.">
 <title>All My Tasks</title>
 <style>
-:root{--s100:#f3f3f3;--s000:#ffffff;--s200:#e6e6e6;--bd:#d6d6d6;--ink:#1b1b1b;--mut:#5c5c5c}
+:root{--blue:#3b82f6;--green:#10b981;--amber:#f59e0b;--purple:#8b5cf6;--teal:#14b8a6;--pink:#ec4899;--red:#ef4444;--gray:#6b7280;--s100:#f3f3f3;--s000:#ffffff;--s200:#e6e6e6;--bd:#d6d6d6;--ink:#1b1b1b;--mut:#5c5c5c}
 @media (prefers-color-scheme: dark){:root{--s100:#202020;--s000:#2d2d2d;--s200:#3a3a3a;--bd:#454545;--ink:#f3f3f3;--mut:#b3b3b3}}
 body{margin:0;background:var(--s100);color:var(--ink);font-family:"Segoe UI",-apple-system,BlinkMacSystemFont,"Inter",system-ui,sans-serif}
 a{color:var(--ink)}a:hover{color:var(--mut)}
@@ -22,9 +22,9 @@ html{scroll-behavior:smooth}
 <div style="max-width: 1120px; margin: 0 auto; padding: 16px 24px; box-sizing: border-box; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px">
 <a href="#top" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink)">
 <span aria-hidden="true" style="display: flex; flex-direction: column; gap: 3px">
-<span style="display: block; width: 22px; height: 5px; border-radius: 2px; background: #3b82f6"></span>
-<span style="display: block; width: 16px; height: 5px; border-radius: 2px; background: #10b981"></span>
-<span style="display: block; width: 10px; height: 5px; border-radius: 2px; background: #f59e0b"></span>
+<span style="display: block; width: 22px; height: 5px; border-radius: 2px; background: var(--blue)"></span>
+<span style="display: block; width: 16px; height: 5px; border-radius: 2px; background: var(--green)"></span>
+<span style="display: block; width: 10px; height: 5px; border-radius: 2px; background: var(--amber)"></span>
 </span>
 <span style="font-size: 18px; line-height: 24px; font-weight: 600">All My Tasks</span>
 </a>
@@ -74,32 +74,32 @@ html{scroll-behavior:smooth}
 <span style="font-size: 16px; line-height: 22px; font-weight: 600">Today</span>
 
 <div style="display: flex; gap: 10px; align-items: stretch">
-<span style="width: 3px; border-radius: 2px; background: #3b82f6; flex: none"></span>
+<span style="width: 3px; border-radius: 2px; background: var(--blue); flex: none"></span>
 <span style="width: 44px; flex: none; font-size: 12px; line-height: 20px; color: var(--mut)">09:30</span>
 <span style="flex: 1; min-width: 0; display: flex; flex-direction: column">
 <span style="font-size: 14px; line-height: 20px; font-weight: 600">Design review</span>
-<span style="display: flex; align-items: center; gap: 6px; font-size: 11px; line-height: 14px; color: var(--mut)"><span style="width: 8px; height: 8px; border-radius: 9999px; background: #3b82f6"></span>Work calendar · CalDAV</span>
+<span style="display: flex; align-items: center; gap: 6px; font-size: 11px; line-height: 14px; color: var(--mut)"><span style="width: 8px; height: 8px; border-radius: 9999px; background: var(--blue)"></span>Work calendar · CalDAV</span>
 </span>
 </div>
 
 <div style="display: flex; gap: 10px; align-items: stretch">
-<span style="width: 3px; border-radius: 2px; background: #14b8a6; flex: none"></span>
+<span style="width: 3px; border-radius: 2px; background: var(--teal); flex: none"></span>
 <span style="width: 44px; flex: none; font-size: 12px; line-height: 20px; color: var(--mut)">Task</span>
 <span style="flex: 1; min-width: 0; display: flex; flex-direction: column">
 <span style="font-size: 14px; line-height: 20px; font-weight: 600">Review open pull requests</span>
-<span style="display: flex; align-items: center; gap: 6px; font-size: 11px; line-height: 14px; color: var(--mut)"><span style="width: 8px; height: 8px; border-radius: 9999px; background: #14b8a6"></span>Todoist · Inbox</span>
+<span style="display: flex; align-items: center; gap: 6px; font-size: 11px; line-height: 14px; color: var(--mut)"><span style="width: 8px; height: 8px; border-radius: 9999px; background: var(--teal)"></span>Todoist · Inbox</span>
 </span>
-<span style="display: flex; align-items: center; gap: 6px; font-size: 12px; line-height: 16px"><span style="width: 10px; height: 10px; border-radius: 9999px; background: #ff8c00"></span>High</span>
+<span style="display: flex; align-items: center; gap: 6px; font-size: 12px; line-height: 16px"><span style="width: 10px; height: 10px; border-radius: 9999px; background: var(--amber)"></span>High</span>
 </div>
 
 <div style="display: flex; gap: 10px; align-items: stretch">
-<span style="width: 3px; border-radius: 2px; background: #10b981; flex: none"></span>
+<span style="width: 3px; border-radius: 2px; background: var(--green); flex: none"></span>
 <span style="width: 44px; flex: none; font-size: 12px; line-height: 20px; color: var(--mut)">Task</span>
 <span style="flex: 1; min-width: 0; display: flex; flex-direction: column">
 <span style="font-size: 14px; line-height: 20px; font-weight: 600">Renew library card</span>
-<span style="display: flex; align-items: center; gap: 6px; font-size: 11px; line-height: 14px; color: var(--mut)"><span style="width: 8px; height: 8px; border-radius: 9999px; background: #10b981"></span>Errands · Todoist</span>
+<span style="display: flex; align-items: center; gap: 6px; font-size: 11px; line-height: 14px; color: var(--mut)"><span style="width: 8px; height: 8px; border-radius: 9999px; background: var(--green)"></span>Errands · Todoist</span>
 </span>
-<span style="display: flex; align-items: center; gap: 6px; font-size: 12px; line-height: 16px"><span style="width: 10px; height: 10px; border-radius: 9999px; background: #cd5c5c"></span>Overdue</span>
+<span style="display: flex; align-items: center; gap: 6px; font-size: 12px; line-height: 16px"><span style="width: 10px; height: 10px; border-radius: 9999px; background: var(--red)"></span>Overdue</span>
 </div>
 </div>
 
@@ -107,20 +107,20 @@ html{scroll-behavior:smooth}
 <span style="font-size: 16px; line-height: 22px; font-weight: 600">Tomorrow</span>
 
 <div style="display: flex; gap: 10px; align-items: stretch">
-<span style="width: 3px; border-radius: 2px; background: #8b5cf6; flex: none"></span>
+<span style="width: 3px; border-radius: 2px; background: var(--purple); flex: none"></span>
 <span style="width: 44px; flex: none; font-size: 12px; line-height: 20px; color: var(--mut)">All day</span>
 <span style="flex: 1; min-width: 0; display: flex; flex-direction: column">
 <span style="font-size: 14px; line-height: 20px; font-weight: 600">Team offsite</span>
-<span style="display: flex; align-items: center; gap: 6px; font-size: 11px; line-height: 14px; color: var(--mut)"><span style="width: 8px; height: 8px; border-radius: 9999px; background: #8b5cf6"></span>Company feed · iCalendar</span>
+<span style="display: flex; align-items: center; gap: 6px; font-size: 11px; line-height: 14px; color: var(--mut)"><span style="width: 8px; height: 8px; border-radius: 9999px; background: var(--purple)"></span>Company feed · iCalendar</span>
 </span>
 </div>
 
 <div style="display: flex; gap: 10px; align-items: stretch">
-<span style="width: 3px; border-radius: 2px; background: #f59e0b; flex: none"></span>
+<span style="width: 3px; border-radius: 2px; background: var(--amber); flex: none"></span>
 <span style="width: 44px; flex: none; font-size: 12px; line-height: 20px; color: var(--mut)">14:00</span>
 <span style="flex: 1; min-width: 0; display: flex; flex-direction: column">
 <span style="font-size: 14px; line-height: 20px; font-weight: 600">Dentist</span>
-<span style="display: flex; align-items: center; gap: 6px; font-size: 11px; line-height: 14px; color: var(--mut)"><span style="width: 8px; height: 8px; border-radius: 9999px; background: #f59e0b"></span>Personal · CalDAV</span>
+<span style="display: flex; align-items: center; gap: 6px; font-size: 11px; line-height: 14px; color: var(--mut)"><span style="width: 8px; height: 8px; border-radius: 9999px; background: var(--amber)"></span>Personal · CalDAV</span>
 </span>
 </div>
 </div>
@@ -136,37 +136,37 @@ html{scroll-behavior:smooth}
 <div style="display: flex; flex-wrap: wrap; gap: 16px">
 
 <div style="flex: 1 1 320px; min-width: 0; background: var(--s000); border: 1px solid var(--bd); border-radius: 6px; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; gap: 8px">
-<span aria-hidden="true" style="width: 28px; height: 4px; border-radius: 2px; background: #3b82f6"></span>
+<span aria-hidden="true" style="width: 28px; height: 4px; border-radius: 2px; background: var(--blue)"></span>
 <h3 style="margin: 0; font-size: 18px; line-height: 24px; font-weight: 600">Day, week, month and upcoming</h3>
 <p style="margin: 0; font-size: 14px; line-height: 22px; color: var(--mut)">Day, week and month grids and an Upcoming list, plus an All tasks view with filtering, sorting and grouping. An Inbox lists open tasks without a date. Click any entry or task to open its details and subtasks.</p>
 </div>
 
 <div style="flex: 1 1 320px; min-width: 0; background: var(--s000); border: 1px solid var(--bd); border-radius: 6px; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; gap: 8px">
-<span aria-hidden="true" style="width: 28px; height: 4px; border-radius: 2px; background: #10b981"></span>
+<span aria-hidden="true" style="width: 28px; height: 4px; border-radius: 2px; background: var(--green)"></span>
 <h3 style="margin: 0; font-size: 18px; line-height: 24px; font-weight: 600">Many sources, one model</h3>
 <p style="margin: 0; font-size: 14px; line-height: 22px; color: var(--mut)">iCalendar feeds, CalDAV, Todoist, personal Microsoft accounts and Google accounts work today, the last two tried on real accounts. Jira Cloud, GitHub and GitLab work too, not yet tried on live accounts. Events and tasks stay separate types, so task-only services fit naturally.</p>
 </div>
 
 <div style="flex: 1 1 320px; min-width: 0; background: var(--s000); border: 1px solid var(--bd); border-radius: 6px; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; gap: 8px">
-<span aria-hidden="true" style="width: 28px; height: 4px; border-radius: 2px; background: #f59e0b"></span>
+<span aria-hidden="true" style="width: 28px; height: 4px; border-radius: 2px; background: var(--amber)"></span>
 <h3 style="margin: 0; font-size: 18px; line-height: 24px; font-weight: 600">Works offline</h3>
 <p style="margin: 0; font-size: 14px; line-height: 22px; color: var(--mut)">Everything is synced into a local SQLite store. Restart the app without a connection and your data is still there. A sync engine handles scheduling, backoff and per-source status.</p>
 </div>
 
 <div style="flex: 1 1 320px; min-width: 0; background: var(--s000); border: 1px solid var(--bd); border-radius: 6px; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; gap: 8px">
-<span aria-hidden="true" style="width: 28px; height: 4px; border-radius: 2px; background: #8b5cf6"></span>
+<span aria-hidden="true" style="width: 28px; height: 4px; border-radius: 2px; background: var(--purple)"></span>
 <h3 style="margin: 0; font-size: 18px; line-height: 24px; font-weight: 600">Credentials stay in your keystore</h3>
 <p style="margin: 0; font-size: 14px; line-height: 22px; color: var(--mut)">Tokens and passwords go to Windows Credential Manager, the macOS Keychain or the Linux Secret Service. Without a keyring on Linux, an opt-in PIN-protected encrypted file is used, never plaintext.</p>
 </div>
 
 <div style="flex: 1 1 320px; min-width: 0; background: var(--s000); border: 1px solid var(--bd); border-radius: 6px; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; gap: 8px">
-<span aria-hidden="true" style="width: 28px; height: 4px; border-radius: 2px; background: #14b8a6"></span>
+<span aria-hidden="true" style="width: 28px; height: 4px; border-radius: 2px; background: var(--teal)"></span>
 <h3 style="margin: 0; font-size: 18px; line-height: 24px; font-weight: 600">Quiet in the system tray</h3>
 <p style="margin: 0; font-size: 14px; line-height: 22px; color: var(--mut)">Closing the window hides it to the tray so syncing carries on. Start with only the tray icon using <code style="font-family: 'Cascadia Mono', Consolas, Menlo, monospace; font-size: 13px">--tray</code>, or turn the behaviour off in Settings.</p>
 </div>
 
 <div style="flex: 1 1 320px; min-width: 0; background: var(--s000); border: 1px solid var(--bd); border-radius: 6px; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; gap: 8px">
-<span aria-hidden="true" style="width: 28px; height: 4px; border-radius: 2px; background: #ec4899"></span>
+<span aria-hidden="true" style="width: 28px; height: 4px; border-radius: 2px; background: var(--pink)"></span>
 <h3 style="margin: 0; font-size: 18px; line-height: 24px; font-weight: 600">Light, dark and cross-platform</h3>
 <p style="margin: 0; font-size: 14px; line-height: 22px; color: var(--mut)">One Avalonia codebase runs on Windows, macOS and Linux and follows the operating system's light or dark theme.</p>
 </div>
@@ -180,51 +180,51 @@ html{scroll-behavior:smooth}
 <div style="background: var(--s000); border: 1px solid var(--bd); border-radius: 6px; overflow: hidden">
 
 <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding: 16px 20px; border-bottom: 1px solid var(--bd)">
-<span style="flex: 1 1 200px; display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 14px; line-height: 20px"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 9999px; background: #3b82f6"></span>iCalendar feeds</span>
+<span style="flex: 1 1 200px; display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 14px; line-height: 20px"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 9999px; background: var(--blue)"></span>iCalendar feeds</span>
 <span style="flex: 1 1 360px; font-size: 14px; line-height: 20px; color: var(--mut)">Paste a public .ics URL. Conditional fetching and full recurrence expansion.</span>
-<span style="display: flex; align-items: center; gap: 6px; font-size: 12px; line-height: 16px; background: var(--s200); border-radius: 8px; padding: 4px 10px"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 9999px; background: #10b981"></span>Available</span>
+<span style="display: flex; align-items: center; gap: 6px; font-size: 12px; line-height: 16px; background: var(--s200); border-radius: 8px; padding: 4px 10px"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 9999px; background: var(--green)"></span>Available</span>
 </div>
 
 <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding: 16px 20px; border-bottom: 1px solid var(--bd)">
-<span style="flex: 1 1 200px; display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 14px; line-height: 20px"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 9999px; background: #8b5cf6"></span>CalDAV</span>
+<span style="flex: 1 1 200px; display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 14px; line-height: 20px"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 9999px; background: var(--purple)"></span>CalDAV</span>
 <span style="flex: 1 1 360px; font-size: 14px; line-height: 20px; color: var(--mut)">Calendar events with incremental sync. Checked by hand against Radicale; Nextcloud and hosted services still need verifying.</span>
-<span style="display: flex; align-items: center; gap: 6px; font-size: 12px; line-height: 16px; background: var(--s200); border-radius: 8px; padding: 4px 10px"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 9999px; background: #10b981"></span>Available</span>
+<span style="display: flex; align-items: center; gap: 6px; font-size: 12px; line-height: 16px; background: var(--s200); border-radius: 8px; padding: 4px 10px"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 9999px; background: var(--green)"></span>Available</span>
 </div>
 
 <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding: 16px 20px; border-bottom: 1px solid var(--bd)">
-<span style="flex: 1 1 200px; display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 14px; line-height: 20px"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 9999px; background: #ef4444"></span>Todoist</span>
+<span style="flex: 1 1 200px; display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 14px; line-height: 20px"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 9999px; background: var(--red)"></span>Todoist</span>
 <span style="flex: 1 1 360px; font-size: 14px; line-height: 20px; color: var(--mut)">Tasks, using a personal API token. Completing tasks is an early, opt-in preview of version 2 write support.</span>
-<span style="display: flex; align-items: center; gap: 6px; font-size: 12px; line-height: 16px; background: var(--s200); border-radius: 8px; padding: 4px 10px"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 9999px; background: #10b981"></span>Available</span>
+<span style="display: flex; align-items: center; gap: 6px; font-size: 12px; line-height: 16px; background: var(--s200); border-radius: 8px; padding: 4px 10px"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 9999px; background: var(--green)"></span>Available</span>
 </div>
 
 <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding: 16px 20px; border-bottom: 1px solid var(--bd)">
-<span style="flex: 1 1 200px; display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 14px; line-height: 20px"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 9999px; background: #f59e0b"></span>Google Calendar and Tasks</span>
+<span style="flex: 1 1 200px; display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 14px; line-height: 20px"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 9999px; background: var(--amber)"></span>Google Calendar and Tasks</span>
 <span style="flex: 1 1 360px; font-size: 14px; line-height: 20px; color: var(--mut)">Read-only, one sign-in for both through OAuth in your browser. For now you create your own OAuth client and paste its ID and secret; tried on a real account.</span>
-<span style="display: flex; align-items: center; gap: 6px; font-size: 12px; line-height: 16px; background: var(--s200); border-radius: 8px; padding: 4px 10px"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 9999px; background: #f59e0b"></span>Experimental</span>
+<span style="display: flex; align-items: center; gap: 6px; font-size: 12px; line-height: 16px; background: var(--s200); border-radius: 8px; padding: 4px 10px"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 9999px; background: var(--amber)"></span>Experimental</span>
 </div>
 
 <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding: 16px 20px; border-bottom: 1px solid var(--bd)">
-<span style="flex: 1 1 200px; display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 14px; line-height: 20px"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 9999px; background: #6b7280"></span>Jira</span>
+<span style="flex: 1 1 200px; display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 14px; line-height: 20px"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 9999px; background: var(--gray)"></span>Jira</span>
 <span style="flex: 1 1 360px; font-size: 14px; line-height: 20px; color: var(--mut)">Open issues assigned to you on Jira Cloud, with their due dates, using your email and an API token. Not yet tried on a live site.</span>
-<span style="display: flex; align-items: center; gap: 6px; font-size: 12px; line-height: 16px; background: var(--s200); border-radius: 8px; padding: 4px 10px"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 9999px; background: #f59e0b"></span>Experimental</span>
+<span style="display: flex; align-items: center; gap: 6px; font-size: 12px; line-height: 16px; background: var(--s200); border-radius: 8px; padding: 4px 10px"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 9999px; background: var(--amber)"></span>Experimental</span>
 </div>
 
 <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding: 16px 20px; border-bottom: 1px solid var(--bd)">
-<span style="flex: 1 1 200px; display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 14px; line-height: 20px"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 9999px; background: #6b7280"></span>GitHub</span>
+<span style="flex: 1 1 200px; display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 14px; line-height: 20px"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 9999px; background: var(--gray)"></span>GitHub</span>
 <span style="flex: 1 1 360px; font-size: 14px; line-height: 20px; color: var(--mut)">Issues and pull requests assigned to you or waiting for your review, using a personal access token. Not yet tried on a live account.</span>
-<span style="display: flex; align-items: center; gap: 6px; font-size: 12px; line-height: 16px; background: var(--s200); border-radius: 8px; padding: 4px 10px"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 9999px; background: #f59e0b"></span>Experimental</span>
+<span style="display: flex; align-items: center; gap: 6px; font-size: 12px; line-height: 16px; background: var(--s200); border-radius: 8px; padding: 4px 10px"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 9999px; background: var(--amber)"></span>Experimental</span>
 </div>
 
 <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding: 16px 20px; border-bottom: 1px solid var(--bd)">
-<span style="flex: 1 1 200px; display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 14px; line-height: 20px"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 9999px; background: #6b7280"></span>GitLab</span>
+<span style="flex: 1 1 200px; display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 14px; line-height: 20px"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 9999px; background: var(--gray)"></span>GitLab</span>
 <span style="flex: 1 1 360px; font-size: 14px; line-height: 20px; color: var(--mut)">Issues and merge requests assigned to you or waiting for your review, on gitlab.com or your own server, using a personal access token. Not yet tried on a live instance.</span>
-<span style="display: flex; align-items: center; gap: 6px; font-size: 12px; line-height: 16px; background: var(--s200); border-radius: 8px; padding: 4px 10px"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 9999px; background: #f59e0b"></span>Experimental</span>
+<span style="display: flex; align-items: center; gap: 6px; font-size: 12px; line-height: 16px; background: var(--s200); border-radius: 8px; padding: 4px 10px"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 9999px; background: var(--amber)"></span>Experimental</span>
 </div>
 
 <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding: 16px 20px">
-<span style="flex: 1 1 200px; display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 14px; line-height: 20px"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 9999px; background: #6b7280"></span>Outlook calendar and Microsoft To Do</span>
+<span style="flex: 1 1 200px; display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 14px; line-height: 20px"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 9999px; background: var(--gray)"></span>Outlook calendar and Microsoft To Do</span>
 <span style="flex: 1 1 360px; font-size: 14px; line-height: 20px; color: var(--mut)">Outlook calendar and To Do for personal Microsoft accounts through Microsoft Graph, one shared sign-in. You register a free app and paste its client ID; tried on a real account. Work accounts later.</span>
-<span style="display: flex; align-items: center; gap: 6px; font-size: 12px; line-height: 16px; background: var(--s200); border-radius: 8px; padding: 4px 10px"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 9999px; background: #f59e0b"></span>Experimental</span>
+<span style="display: flex; align-items: center; gap: 6px; font-size: 12px; line-height: 16px; background: var(--s200); border-radius: 8px; padding: 4px 10px"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 9999px; background: var(--amber)"></span>Experimental</span>
 </div>
 </div>
 </section>
@@ -270,7 +270,7 @@ html{scroll-behavior:smooth}
 <div style="display: flex; flex-wrap: wrap; gap: 16px">
 
 <div style="flex: 1 1 320px; min-width: 0; background: var(--s000); border: 1px solid var(--bd); border-radius: 6px; padding: 20px; box-sizing: border-box">
-<h3 style="margin: 0 0 12px; font-size: 16px; line-height: 22px; font-weight: 600; display: flex; align-items: center; gap: 8px"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 9999px; background: #10b981"></span>Version 1: read-only overview</h3>
+<h3 style="margin: 0 0 12px; font-size: 16px; line-height: 22px; font-weight: 600; display: flex; align-items: center; gap: 8px"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 9999px; background: var(--green)"></span>Version 1: read-only overview</h3>
 <ul style="margin: 0; padding: 0 0 0 20px; font-size: 14px; line-height: 24px">
 <li>General framework: model, providers, local storage, sync (built)</li>
 <li>Todoist, Microsoft Outlook and To Do, Google Calendar and Tasks (built)</li>
@@ -282,7 +282,7 @@ html{scroll-behavior:smooth}
 </div>
 
 <div style="flex: 1 1 320px; min-width: 0; background: var(--s000); border: 1px solid var(--bd); border-radius: 6px; padding: 20px; box-sizing: border-box">
-<h3 style="margin: 0 0 12px; font-size: 16px; line-height: 22px; font-weight: 600; display: flex; align-items: center; gap: 8px"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 9999px; background: #f59e0b"></span>Version 2</h3>
+<h3 style="margin: 0 0 12px; font-size: 16px; line-height: 22px; font-weight: 600; display: flex; align-items: center; gap: 8px"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 9999px; background: var(--amber)"></span>Version 2</h3>
 <ul style="margin: 0; padding: 0 0 0 20px; font-size: 14px; line-height: 24px">
 <li>More services (to be chosen)</li>
 <li>Write support: complete tasks, change task dates, reschedule events</li>
@@ -291,7 +291,7 @@ html{scroll-behavior:smooth}
 </div>
 
 <div style="flex: 1 1 320px; min-width: 0; background: var(--s000); border: 1px solid var(--bd); border-radius: 6px; padding: 20px; box-sizing: border-box">
-<h3 style="margin: 0 0 12px; font-size: 16px; line-height: 22px; font-weight: 600; display: flex; align-items: center; gap: 8px"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 9999px; background: #8b5cf6"></span>Further research</h3>
+<h3 style="margin: 0 0 12px; font-size: 16px; line-height: 22px; font-weight: 600; display: flex; align-items: center; gap: 8px"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 9999px; background: var(--purple)"></span>Further research</h3>
 <ul style="margin: 0; padding: 0 0 0 20px; font-size: 14px; line-height: 24px">
 <li>Runtime plug-in support</li>
 <li>MCP support</li>
