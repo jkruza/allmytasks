@@ -26,6 +26,7 @@ fix whichever is wrong in the same pull request.
 | [toolbar.md](toolbar.md) | Main toolbar look (title and segmented view switcher) and the All tasks filter bar |
 | [details-pane.md](details-pane.md) | Right-hand details pane and the calendar entry details shown in it |
 | [app-icon.md](app-icon.md) | The three-lines logo as window, executable and tray icon, and how the files are generated |
+| [design-system.md](design-system.md) | Proposal: colour and type tokens, mapping to Avalonia FluentTheme and the `seg` / `tool` / `chip` classes, light and dark, and a cleaner look for the calendar and task views |
 | [system-tray.md](system-tray.md) | Tray icon and menu, `--tray` start option, close-to-tray, Linux StatusNotifier caveat |
 | [launch-at-login.md](launch-at-login.md) | Settings option to start at login on Windows, Linux and macOS, optionally tray-only |
 | [complete-tasks.md](complete-tasks.md) | Complete and reopen Todoist tasks from the app: write interface, pending-changes queue, opt-in per source |

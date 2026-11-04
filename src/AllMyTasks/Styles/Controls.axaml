@@ -1,0 +1,38 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <!-- Text roles. Use these classes instead of hand-set FontSize and Opacity. -->
+  <Style Selector="TextBlock.meta">
+    <Setter Property="FontSize" Value="{DynamicResource AmtFontSizeMeta}" />
+    <Setter Property="Foreground" Value="{DynamicResource AmtMutedBrush}" />
+  </Style>
+  <Style Selector="TextBlock.small">
+    <Setter Property="FontSize" Value="{DynamicResource AmtFontSizeSmall}" />
+    <Setter Property="Foreground" Value="{DynamicResource AmtMutedBrush}" />
+  </Style>
+  <Style Selector="TextBlock.title">
+    <Setter Property="FontSize" Value="{DynamicResource AmtFontSizeTitle}" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+  <Style Selector="TextBlock.heading">
+    <Setter Property="FontSize" Value="{DynamicResource AmtFontSizeHeading}" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+  <Style Selector="TextBlock.overdue">
+    <Setter Property="Foreground" Value="{DynamicResource AmtOverdueBrush}" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+
+  <!-- Surfaces. -->
+  <Style Selector="Border.card">
+    <Setter Property="Background" Value="{DynamicResource AmtSurfaceBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource AmtBorderBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="{DynamicResource AmtRadiusCard}" />
+    <Setter Property="Padding" Value="12" />
+  </Style>
+  <Style Selector="Border.badge">
+    <Setter Property="Background" Value="{DynamicResource AmtRaisedBrush}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource AmtRadiusPill}" />
+    <Setter Property="Padding" Value="8,1" />
+  </Style>
+</Styles>
