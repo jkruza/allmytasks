@@ -63,7 +63,8 @@ under an `Amt` prefix, and alias Fluent's accent so Fluent controls follow ours:
 | --- | --- | --- |
 | `AmtCanvasBrush`, `AmtSurfaceBrush`, `AmtRaisedBrush`, `AmtBorderBrush` | table above | New |
 | `AmtInkBrush`, `AmtMutedBrush` | table above | Replace `SystemControlForegroundBaseHighBrush` / `...MediumBrush` in our views |
-| `AmtAccentBrush`, `AmtDoneBrush`, `AmtSoonBrush`, `AmtOverdueBrush` | blue, green, amber, red | |
+| `AmtAccentBrush`, `AmtDoneBrush`, `AmtSoonBrush`, `AmtDangerBrush` | blue, green, amber, red | Dots and bars; `AmtDangerBrush` is `#ef4444` |
+| `AmtOverdueBrush`, `AmtWarningBrush` | red / amber, darker in light | Text colours that keep 4.5:1; `AmtAccentTintBrush` is the accent at 15 % |
 | `SystemAccentColor` | `#3b82f6` | Set on `FluentTheme.Palettes` (`Light`/`Dark` `Accent`) so default controls follow |
 | `AmtFontSizeMeta/Small/Body/Title/Heading/Display` | 11 / 12 / 13 / 15 / 20 / 28 | `x:Double` |
 | `AmtSpace1..6`, `AmtRadiusChip/Card/Pill` | 4..24, 3 / 6 / 12 | `x:Double` and `CornerRadius` |
@@ -110,12 +111,11 @@ radius 2, `#3b82f6`, `#10b981`, `#f59e0b`. `scripts/make-icons.py` remains the g
 ## Accessibility
 
 Text contrast at least 4.5:1 on its surface in both variants (`mut` on `s000` is 6.9:1 light, 6.6:1 dark). Status never relies on
-colour alone: overdue adds text ("Overdue 2d"), tasks add a glyph. High contrast themes fall back to Fluent's own
-`SystemControl*` brushes because the `Amt*` keys also define a `HighContrast` dictionary pointing at them.
+colour alone: overdue adds text ("Overdue 2d"), tasks add a glyph. Avalonia 12 has no high-contrast theme variant, so the `Amt*` keys define Light and Dark only; a high-contrast mapping stays open until Avalonia exposes one.
 
 ## Rollout
 
-1. Add `Styles/Tokens.axaml` and `Styles/Controls.axaml` (done, with `EntryRow` as the first user: `small`, `meta`, `overdue`, `badge`). Still to do: move `seg`, `tool`, `chip` onto the tokens and set the Fluent accent.
+1. Add `Styles/Tokens.axaml` and `Styles/Controls.axaml`, move `seg`, `tool`, `chip` onto the tokens, set the Fluent accent, migrate `EntryRow` and `EntryChip` ([#97](https://github.com/jkruza/allmytasks/issues/97), done). Shared classes: text roles `meta small title heading display section empty overdue error warning mono`; surfaces `card badge hairline-bottom hairline-left selected`; identity `dot bar chip-box`.
 2. Replace literal font sizes and brush lookups in views with tokens, one view per pull request.
 3. Apply the per-view changes above in this order: Day, Upcoming, Week, Month, All tasks / Inbox.
 4. Keep `site/index.html` variables in sync with the token table (same names where possible).
