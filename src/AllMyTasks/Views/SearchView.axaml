@@ -13,52 +13,46 @@
         <Button Grid.Column="1" Classes="tool" Content="Close" Command="{Binding CloseCommand}" ToolTip.Tip="Close search (Esc)" />
       </Grid>
       <StackPanel Orientation="Horizontal" Spacing="12">
-        <TextBlock Text="{Binding Summary}" Opacity="0.7" />
-        <TextBlock Text="{Binding HiddenText}" IsVisible="{Binding HasHidden}" Opacity="0.7" />
+        <TextBlock Classes="small" Text="{Binding Summary}" />
+        <TextBlock Classes="small" Text="{Binding HiddenText}" IsVisible="{Binding HasHidden}" />
       </StackPanel>
     </StackPanel>
     <ListBox ItemsSource="{Binding Items}" SelectionMode="Single">
       <ListBox.DataTemplates>
         <DataTemplate DataType="vm:TaskGroupHeader">
           <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,10,0,2">
-            <TextBlock Text="{Binding Text}" FontSize="15" FontWeight="SemiBold" />
-            <TextBlock Text="{Binding CountText}" Opacity="0.6" VerticalAlignment="Center" />
+            <TextBlock Classes="section" Text="{Binding Text}" />
+            <TextBlock Classes="meta" Text="{Binding CountText}" VerticalAlignment="Center" />
           </StackPanel>
         </DataTemplate>
         <DataTemplate DataType="vm:SearchEventItem">
-          <Grid ColumnDefinitions="4,200,*,Auto,Auto" ColumnSpacing="10" Margin="0,3" Opacity="{Binding Opacity}"
+          <Grid ColumnDefinitions="200,Auto,*,Auto,Auto" ColumnSpacing="10" Margin="0,4" Opacity="{Binding Opacity}"
                 AutomationProperties.Name="{Binding Spoken}" Background="Transparent" c:EntryActivation.Enabled="True">
-            <Border Grid.Column="0" Background="{Binding Accent}" CornerRadius="2" />
-            <TextBlock Grid.Column="1" Text="{Binding WhenText}" VerticalAlignment="Center" Opacity="0.8" />
+            <TextBlock Grid.Column="0" Classes="small" Text="{Binding WhenText}" VerticalAlignment="Center" />
+            <Border Grid.Column="1" Classes="dot" Background="{Binding Accent}" />
             <StackPanel Grid.Column="2" VerticalAlignment="Center">
-              <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
-              <TextBlock Text="{Binding Detail}" IsVisible="{Binding HasDetail}" Opacity="0.7" FontSize="12" TextTrimming="CharacterEllipsis" />
+              <TextBlock Classes="title" Text="{Binding Title}" TextTrimming="CharacterEllipsis" />
+              <TextBlock Classes="small" Text="{Binding Detail}" IsVisible="{Binding HasDetail}" TextTrimming="CharacterEllipsis" />
             </StackPanel>
-            <Border Grid.Column="3" Padding="6,1" CornerRadius="8" Background="{DynamicResource SystemControlBackgroundBaseLowBrush}" VerticalAlignment="Center">
-              <TextBlock Text="{Binding CollectionName}" FontSize="11" />
+            <Border Grid.Column="3" Classes="badge" VerticalAlignment="Center">
+              <TextBlock Classes="meta" Text="{Binding CollectionName}" />
             </Border>
             <Button Grid.Column="4" Classes="tool" Content="Show in calendar" Command="{Binding ShowInCalendarCommand}" VerticalAlignment="Center" />
           </Grid>
         </DataTemplate>
         <DataTemplate DataType="vm:SearchTaskItem">
-          <Grid ColumnDefinitions="Auto,4,*,Auto,Auto" ColumnSpacing="10" Margin="0,3" Opacity="{Binding Opacity}"
+          <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto" ColumnSpacing="10" Margin="0,4" Opacity="{Binding Opacity}"
                 AutomationProperties.Name="{Binding Spoken}" Background="Transparent" c:EntryActivation.Enabled="True">
             <TextBlock Grid.Column="0" Text="{Binding Glyph}" VerticalAlignment="Center" />
-            <Border Grid.Column="1" Background="{Binding Accent}" CornerRadius="2" />
+            <Border Grid.Column="1" Classes="dot" Background="{Binding Accent}" />
             <TextBlock Grid.Column="2" Text="{Binding Title}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
-            <TextBlock Grid.Column="3" Text="{Binding DueText}" VerticalAlignment="Center" Classes.overdue="{Binding IsOverdue}" />
-            <Border Grid.Column="4" Padding="6,1" CornerRadius="8" Background="{DynamicResource SystemControlBackgroundBaseLowBrush}" VerticalAlignment="Center">
-              <TextBlock Text="{Binding CollectionName}" FontSize="11" />
+            <TextBlock Grid.Column="3" Classes="small" Text="{Binding DueText}" VerticalAlignment="Center" Classes.overdue="{Binding IsOverdue}" />
+            <Border Grid.Column="4" Classes="badge" VerticalAlignment="Center">
+              <TextBlock Classes="meta" Text="{Binding CollectionName}" />
             </Border>
           </Grid>
         </DataTemplate>
       </ListBox.DataTemplates>
-      <ListBox.Styles>
-        <Style Selector="TextBlock.overdue">
-          <Setter Property="Foreground" Value="IndianRed" />
-          <Setter Property="FontWeight" Value="SemiBold" />
-        </Style>
-      </ListBox.Styles>
     </ListBox>
   </DockPanel>
 </UserControl>
