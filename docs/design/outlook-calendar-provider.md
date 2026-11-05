@@ -8,7 +8,7 @@ API. Project: `AllMyTasks.Providers.Microsoft`, shared with the Microsoft To Do 
 
 Status: implemented for personal accounts. Read-only: no event is ever created, changed, answered or
 deleted, and `CollectionInfo.IsReadOnly = true`. **Work and school (Entra ID) accounts are not supported
-yet**; see [Work and school accounts](#work-and-school-accounts-not-in-v1) for why and what it would take.
+yet**; see [Work and school accounts](#work-and-school-accounts) and [microsoft-work-accounts.md](microsoft-work-accounts.md) for how they are added.
 The code has been tested against recorded-shape fixtures only; it has not yet been run against a live
 account (see [Testing](#testing)).
 
@@ -25,7 +25,7 @@ In v1:
 
 Not in v1 (decisions, not oversights):
 
-- Work and school accounts (see below).
+- Work and school accounts in this first implementation (designed in [microsoft-work-accounts.md](microsoft-work-accounts.md)).
 - A project-owned application registration shipped in the source. The client id is configuration; see
   [Application (client) id](#application-client-id).
 - Writing, RSVP, creating meetings. See [providers.md](providers.md#write-support-later).
@@ -183,20 +183,15 @@ need five request shapes). Models are small DTOs for only the fields we read, pa
   duration. Never log query strings (they carry `$deltatoken`/`$skiptoken` and date ranges), headers,
   bodies or the account name.
 
-## Work and school accounts (not in v1)
+## Work and school accounts
 
-Dropped for now (maintainer decision, 2026-10-26). The sync code would be identical; what is missing is
-everything around it, and none of it can be tested without a work tenant:
+Version 1, designed in [microsoft-work-accounts.md](microsoft-work-accounts.md) ([#118](https://github.com/jkruza/allmytasks/issues/118)); not
+implemented yet. The sync code stays the same. What it adds is a configurable sign-in authority, an app registration for
+any directory plus personal accounts (ideally publisher verified), error mapping for consent and conditional access, and
+documentation for tenant administrators. The main risk is that Microsoft's default consent policy requires an administrator
+to approve `Calendars.Read` and `Tasks.Read`; the design covers messages, an admin-consent link, a guide and two fallbacks.
 
-- The app registration must be multi-tenant and, to avoid "needs admin approval" in many tenants, publisher
-  verified. That is a manual maintainer task.
-- Failure modes needing their own handling and messages: admin consent required (`AADSTS65001`, `AADSTS90094`),
-  conditional access and compliant-device policies, mailboxes that are on-premises or unlicensed, shared
-  calendars exposing only free/busy.
-- The `common`/`organizations` authority and a tenant-aware account label.
-
-Meanwhile a work calendar can be added through its published `.ics` link with the `ical` provider, if the
-tenant allows publishing.
+Meanwhile a work calendar can be added through its published `.ics` link with the `ical` provider, if the tenant allows publishing.
 
 ## Collections
 

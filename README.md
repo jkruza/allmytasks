@@ -32,7 +32,7 @@ source, register a free app once (a few minutes, no secret, no verification for 
 Application (client) ID into the source form; or build with `AMT_MICROSOFT_CLIENT_ID` set to embed it. Steps:
 [Register an app](docs/oauth-setup.md#microsoft-register-an-app-in-microsoft-entra). After you save the source, a
 browser window opens to sign in; only a refresh token is kept, in your system keyring. Work and school accounts
-are not supported yet. A calendar-only alternative that needs no registration is the Outlook.com *published
+are not supported yet (planned for version 1, [design](docs/design/microsoft-work-accounts.md)). A calendar-only alternative that needs no registration is the Outlook.com *published
 calendar* link, added as an iCalendar feed.
 
 ### Google accounts

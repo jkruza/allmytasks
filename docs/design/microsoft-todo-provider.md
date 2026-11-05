@@ -6,8 +6,8 @@ A task provider for [Microsoft To Do](https://learn.microsoft.com/en-us/graph/to
 for **personal Microsoft accounts** (outlook.com, hotmail, live), through the Microsoft Graph To Do API.
 
 Status: implemented for personal accounts, read-only. **Work and school accounts are not supported yet**; the
-reasons and what they need are in
-[outlook-calendar-provider.md](outlook-calendar-provider.md#work-and-school-accounts-not-in-v1). The code is covered by fixture tests and has been tried on a real
+design for adding them (version 1, [#118](https://github.com/jkruza/allmytasks/issues/118)) is in
+[microsoft-work-accounts.md](microsoft-work-accounts.md). The code is covered by fixture tests and has been tried on a real
 account (see [Testing](#testing)).
 
 It lives in the shared Microsoft project, `AllMyTasks.Providers.Microsoft`, next to the
