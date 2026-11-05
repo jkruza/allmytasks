@@ -9,7 +9,6 @@
       <Color x:Key="AmtBorderColor">#D6D6D6</Color>
       <Color x:Key="AmtInkColor">#1B1B1B</Color>
       <Color x:Key="AmtMutedColor">#5C5C5C</Color>
-      <Color x:Key="AmtAccentColor">#3B82F6</Color>
       <Color x:Key="AmtOverdueColor">#C62828</Color>
       <Color x:Key="AmtWarningColor">#B45309</Color>
     </ResourceDictionary>
@@ -20,11 +19,14 @@
       <Color x:Key="AmtBorderColor">#454545</Color>
       <Color x:Key="AmtInkColor">#F3F3F3</Color>
       <Color x:Key="AmtMutedColor">#B3B3B3</Color>
-      <Color x:Key="AmtAccentColor">#3B82F6</Color>
       <Color x:Key="AmtOverdueColor">#F07178</Color>
       <Color x:Key="AmtWarningColor">#F59E0B</Color>
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
+
+  <!-- The accent is not themed: AccentService swaps it at runtime (Settings, Appearance). AmtOnAccent is text on it. -->
+  <Color x:Key="AmtAccentColor">#3B82F6</Color>
+  <Color x:Key="AmtOnAccentColor">#FFFFFF</Color>
 
   <SolidColorBrush x:Key="AmtCanvasBrush" Color="{DynamicResource AmtCanvasColor}" />
   <SolidColorBrush x:Key="AmtSurfaceBrush" Color="{DynamicResource AmtSurfaceColor}" />
@@ -33,6 +35,7 @@
   <SolidColorBrush x:Key="AmtInkBrush" Color="{DynamicResource AmtInkColor}" />
   <SolidColorBrush x:Key="AmtMutedBrush" Color="{DynamicResource AmtMutedColor}" />
   <SolidColorBrush x:Key="AmtAccentBrush" Color="{DynamicResource AmtAccentColor}" />
+  <SolidColorBrush x:Key="AmtOnAccentBrush" Color="{DynamicResource AmtOnAccentColor}" />
   <SolidColorBrush x:Key="AmtOverdueBrush" Color="{DynamicResource AmtOverdueColor}" />
   <SolidColorBrush x:Key="AmtWarningBrush" Color="{DynamicResource AmtWarningColor}" />
 

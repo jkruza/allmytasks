@@ -119,7 +119,7 @@ colour alone: overdue adds text ("Overdue 2d"), tasks add a glyph. Avalonia 12 h
 2. Replace literal font sizes and brush lookups in views with tokens, one view per pull request.
 3. Apply the per-view changes above in this order: Day ([#98](https://github.com/jkruza/allmytasks/issues/98), done), Upcoming ([#99](https://github.com/jkruza/allmytasks/issues/99), done), Week ([#100](https://github.com/jkruza/allmytasks/issues/100), done), Month ([#101](https://github.com/jkruza/allmytasks/issues/101), done), All tasks, Inbox and Search ([#102](https://github.com/jkruza/allmytasks/issues/102), done), then the window chrome, details panes and dialogs ([#103](https://github.com/jkruza/allmytasks/issues/103), done).
 4. Keep `site/index.html` variables in sync with the token table (same names where possible).
-5. Add the accent setting: a Settings choice (Blue, OS accent, palette colours), applied by swapping `AmtAccentColor` and the Fluent accent at runtime.
+5. Add the accent setting ([#104](https://github.com/jkruza/allmytasks/issues/104), done): a Settings choice (Blue, OS accent, palette colours), applied by swapping `AmtAccentColor` and the Fluent accent at runtime.
 
 ## Non-goals
 
@@ -132,6 +132,6 @@ icon font or illustration work, or any change to data, providers or Core.
   other colours of the collection palette. `AmtAccentBrush` and Fluent's accent follow the choice, in light and dark. The OS
   option reads the system accent where Avalonia exposes it and falls back to Blue where it does not (some Linux desktops). The
   setting is stored with the other settings ([settings.md](settings.md)). Collection colours are unaffected, and overdue
-  stays red whatever the accent. Implementing it is rollout step 5.
+  stays red whatever the accent. Implemented in rollout step 5: `AccentColors` (Core), `AccentService` (app) and an *Appearance* section in Settings.
 - **Dense lists show the collection colour as a dot**, 8 px, before the title, in All tasks and Inbox. Calendar chips keep the
   3 px left bar, because there it also separates adjacent events.

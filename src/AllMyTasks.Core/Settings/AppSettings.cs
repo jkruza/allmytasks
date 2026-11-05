@@ -11,6 +11,9 @@ public sealed record AppSettings
 
     public WeekStartSetting WeekStart { get; init; } = WeekStartSetting.System;
 
+    /// <summary>Id of the app accent, one of <see cref="AccentColors.Options"/>.</summary>
+    public string Accent { get; init; } = AccentColors.Blue;
+
     /// <summary>Closing the main window hides it to the system tray instead of quitting.</summary>
     public bool CloseToTray { get; init; } = true;
 
@@ -68,6 +71,9 @@ public sealed record AppSettings
 
             result = result with
             {
+                Accent = root.TryGetProperty("accent", out var accent) && accent.ValueKind == JsonValueKind.String
+                    ? AccentColors.Normalize(accent.GetString())
+                    : result.Accent,
                 LaunchAtLogin = ReadBool(root, "launchAtLogin", result.LaunchAtLogin),
                 StartInTrayAtLogin = ReadBool(root, "startInTrayAtLogin", result.StartInTrayAtLogin),
                 RemindersEnabled = ReadBool(root, "remindersEnabled", result.RemindersEnabled),
@@ -89,6 +95,7 @@ public sealed record AppSettings
         new Dictionary<string, object>
         {
             ["weekStart"] = WeekStart.ToString(),
+            ["accent"] = AccentColors.Normalize(Accent),
             ["closeToTray"] = CloseToTray,
             ["launchAtLogin"] = LaunchAtLogin,
             ["startInTrayAtLogin"] = StartInTrayAtLogin,
