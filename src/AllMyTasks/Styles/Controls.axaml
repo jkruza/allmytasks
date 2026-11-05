@@ -110,6 +110,35 @@
     <Setter Property="FontSize" Value="{DynamicResource AmtFontSizeSmall}" />
   </Style>
 
+  <!-- Calendar grids: surface cells with hairlines; today is tinted and its number sits in a filled accent circle. -->
+  <Style Selector="Border.cell">
+    <Setter Property="Background" Value="{DynamicResource AmtSurfaceBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource AmtBorderBrush}" />
+  </Style>
+  <Style Selector="Border.cell.today">
+    <Setter Property="Background" Value="{DynamicResource AmtRaisedBrush}" />
+  </Style>
+  <Style Selector="Border.cell.recessed">
+    <Setter Property="Background" Value="{DynamicResource AmtCanvasBrush}" />
+  </Style>
+  <Style Selector="Border.daynum">
+    <Setter Property="MinWidth" Value="24" />
+    <Setter Property="Height" Value="24" />
+    <Setter Property="CornerRadius" Value="12" />
+    <Setter Property="Padding" Value="4,0" />
+  </Style>
+  <Style Selector="Border.daynum.today">
+    <Setter Property="Background" Value="{DynamicResource AmtAccentBrush}" />
+  </Style>
+  <Style Selector="Border.daynum.today > TextBlock">
+    <Setter Property="Foreground" Value="White" />
+  </Style>
+  <Style Selector="Border.daynum > TextBlock">
+    <Setter Property="HorizontalAlignment" Value="Center" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+
   <!-- Segmented view switcher and quiet toolbar buttons. -->
   <Style Selector="ToggleButton.seg">
     <Setter Property="Background" Value="Transparent" />
