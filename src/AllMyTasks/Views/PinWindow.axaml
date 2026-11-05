@@ -4,11 +4,11 @@
         Title="All My Tasks" Width="460" SizeToContent="Height" CanResize="False"
         WindowStartupLocation="CenterScreen">
   <StackPanel Margin="20" Spacing="12">
-    <TextBlock x:Name="Heading" FontSize="18" FontWeight="SemiBold" TextWrapping="Wrap" />
+    <TextBlock x:Name="Heading" Classes="title" TextWrapping="Wrap" />
     <TextBlock x:Name="Body" TextWrapping="Wrap" />
     <TextBox x:Name="Pin" PasswordChar="●" PlaceholderText="PIN" />
     <TextBox x:Name="Confirm" PasswordChar="●" PlaceholderText="Repeat PIN" IsVisible="False" />
-    <TextBlock x:Name="Error" Foreground="IndianRed" TextWrapping="Wrap" IsVisible="False" />
+    <TextBlock x:Name="Error" Classes="error" IsVisible="False" />
     <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
       <Button Content="Cancel" Click="OnCancel" />
       <Button x:Name="Ok" Content="OK" IsDefault="True" Click="OnOk" />
