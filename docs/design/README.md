@@ -21,7 +21,7 @@ fix whichever is wrong in the same pull request.
 | [microsoft-todo-provider.md](microsoft-todo-provider.md) | Microsoft To Do tasks via Microsoft Graph, personal accounts, read-only |
 | [todoist-provider.md](todoist-provider.md) | Todoist task provider: API token auth, Sync API delta, mapping, read-only |
 | [outlook-calendar-provider.md](outlook-calendar-provider.md) | Outlook calendar via Microsoft Graph (personal accounts), and the Microsoft sign-in and client id shared with To Do |
-| [microsoft-work-accounts.md](microsoft-work-accounts.md) | Version 1 design: Microsoft work and school accounts, sign-in authority, tenant admin consent, fallbacks, failure modes, tests |
+| [microsoft-work-accounts.md](microsoft-work-accounts.md) | Research design: Microsoft work and school accounts, sign-in authority, tenant admin consent, fallbacks, failure modes, tests |
 | [oauth-client-configuration.md](oauth-client-configuration.md) | How Microsoft and Google client IDs reach a build (release secrets), what the app does without them, Google revoke on removal; user setup steps are in [../oauth-setup.md](../oauth-setup.md) |
 | [views.md](views.md) | Day agenda, week, month and upcoming views and the Core logic behind them |
 | [toolbar.md](toolbar.md) | Main toolbar look (title and segmented view switcher) and the All tasks filter bar |

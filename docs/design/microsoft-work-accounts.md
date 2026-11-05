@@ -1,8 +1,8 @@
 # Microsoft work and school accounts
 
-Tracking issue: [#118](https://github.com/jkruza/allmytasks/issues/118). Version 1.
+Tracking issue: [#118](https://github.com/jkruza/allmytasks/issues/118). Research item, not scheduled for a version (moved from version 1 by the maintainer, 2026-11-05).
 
-Status: design only. Nothing here is implemented, and none of it has been tried against a work tenant.
+Status: design only, a research item (label `research`, no milestone) that is not scheduled for any version. Nothing here is implemented, and none of it has been tried against a work tenant.
 
 The Microsoft source (kind `microsoft`: Outlook calendar and Microsoft To Do) signs in **personal accounts only**
 today. This doc says what it takes to also sign in **work or school accounts** (Microsoft Entra ID, Microsoft 365):
@@ -25,7 +25,7 @@ section "Work and school accounts (not in v1)" in the first of those; that secti
 
 ## Scope
 
-In v1 of this feature:
+If and when this is built:
 
 - Work or school accounts in the existing `microsoft` source, for Outlook calendar and To Do, read-only.
 - Personal accounts keep working, with no migration. One shared project app registration serves both.
@@ -103,7 +103,7 @@ successful sign-in the source reads `GET /me?$select=userPrincipalName,mail` and
 - It is stored with the source, deleted with the source, and shown only in the Sources list and the source editor.
 - This resolves the "account name is not shown" known limit for all Microsoft sources, not only work ones.
 
-Whether to also show the tenant name (`GET /organization`) is not needed for v1; the sign-in name's domain is enough.
+Whether to also show the tenant name (`GET /organization`) is not needed in a first version; the sign-in name's domain is enough.
 
 ### Scopes (and why we do not ask for less)
 
@@ -276,7 +276,7 @@ source into "needs attention" until the user edits and saves it. See [Known limi
 ## Data from work calendars and tasks
 
 - **Sensitivity.** Events marked Private/Confidential carry `sensitivity`. For the signed-in user's own calendar Graph
-  returns the full event, so the app shows what the user can already see in Outlook. No special handling for v1;
+  returns the full event, so the app shows what the user can already see in Outlook. No special handling at first;
   the model has no sensitivity field, so nothing is hidden or highlighted.
 - **Teams meetings.** `onlineMeeting.joinUrl` and `onlineMeetingProvider` are already mapped to `MeetingUrl`
   ([meeting-url-and-attendees.md](meeting-url-and-attendees.md)). Work calendars are where this matters most; the

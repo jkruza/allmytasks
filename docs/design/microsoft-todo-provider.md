@@ -6,7 +6,7 @@ A task provider for [Microsoft To Do](https://learn.microsoft.com/en-us/graph/to
 for **personal Microsoft accounts** (outlook.com, hotmail, live), through the Microsoft Graph To Do API.
 
 Status: implemented for personal accounts, read-only. **Work and school accounts are not supported yet**; the
-design for adding them (version 1, [#118](https://github.com/jkruza/allmytasks/issues/118)) is in
+design for adding them (research item, [#118](https://github.com/jkruza/allmytasks/issues/118)) is in
 [microsoft-work-accounts.md](microsoft-work-accounts.md). The code is covered by fixture tests and has been tried on a real
 account (see [Testing](#testing)).
 

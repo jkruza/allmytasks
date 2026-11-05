@@ -185,7 +185,7 @@ need five request shapes). Models are small DTOs for only the fields we read, pa
 
 ## Work and school accounts
 
-Version 1, designed in [microsoft-work-accounts.md](microsoft-work-accounts.md) ([#118](https://github.com/jkruza/allmytasks/issues/118)); not
+Research item, designed in [microsoft-work-accounts.md](microsoft-work-accounts.md) ([#118](https://github.com/jkruza/allmytasks/issues/118)); not
 implemented yet. The sync code stays the same. What it adds is a configurable sign-in authority, an app registration for
 any directory plus personal accounts (ideally publisher verified), error mapping for consent and conditional access, and
 documentation for tenant administrators. The main risk is that Microsoft's default consent policy requires an administrator
