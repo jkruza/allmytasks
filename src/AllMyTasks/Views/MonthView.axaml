@@ -12,7 +12,7 @@
       </ItemsControl.ItemsPanel>
       <ItemsControl.ItemTemplate>
         <DataTemplate x:DataType="x:String">
-          <TextBlock Text="{Binding}" HorizontalAlignment="Center" FontWeight="SemiBold" Margin="0,4" />
+          <TextBlock Classes="section" Text="{Binding}" HorizontalAlignment="Center" Margin="0,4" />
         </DataTemplate>
       </ItemsControl.ItemTemplate>
     </ItemsControl>
@@ -29,15 +29,15 @@
               </ItemsControl.ItemsPanel>
               <ItemsControl.ItemTemplate>
                 <DataTemplate x:DataType="vm:MonthCellViewModel">
-                  <Border BorderThickness="1" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" Padding="2"
+                  <Border Classes="cell" Classes.today="{Binding IsToday}" Classes.recessed="{Binding IsRecessed}" BorderThickness="1" Padding="2"
                           Opacity="{Binding Opacity}">
                     <DockPanel>
                       <Button DockPanel.Dock="Top" Command="{Binding OpenDayCommand}" Padding="4,0" Background="Transparent" BorderThickness="0"
                               HorizontalAlignment="Left" AutomationProperties.Name="Open day">
-                        <TextBlock Text="{Binding DayNumber}" FontWeight="SemiBold" />
+                        <Border Classes="daynum" Classes.today="{Binding IsToday}"><TextBlock Text="{Binding DayNumber}" /></Border>
                       </Button>
                       <Button DockPanel.Dock="Bottom" Command="{Binding OpenDayCommand}" Content="{Binding MoreText}" IsVisible="{Binding HasMore}"
-                              Padding="4,0" Background="Transparent" BorderThickness="0" FontSize="11" />
+                              Classes="tool" Padding="4,0" FontSize="{DynamicResource AmtFontSizeMeta}" />
                       <ItemsControl ItemsSource="{Binding Items}" Margin="{Binding ItemsMargin}">
                         <ItemsControl.ItemTemplate>
                           <DataTemplate x:DataType="vm:EntryItem">
@@ -57,9 +57,9 @@
               </ItemsControl.ItemsPanel>
               <ItemsControl.ItemTemplate>
                 <DataTemplate x:DataType="vm:SpanBarItem">
-                  <Border Classes="chip-box" Background="{Binding ChipBackground}" BorderBrush="{Binding Accent}" ToolTip.Tip="{Binding Spoken}"
+                  <Border Classes="chip-box" Background="{Binding ChipBackground}" BorderBrush="{Binding Accent}" Padding="4,0" ToolTip.Tip="{Binding Spoken}"
                           AutomationProperties.Name="{Binding Spoken}" c:EntryActivation.Enabled="True">
-                    <TextBlock Text="{Binding BarText}" FontSize="12" TextTrimming="CharacterEllipsis" />
+                    <TextBlock Text="{Binding BarText}" TextTrimming="CharacterEllipsis" />
                   </Border>
                 </DataTemplate>
               </ItemsControl.ItemTemplate>

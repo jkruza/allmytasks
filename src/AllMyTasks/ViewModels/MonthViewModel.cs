@@ -32,6 +32,10 @@ public sealed class MonthCellViewModel
 
     public bool IsToday { get; }
 
+    public bool IsWeekend => Date.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday;
+
+    public bool IsRecessed => IsWeekend && !IsToday;
+
     public IReadOnlyList<EntryItem> Items { get; }
 
     public int Hidden { get; }
