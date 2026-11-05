@@ -2,7 +2,7 @@
 
 Project `AllMyTasks.Providers.GitHub`, source kind `github`. Implements `ITaskSource` only. Tracking issue:
 [#72](https://github.com/jkruza/allmytasks/issues/72). **Status: implemented, read-only.** The API details come
-from GitHub's public documentation and have not been tried against a live account (see [Unverified](#unverified)).
+from GitHub's public documentation and have since been tried against a live account (2026-11-05); the points under [Unverified](#unverified) were not individually recorded.
 Where the code differs from the design, [Implementation notes](#implementation-notes) says so.
 
 ## Scope
@@ -89,8 +89,8 @@ search result carries `draft` and `labels`, and that a rate-limit 403 carries `R
 
 ## Implementation notes
 
-What was built, and where it differs from the design above. No live GitHub account or token was available, so the
-points under [Unverified](#unverified) and marked *assumed* are untested against the real service.
+What was built, and where it differs from the design above. No live GitHub account was available when this was written; the maintainer has since used the provider on a live
+account (2026-11-05), without recording each point under [Unverified](#unverified).
 
 - **Sources and fields.** Kind `github`, one field: the personal access token (a password field, kept in the secret
   store only), plus the usual refresh interval. There is no setting for a host: github.com is fixed in code, the token

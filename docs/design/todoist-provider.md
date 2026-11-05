@@ -236,8 +236,8 @@ Written so the Google and Microsoft designs can lean on the same decisions:
 ## Implementation notes
 
 Differences from the original design, and what was checked against the live documentation on
-2026-10-26. No live Todoist account was available, so the points marked *assumed* are untested
-against the real service.
+2026-10-26. No live Todoist account was available when this was written; the maintainer has since read tasks
+from a live account (2026-11-05) without recording each point marked *assumed*. Completing tasks is still unverified (see [complete-tasks.md](complete-tasks.md)).
 
 - **Fields confirmed** against Todoist's official Python SDK models and the Sync API reference:
   project `id`, `name`, `color`, `is_archived`, `is_deleted`; item `id`, `project_id`, `parent_id`,
