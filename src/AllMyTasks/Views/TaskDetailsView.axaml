@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:AllMyTasks.ViewModels"
              xmlns:core="using:AllMyTasks.Core.Views"
+             xmlns:controls="using:AllMyTasks.Controls"
              x:Class="AllMyTasks.Views.TaskDetailsView"
              x:DataType="vm:TaskDetailsViewModel"
              AutomationProperties.Name="{Binding AutomationName}">
@@ -34,7 +35,7 @@
       <Button x:Name="OpenLink" Content="Open link" ToolTip.Tip="{Binding LinkTooltip}" IsVisible="{Binding HasLink}" HorizontalAlignment="Left" Click="OnOpenLink" />
       <StackPanel IsVisible="{Binding HasNotes}">
         <TextBlock Classes="meta" Text="Notes" />
-        <SelectableTextBlock Text="{Binding Notes}" TextWrapping="Wrap" />
+        <controls:RichTextView Document="{Binding NotesDocument}" />
       </StackPanel>
       <StackPanel IsVisible="{Binding HasParent}">
         <TextBlock Classes="meta" Text="Subtask of" />

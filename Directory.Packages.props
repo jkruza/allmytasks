@@ -16,6 +16,8 @@
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="10.0.10" />
     <!-- Pins the native SQLite build Microsoft.Data.Sqlite brings in transitively; 2.1.11 has a known high-severity advisory. -->
     <PackageVersion Include="SQLitePCLRaw.lib.e_sqlite3" Version="2.1.14" />
+    <PackageVersion Include="Markdig" Version="1.6.0" />
+    <PackageVersion Include="AngleSharp" Version="1.10.0" />
     <PackageVersion Include="Konscious.Security.Cryptography.Argon2" Version="1.3.1" />
   </ItemGroup>
   <ItemGroup Label="Providers">

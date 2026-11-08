@@ -1,6 +1,7 @@
 using System.Windows.Input;
 using AllMyTasks.Core.Changes;
 using AllMyTasks.Core.Model;
+using AllMyTasks.Core.Notes;
 using AllMyTasks.Core.Views;
 using Avalonia.Media;
 using CommunityToolkit.Mvvm.Input;
@@ -23,6 +24,7 @@ public sealed class TaskDetailsViewModel : ViewModelBase
         Rows = details.Rows;
         Link = details.Link;
         Notes = details.Notes;
+        NotesDocument = NoteFormatter.Format(details.Notes);
         Parent = details.Parent is { } parent ? new TaskLink(parent, open) : null;
         Subtasks = [.. details.Subtasks.Select(t => new TaskLink(t, open))];
 
@@ -78,6 +80,9 @@ public sealed class TaskDetailsViewModel : ViewModelBase
 
     public string? Notes { get; }
 
+    /// <summary>The notes with Markdown or HTML turned into whitelisted blocks; see formatted-notes.md.</summary>
+    public NoteDocument NotesDocument { get; }
+
     public TaskLink? Parent { get; }
 
     public IReadOnlyList<TaskLink> Subtasks { get; }
@@ -87,7 +92,7 @@ public sealed class TaskDetailsViewModel : ViewModelBase
     /// <summary>The address, shown only as the tooltip of Open link.</summary>
     public string? LinkTooltip => Link?.AbsoluteUri;
 
-    public bool HasNotes => !string.IsNullOrEmpty(Notes);
+    public bool HasNotes => NotesDocument.Blocks.Count > 0;
 
     public bool HasParent => Parent is not null;
 

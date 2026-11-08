@@ -3,6 +3,8 @@
     <RootNamespace>AllMyTasks.Core</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Markdig" />
+    <PackageReference Include="AngleSharp" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
   </ItemGroup>
   <ItemGroup>
