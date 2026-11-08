@@ -70,7 +70,7 @@ model only exposes it. Rows that have no value are not shown.
 | Status | `Status` | Only shown when Tentative or Cancelled |
 | Show as | `Availability` | Only shown when Free |
 | Categories | `Categories` | Comma separated |
-| Link | `Url` | A button; only `http` and `https` links are openable, other schemes are shown as text |
+| Link | `Url` | An "Open link" button with the address as its tooltip, never as text; only `http` and `https` links are offered ([hidden-links.md](hidden-links.md)) |
 | Description | `Description` | Selectable, scrolls; Markdown and HTML are shown with basic formatting ([formatted-notes.md](formatted-notes.md)). Capped at 20 000 characters with a "…" so a huge feed value cannot stall the UI |
 | Last changed | `LastModified` | Small print, when the provider supplies it |
 
@@ -83,7 +83,7 @@ model, view and `DataTemplate`.
 
 Descriptions, locations and titles come from third-party feeds. They are only ever shown
 as text in selectable text blocks, never parsed as markup, and links are only opened from
-the explicit link row after a scheme check.
+the explicit link button after a scheme check.
 
 ## Core types
 
@@ -95,7 +95,7 @@ public sealed record EntryDetails(
     bool IsTask,
     string AccentColor,                // collection colour, #RRGGBB
     IReadOnlyList<DetailRow> Rows,     // When, Repeats, Where, Calendar, Status, ...
-    Uri? Link,                         // http/https only, else null (the raw value is a row)
+    Uri? Link,                         // http/https only, else null; shown as a button tooltip, not a row
     string? Description);
 
 public static class EntryDetailsBuilder

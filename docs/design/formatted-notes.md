@@ -137,6 +137,10 @@ It replaces the plain `SelectableTextBlock` for Notes in the task details pane a
 Description in the event details pane. The 20 000 character cap stays in the builders.
 Lists, search and reminders keep using the plain stored text.
 
+## Links and hidden raw URLs
+
+[hidden-links.md](hidden-links.md) removed raw URLs from the details pane and left URLs inside notes to this work. In notes, a link keeps its visible text (as the author wrote it) and its address is the tooltip, as for the Open link button. A bare URL in a note is still shown as text, because a link text that is the address is what the author chose to show.
+
 ## Implementation notes
 
 - Code is in `AllMyTasks.Core.Notes`: `NoteFormatDetector`, `NoteFormatter` (entry point), `HtmlNoteParser`, `MarkdownNoteParser`, `CommentStripper` and `NoteLinks`. The view models call `NoteFormatter.Format` once when the pane opens.

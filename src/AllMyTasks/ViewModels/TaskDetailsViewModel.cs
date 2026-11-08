@@ -89,6 +89,9 @@ public sealed class TaskDetailsViewModel : ViewModelBase
 
     public bool HasLink => Link is not null;
 
+    /// <summary>The address, shown only as the tooltip of Open link.</summary>
+    public string? LinkTooltip => Link?.AbsoluteUri;
+
     public bool HasNotes => NotesDocument.Blocks.Count > 0;
 
     public bool HasParent => Parent is not null;
