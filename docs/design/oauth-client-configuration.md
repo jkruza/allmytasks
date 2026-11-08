@@ -85,9 +85,9 @@ tells the user to remove the app at account.live.com/consent/Manage.
 - **In-app sign-in / re-sign-in button and progress dialog.** Needs a provider-specific action in the schema-driven form
   and a view model for an in-flight browser sign-in. Re-sign-in stays "edit and save the source". Own design later.
 - **Work and school Microsoft accounts.** Design-only, still as in
-  [outlook-calendar-provider.md](outlook-calendar-provider.md#work-and-school-accounts-not-in-v1). The setup doc describes
-  how a multi-tenant registration would differ, so the maintainer can prepare it, but the app stays on the `consumers`
-  authority. Publisher verification is the blocker.
+  [microsoft-work-accounts.md](microsoft-work-accounts.md) (research item, [#118](https://github.com/jkruza/allmytasks/issues/118)). The setup doc describes
+  how a multi-tenant registration differs, so the maintainer can prepare it, but the app stays on the `consumers`
+  authority until that is built. Tenant admin consent is the main risk; publisher verification helps but does not remove it.
 - **Creating the Entra app and Google Cloud project.** Maintainer tasks, described in the setup doc.
 
 ## Testing
