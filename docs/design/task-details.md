@@ -19,7 +19,7 @@ Whatever the provider supplied; empty fields are left out rather than shown as b
 | Due | `TaskItem.Due` | Date only ("Fri 24 Oct") or date and time in the display zone |
 | Starts | `TaskItem.Start` | "Do not show before"; shown only when set |
 | Priority | `TaskItem.Priority` | High, Medium, Low; hidden for None |
-| Notes | `TaskItem.Notes` | Plain text, selectable, wraps; capped at 20 000 characters like event descriptions |
+| Notes | `TaskItem.Notes` | Selectable and wrapping; capped at 20 000 characters like event descriptions. Plain text, Markdown or HTML is detected and shown with basic formatting, never executed ([formatted-notes.md](formatted-notes.md)) |
 | List and source | collection and source display names, collection colour | e.g. "Groceries · Todoist" |
 | Labels | `TaskItem.Labels` | Comma-separated |
 | Repeats | `TaskItem.Recurrence` | Plain-language summary from `RecurrenceDescriber`, shared with events |

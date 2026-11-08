@@ -71,7 +71,7 @@ model only exposes it. Rows that have no value are not shown.
 | Show as | `Availability` | Only shown when Free |
 | Categories | `Categories` | Comma separated |
 | Link | `Url` | A button; only `http` and `https` links are openable, other schemes are shown as text |
-| Description | `Description` | Plain text, selectable, scrolls. Capped at 20 000 characters with a "…" so a huge feed value cannot stall the UI |
+| Description | `Description` | Selectable, scrolls; Markdown and HTML are shown with basic formatting ([formatted-notes.md](formatted-notes.md)). Capped at 20 000 characters with a "…" so a huge feed value cannot stall the UI |
 | Last changed | `LastModified` | Small print, when the provider supplies it |
 
 Dated tasks that appear in the calendar views, and rows of the All tasks view, open the

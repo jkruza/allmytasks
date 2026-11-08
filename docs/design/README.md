@@ -35,6 +35,7 @@ fix whichever is wrong in the same pull request.
 | [meeting-url-and-attendees.md](meeting-url-and-attendees.md) | Join links and attendees on events: model, provider mapping, display |
 | [packaging.md](packaging.md) | Installers and signing for Windows, macOS and Linux, shared release decisions |
 | [storage-and-sync.md](storage-and-sync.md) | Local database, credentials, cache and refresh behaviour |
+| [formatted-notes.md](formatted-notes.md) | Detecting Markdown and HTML in notes and descriptions and showing basic formatting safely: whitelist, comments hidden, no scripts or iframes, Markdig and AngleSharp |
 | [task-details.md](task-details.md) | Read-only details of a clicked task: fields, subtasks, where the data comes from |
 | [settings.md](settings.md) | Settings dialog, persistence of app preferences, week start |
 | [ci-docs-only-changes.md](ci-docs-only-changes.md) | How CI skips build and test for docs-only changes while required checks still report |
