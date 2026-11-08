@@ -26,7 +26,7 @@ Whatever the provider supplied; empty fields are left out rather than shown as b
 | Subtask of | `TaskItem.ParentKey` | Parent's title as a button that opens the parent; shown when the parent is in the cache |
 | Subtasks | tasks whose `ParentKey` is this task | Status glyph and title; a subtask can be clicked to open its details |
 | Last changed | `TaskItem.LastModified` | Local date and time |
-| Link | `TaskItem.Url` | An "Open link" button; only `http` and `https` links are offered |
+| Link | `TaskItem.Url` | An "Open link" button with the address as its tooltip; only `http` and `https` links are offered |
 
 ## Where the data comes from
 

@@ -38,7 +38,6 @@ public static class EntryDetailsBuilder
                 Add(rows, "Status", ev.Status == EventStatus.Confirmed ? null : ev.Status.ToString());
                 Add(rows, "Show as", ev.Availability == Availability.Free ? "Free" : null);
                 Add(rows, "Categories", string.Join(", ", ev.Categories));
-                AddLink(rows, url);
                 AddModified(rows, ev.LastModified, zone, culture);
                 meeting = MeetingLinks.IsSafe(ev.MeetingUrl) ? ev.MeetingUrl : null;
                 people = People(ev);
@@ -53,7 +52,6 @@ public static class EntryDetailsBuilder
                 Add(rows, "Status", task.Status == TaskItemStatus.Open ? null : TaskStatusText(task, zone, culture));
                 Add(rows, "Priority", task.Priority == Priority.None ? null : task.Priority.ToString());
                 Add(rows, "Labels", string.Join(", ", task.Labels));
-                AddLink(rows, url);
                 AddModified(rows, task.LastModified, zone, culture);
                 break;
             default:
@@ -162,8 +160,6 @@ public static class EntryDetailsBuilder
             ? $"{text} on {TimeZoneInfo.ConvertTime(done, zone).ToString("d MMM yyyy", culture)}"
             : text;
     }
-
-    private static void AddLink(List<DetailRow> rows, Uri? url) => Add(rows, "Link", url?.ToString());
 
     private static void AddModified(List<DetailRow> rows, DateTimeOffset? modified, TimeZoneInfo zone, CultureInfo culture) =>
         Add(rows, "Last changed", modified is { } m ? DateTimeText(TimeZoneInfo.ConvertTime(m, zone), culture) : null);

@@ -66,6 +66,12 @@ public sealed partial class CalendarEntryDetailsViewModel : ViewModelBase
 
     public bool HasLink => Link is not null;
 
+    /// <summary>The address, shown only as the tooltip of Open link.</summary>
+    public string? LinkTooltip => Link?.AbsoluteUri;
+
+    /// <summary>The meeting address, shown only as the tooltip of Join.</summary>
+    public string? MeetingTooltip => MeetingUrl?.AbsoluteUri;
+
     public bool HasDescription => !string.IsNullOrEmpty(Description);
 
     public string AutomationName => $"Details for {Title}";
