@@ -6,6 +6,9 @@ namespace AllMyTasks.Services;
 /// <summary>What the shell remembers between sessions.</summary>
 public sealed record ShellState(string Mode, bool ShowEvents, bool ShowTasks, bool ShowCompleted, bool HideWeekends);
 
+/// <summary>The details pane width the user dragged it to (<c>view.details</c>).</summary>
+public sealed record DetailsState(double Width);
+
 /// <summary>What the All tasks view remembers between sessions: filter, sort and grouping, and which saved filter was in use.</summary>
 public sealed record TasksState(
     string Status,

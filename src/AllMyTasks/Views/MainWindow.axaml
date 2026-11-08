@@ -97,32 +97,39 @@
         <Button Grid.Column="2" Classes="tool" Content="✕" Command="{Binding DismissNoticeCommand}" AutomationProperties.Name="Dismiss" />
       </Grid>
     </Border>
-    <!-- Details pane: one host for every kind of details; see docs/design/details-pane.md. -->
-    <Border DockPanel.Dock="Right" Classes="hairline-left" Width="340" Padding="16,12" IsVisible="{Binding IsDetailsOpen}"
-            Background="{DynamicResource AmtSurfaceBrush}">
-      <DockPanel>
-        <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="0,0,0,8">
-          <TextBlock Classes="section" Text="Details" VerticalAlignment="Center" />
-          <Button x:Name="CloseDetailsButton" Grid.Column="1" Classes="tool" Content="✕" Command="{Binding CloseDetailsCommand}"
-                  AutomationProperties.Name="Close details" ToolTip.Tip="Close (Esc)" />
-        </Grid>
-        <ContentControl Content="{Binding SelectedDetails}">
-          <ContentControl.DataTemplates>
-            <DataTemplate DataType="vm:CalendarEntryDetailsViewModel"><views:CalendarEntryDetailsView /></DataTemplate>
-            <DataTemplate DataType="vm:TaskDetailsViewModel"><views:TaskDetailsView /></DataTemplate>
-          </ContentControl.DataTemplates>
-        </ContentControl>
-      </DockPanel>
-    </Border>
-    <ContentControl Content="{Binding Content}">
-      <ContentControl.DataTemplates>
-        <DataTemplate DataType="vm:DayViewModel"><views:DayView /></DataTemplate>
-        <DataTemplate DataType="vm:WeekViewModel"><views:WeekView /></DataTemplate>
-        <DataTemplate DataType="vm:MonthViewModel"><views:MonthView /></DataTemplate>
-        <DataTemplate DataType="vm:UpcomingViewModel"><views:UpcomingView /></DataTemplate>
-        <DataTemplate DataType="vm:TasksViewModel"><views:TasksView /></DataTemplate>
-        <DataTemplate DataType="vm:SearchViewModel"><views:SearchView /></DataTemplate>
-      </ContentControl.DataTemplates>
-    </ContentControl>
+    <!-- Body: the view, a splitter, then the details pane. Column 2 is sized in code (MainWindow.axaml.cs). -->
+    <Grid x:Name="BodyGrid" ColumnDefinitions="*,Auto,0">
+      <ContentControl Content="{Binding Content}">
+        <ContentControl.DataTemplates>
+          <DataTemplate DataType="vm:DayViewModel"><views:DayView /></DataTemplate>
+          <DataTemplate DataType="vm:WeekViewModel"><views:WeekView /></DataTemplate>
+          <DataTemplate DataType="vm:MonthViewModel"><views:MonthView /></DataTemplate>
+          <DataTemplate DataType="vm:UpcomingViewModel"><views:UpcomingView /></DataTemplate>
+          <DataTemplate DataType="vm:TasksViewModel"><views:TasksView /></DataTemplate>
+          <DataTemplate DataType="vm:SearchViewModel"><views:SearchView /></DataTemplate>
+        </ContentControl.DataTemplates>
+      </ContentControl>
+      <!-- Details pane: one host for every kind of details; see docs/design/details-pane.md.
+           The splitter beside it resizes it: docs/design/details-pane-resize.md. -->
+      <Border x:Name="DetailsPane" Grid.Column="2" Classes="hairline-left" Padding="16,12" IsVisible="{Binding IsDetailsOpen}"
+              Background="{DynamicResource AmtSurfaceBrush}">
+        <DockPanel>
+          <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="0,0,0,8">
+            <TextBlock Classes="section" Text="Details" VerticalAlignment="Center" />
+            <Button x:Name="CloseDetailsButton" Grid.Column="1" Classes="tool" Content="✕" Command="{Binding CloseDetailsCommand}"
+                    AutomationProperties.Name="Close details" ToolTip.Tip="Close (Esc)" />
+          </Grid>
+          <ContentControl Content="{Binding SelectedDetails}">
+            <ContentControl.DataTemplates>
+              <DataTemplate DataType="vm:CalendarEntryDetailsViewModel"><views:CalendarEntryDetailsView /></DataTemplate>
+              <DataTemplate DataType="vm:TaskDetailsViewModel"><views:TaskDetailsView /></DataTemplate>
+            </ContentControl.DataTemplates>
+          </ContentControl>
+        </DockPanel>
+      </Border>
+      <GridSplitter x:Name="DetailsSplitter" Grid.Column="1" Width="5" Background="Transparent" Cursor="SizeWestEast"
+                    ResizeDirection="Columns" ResizeBehavior="PreviousAndNext" IsVisible="{Binding IsDetailsOpen}"
+                    AutomationProperties.Name="Resize details pane" />
+    </Grid>
   </DockPanel>
 </Window>

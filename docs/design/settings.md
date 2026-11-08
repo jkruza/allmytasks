@@ -74,6 +74,7 @@ Other persisted keys (written through `ViewStateStore` or `ISettingsStore`):
 | --- | --- |
 | `view.shell` | Selected view and the shared filter toggles |
 | `view.tasks` | The All tasks filter, sort and grouping, and the id of the saved filter in use (`FilterId`) |
+| `view.details` | Width of the details pane after the user dragged it ([details-pane-resize.md](details-pane-resize.md)) |
 | `filters.tasks` | The user's [saved All tasks filters](search-and-saved-filters.md#saved-filters): `{"version":1,"filters":[...]}` |
 
 `AppSettings` (immutable record) is the single shape. `SettingsService` holds the current value,

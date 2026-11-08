@@ -25,7 +25,7 @@ the rest of the app.
 | --- | --- | --- |
 | Popover anchored to the entry | Close to the click | Hard to place in Week and Month where entries sit at window edges and are tiny; long descriptions need a scrolling popup; selected text and links inside popups behave differently per platform |
 | Modal dialog | Plenty of room | Blocks the window for a read-only glance; needs the dialog-owner handling in `DialogService`; one more window to manage on every click |
-| **Docked right pane** | Same behaviour in every view; no window or popup ownership issues; room for long text; stays open while the user clicks through entries; keyboard and screen reader friendly | Takes about 320 px from the content while open |
+| **Docked right pane** | Same behaviour in every view; no window or popup ownership issues; room for long text; stays open while the user clicks through entries; keyboard and screen reader friendly | Takes about 340 px from the content while open (the user can resize it, see [details-pane-resize.md](details-pane-resize.md)) |
 
 The pane wins because it is the only option that needs no per-view placement logic and no
 extra windows. It is closed by default, so the cost is paid only while the user is reading
@@ -39,7 +39,7 @@ details. Week and Month use uniform grids, so they simply get narrower.
 object? SelectedDetails   // null = pane closed
 ```
 
-`MainWindow.axaml` docks a pane on the right. It is visible when `SelectedDetails` is not
+`MainWindow.axaml` shows a pane on the right, with a draggable splitter between it and the view (width 260 to 640 px, remembered: [details-pane-resize.md](details-pane-resize.md)). It is visible when `SelectedDetails` is not
 null and renders it with a `ContentControl` whose `DataTemplate`s map details view models
 to views. A header with a Close button sits above the content.
 

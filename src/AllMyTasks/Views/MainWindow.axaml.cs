@@ -1,3 +1,4 @@
+using AllMyTasks.Core.Settings;
 using AllMyTasks.ViewModels;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -7,7 +8,17 @@ namespace AllMyTasks.Views;
 
 public sealed partial class MainWindow : Window
 {
-    public MainWindow() => InitializeComponent();
+    public MainWindow()
+    {
+        InitializeComponent();
+
+        // The splitter changes the column; remember the width when the drag (or an arrow key press) ends.
+        DetailsSplitter.DragCompleted += (_, _) => RememberPaneWidth();
+        DetailsSplitter.KeyUp += (_, _) => RememberPaneWidth();
+
+        // A narrower window must not squeeze the view below its minimum, so re-fit the pane.
+        BodyGrid.SizeChanged += (_, _) => ApplyPaneWidth();
+    }
 
     protected override void OnDataContextChanged(EventArgs e)
     {
@@ -17,11 +28,53 @@ public sealed partial class MainWindow : Window
             // Move focus into the pane when it opens so keyboard and screen reader users land in it.
             shell.PropertyChanged += (_, args) =>
             {
+                if (args.PropertyName is nameof(CalendarShellViewModel.IsDetailsOpen) or nameof(CalendarShellViewModel.DetailsWidth))
+                {
+                    ApplyPaneWidth();
+                }
+
                 if (args.PropertyName == nameof(CalendarShellViewModel.SelectedDetails) && shell.IsDetailsOpen)
                 {
                     Dispatcher.UIThread.Post(() => CloseDetailsButton.Focus());
                 }
             };
+
+            ApplyPaneWidth();
+        }
+    }
+
+    // Column 0 is the view, column 2 the details pane. The pane column is 0 wide while the pane is closed.
+    private void ApplyPaneWidth()
+    {
+        if (DataContext is not CalendarShellViewModel shell)
+        {
+            return;
+        }
+
+        var view = BodyGrid.ColumnDefinitions[0];
+        var pane = BodyGrid.ColumnDefinitions[2];
+        if (!shell.IsDetailsOpen)
+        {
+            view.MinWidth = 0;
+            pane.MinWidth = 0;
+            pane.MaxWidth = double.PositiveInfinity;
+            pane.Width = new GridLength(0);
+            return;
+        }
+
+        var available = BodyGrid.Bounds.Width;
+        var width = DetailsPaneWidth.Clamp(shell.DetailsWidth, available);
+        view.MinWidth = DetailsPaneWidth.MinimumContent;
+        pane.MinWidth = DetailsPaneWidth.Minimum;
+        pane.MaxWidth = DetailsPaneWidth.Clamp(DetailsPaneWidth.Maximum, available);
+        pane.Width = new GridLength(width);
+    }
+
+    private void RememberPaneWidth()
+    {
+        if (DataContext is CalendarShellViewModel { IsDetailsOpen: true } shell)
+        {
+            shell.SetDetailsWidth(BodyGrid.ColumnDefinitions[2].ActualWidth, BodyGrid.Bounds.Width);
         }
     }
 
