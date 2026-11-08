@@ -110,7 +110,7 @@ public class EntryDetailsBuilderTests
         Assert.Equal("Tentative", Row(details, "Status"));
         Assert.Equal("Free", Row(details, "Show as"));
         Assert.Equal("Work, Team", Row(details, "Categories"));
-        Assert.Equal("https://example.com/meet", Row(details, "Link"));
+        Assert.DoesNotContain(details.Rows, r => r.Label == "Link");
         Assert.Equal("Tue 20 Oct 2026, 08:00", Row(details, "Last changed"));
         Assert.Equal("Agenda attached", details.Description);
         Assert.Equal(new Uri("https://example.com/meet"), details.Link);
@@ -126,12 +126,12 @@ public class EntryDetailsBuilderTests
     [InlineData("mailto:a@example.com")]
     [InlineData("file:///etc/passwd")]
     [InlineData("javascript:alert(1)")]
-    public void Links_with_other_schemes_are_shown_but_not_openable(string url)
+    public void Links_with_other_schemes_are_neither_shown_nor_openable(string url)
     {
         var template = Timed();
         var details = Build(WithEvent(template.Occurrence.Event with { Url = new Uri(url) }, template));
         Assert.Null(details.Link);
-        Assert.NotNull(Row(details, "Link"));
+        Assert.DoesNotContain(details.Rows, r => r.Label == "Link");
     }
 
     [Fact]

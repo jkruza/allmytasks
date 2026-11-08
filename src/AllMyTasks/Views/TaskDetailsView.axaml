@@ -31,7 +31,7 @@
           </DataTemplate>
         </ItemsControl.ItemTemplate>
       </ItemsControl>
-      <Button x:Name="OpenLink" Content="Open link" IsVisible="{Binding HasLink}" HorizontalAlignment="Left" Click="OnOpenLink" />
+      <Button x:Name="OpenLink" Content="Open link" ToolTip.Tip="{Binding LinkTooltip}" IsVisible="{Binding HasLink}" HorizontalAlignment="Left" Click="OnOpenLink" />
       <StackPanel IsVisible="{Binding HasNotes}">
         <TextBlock Classes="meta" Text="Notes" />
         <SelectableTextBlock Text="{Binding Notes}" TextWrapping="Wrap" />

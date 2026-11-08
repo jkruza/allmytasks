@@ -45,6 +45,7 @@ fix whichever is wrong in the same pull request.
 | [jira-provider.md](jira-provider.md) | Jira Cloud issues assigned to me (implemented, version 1; not yet tried on a live site) |
 | [github-provider.md](github-provider.md) | GitHub issues and pull requests assigned to me or awaiting review (implemented read-only, version 1) |
 | [gitlab-provider.md](gitlab-provider.md) | GitLab issues and merge requests, gitlab.com and self-managed (implemented, version 1; not yet tried on a live instance) |
+| [hidden-links.md](hidden-links.md) | Details pane shows links as an Open link button with the address as tooltip, not as text |
 | [inbox-view.md](inbox-view.md) | Inbox view of tasks without a date (implemented, version 1) |
 | [write-support.md](write-support.md) | Version 2: complete tasks, change dates, reschedule events; how the Todoist preview fits |
 | [research.md](research.md) | Unscheduled topics: runtime plug-ins, MCP support, local-model AI summaries |
