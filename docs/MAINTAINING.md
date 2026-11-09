@@ -125,6 +125,26 @@ Binaries are not code-signed yet, so Windows SmartScreen and macOS Gatekeeper wi
 (SignPath Foundation, or a Certum open-source certificate) is still to be decided; the release workflow has a placeholder
 step where signing goes.
 
+### Daily prerelease
+
+`scripts/nightly-prerelease.sh` tags the next prerelease automatically: at 08:00 it checks whether anything was merged to `main`
+after the latest `v*` tag and, if so, pushes a signed tag with the minor version bumped and `-alpha` (`v0.8.0-alpha` becomes
+`v0.9.0-alpha`). You still approve the `release` environment (step 4) and publish the draft as a pre-release (step 5).
+Design: [nightly-prerelease.md](design/nightly-prerelease.md).
+
+Install on the machine that holds your signing key and git credentials (once, after the script is on `main`):
+
+```sh
+mkdir -p ~/.config/systemd/user
+cp scripts/systemd/amt-nightly-prerelease.* ~/.config/systemd/user/
+loginctl enable-linger "$USER"
+systemctl --user daemon-reload && systemctl --user enable --now amt-nightly-prerelease.timer
+```
+
+Check with `scripts/nightly-prerelease.sh --dry-run`, `systemctl --user list-timers` and
+`journalctl --user -u amt-nightly-prerelease`. Edit `AMT_REPO` in the service if the clone is elsewhere. Stop it with
+`systemctl --user disable --now amt-nightly-prerelease.timer`.
+
 ## Project site
 
 `site/index.html` is the public project page, published to GitHub Pages by the `Pages`

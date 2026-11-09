@@ -1,0 +1,10 @@
+[Unit]
+Description=All My Tasks daily prerelease check
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+# Adjust to the clone the tag is made from. The ssh-agent socket lets git sign the tag if the key has a passphrase.
+Environment=AMT_REPO=%h/Projects/allmytasks
+ExecStart=%h/Projects/allmytasks/scripts/nightly-prerelease.sh
