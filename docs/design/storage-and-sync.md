@@ -195,7 +195,9 @@ Last successful sync time is always shown, so stale data is never mistaken for f
   page parsed as "no events"); the engine refuses to apply an empty full snapshot that
   would delete more than a threshold of items unless the provider positively confirmed it,
   and reports a warning instead.
-- Deleting a source removes its collections, items, state and secrets together.
+- Deleting a source removes its collections, items, state and secrets together, and the
+  engine then raises `SourceSynced` for it, so every open view and the reminder scheduler
+  re-query immediately. Removal never needs a manual or full sync to take effect.
 
 ## Privacy
 

@@ -37,7 +37,7 @@ public sealed partial class SyncEngine(
     private readonly SemaphoreSlim _parallel = new(Math.Max(1, (options ?? new SyncOptions()).MaxParallelSources));
     private bool _loaded;
 
-    /// <summary>Raised after a source's cached data changed (from any thread).</summary>
+    /// <summary>Raised after a source's cached data changed, including when a source is removed (from any thread).</summary>
     public event EventHandler<SourceSyncedEventArgs>? SourceSynced;
 
     /// <summary>Raised whenever a source's status changes (from any thread).</summary>
@@ -116,13 +116,18 @@ public sealed partial class SyncEngine(
 
     public void Dispose() => _parallel.Dispose();
 
-    /// <summary>Forgets a source that was removed.</summary>
+    /// <summary>
+    /// Forgets a source that was removed and raises <see cref="SourceSynced"/>, because its cached items are gone
+    /// and the open views need to re-query without waiting for a sync.
+    /// </summary>
     public void Forget(string sourceId)
     {
         lock (_gate)
         {
             _statuses.Remove(sourceId);
         }
+
+        SourceSynced?.Invoke(this, new SourceSyncedEventArgs(sourceId));
     }
 
     private async Task RunExclusiveAsync(string sourceId, TaskCompletionSource completion, CancellationToken cancellationToken)
