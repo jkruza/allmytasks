@@ -15,10 +15,16 @@ public sealed class SyncScheduler(SyncEngine engine, ISourceRepository repositor
     private static readonly TimeSpan TickPeriod = TimeSpan.FromSeconds(30);
 
     private ITimer? _timer;
+    private volatile bool _disposed;
 
     /// <summary>Starts the timer and syncs everything once. Call after the UI is showing cached data.</summary>
     public Task StartAsync(CancellationToken cancellationToken = default)
     {
+        if (_disposed)
+        {
+            return Task.CompletedTask;
+        }
+
         _timer ??= clock.CreateTimer(_ => _ = TickAsync(CancellationToken.None), null, TickPeriod, TickPeriod);
         return engine.SyncAllAsync(cancellationToken);
     }
@@ -26,6 +32,11 @@ public sealed class SyncScheduler(SyncEngine engine, ISourceRepository repositor
     /// <summary>Syncs every source that is due: its interval has passed and it is not backing off or waiting for the user.</summary>
     public async Task TickAsync(CancellationToken cancellationToken = default)
     {
+        if (_disposed)
+        {
+            return;
+        }
+
         try
         {
             var now = clock.GetUtcNow();
@@ -47,12 +58,20 @@ public sealed class SyncScheduler(SyncEngine engine, ISourceRepository repositor
         {
             // Shutting down.
         }
+        catch (Exception) when (_disposed)
+        {
+            // The engine or the database is already closed because the app is exiting; nothing is left to sync.
+        }
     }
 
     /// <summary>Call when the window regains focus: the same check as a timer tick.</summary>
     public Task OnWindowActivatedAsync(CancellationToken cancellationToken = default) => TickAsync(cancellationToken);
 
-    public void Dispose() => _timer?.Dispose();
+    public void Dispose()
+    {
+        _disposed = true;
+        _timer?.Dispose();
+    }
 
     /// <summary>The refresh interval of a source, from its config.</summary>
     public static TimeSpan IntervalFor(SourceConfig? config)

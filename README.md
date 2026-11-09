@@ -58,6 +58,11 @@ dotnet test --solution AllMyTasks.slnx
 dotnet run --project src/AllMyTasks
 ```
 
+### Troubleshooting
+
+The app writes problems, including any unhandled exception, to `logs/allmytasks.log` in its data folder (on Windows
+`%LOCALAPPDATA%\AllMyTasks`). See [docs/design/graceful-shutdown.md](docs/design/graceful-shutdown.md).
+
 ### System tray
 
 The app shows a tray icon. Closing the window hides it to the tray; use **Quit** in the tray menu to exit
