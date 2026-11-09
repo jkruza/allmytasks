@@ -86,7 +86,7 @@ needed to answer it.
   column tinted with `AmtRaisedBrush`, header shows weekday muted and day number in ink with a blue filled circle for
   today. All-day and due items in a header band; timed events as 15 % tinted blocks with a 3 px left bar in the
   collection colour. Overlaps share width, no overlap text clipping below 36 px height (show title only).
-- **Month.** Question: "where are the busy and free days?" Cell shows day number and up to three chips, then "+N".
+- **Month.** Question: "where are the busy and free days?" Cell shows the day number and as many chips as its measured height allows (re-fitted on resize, see [views.md](views.md#month)), then "+N more" only for what does not fit.
   Weekend cells slightly recessed; days from adjacent months at 50 % opacity; today has a blue number badge. Tasks
   are dots with a check glyph, events are tinted chips, so they differ without colour.
 - **Upcoming.** Question: "what is next?" A flat list grouped by relative day (Today, Tomorrow, Thursday, Next week),
