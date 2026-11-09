@@ -67,7 +67,12 @@ internal sealed class TrayService : IDisposable
         _window.Activate();
     }
 
-    public void Dispose() => _icon.Dispose();
+    public void Dispose()
+    {
+        // Hide first: during a Windows shutdown the shell may already have removed the icon.
+        _icon.IsVisible = false;
+        _icon.Dispose();
+    }
 
     private NativeMenu BuildMenu()
     {

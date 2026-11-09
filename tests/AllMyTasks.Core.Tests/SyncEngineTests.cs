@@ -34,6 +34,17 @@ public class SyncEngineTests
     }
 
     [Fact]
+    public async Task A_sync_started_after_the_engine_is_disposed_is_cancelled_instead_of_throwing_object_disposed()
+    {
+        using var rig = new SyncRig();
+        await rig.AddAsync();
+
+        rig.Engine.Dispose();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => rig.Engine.SyncSourceAsync("src", Ct));
+    }
+
+    [Fact]
     public async Task Forgetting_a_removed_source_raises_the_event_so_views_refresh_without_a_sync()
     {
         using var rig = new SyncRig();

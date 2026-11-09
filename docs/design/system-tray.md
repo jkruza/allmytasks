@@ -85,6 +85,8 @@ adds a D-Bus dependency. Left as a follow-up if people hit this.
   `desktop.MainWindow` (which would show it) until the first request to show it.
 - `desktop.ShutdownMode` is `OnExplicitShutdown`. Quit calls `desktop.Shutdown()`; if
   close-to-tray is off, `MainWindow.Closed` calls it too.
+- On exit the tray icon is hidden, then disposed, as one guarded step of the shutdown sequence; see
+  [graceful-shutdown.md](graceful-shutdown.md).
 - The window `Closing` handler cancels and hides when `CloseReason == WindowClosing`,
   close-to-tray is on, and the tray icon is visible.
 - Icon: `Assets/tray.png`, the three-lines logo on a transparent background; see

@@ -30,6 +30,7 @@ fix whichever is wrong in the same pull request.
 | [app-icon.md](app-icon.md) | The three-lines logo as window, executable and tray icon, and how the files are generated |
 | [design-system.md](design-system.md) | Proposal: colour and type tokens, mapping to Avalonia FluentTheme and the `seg` / `tool` / `chip` classes, light and dark, and a cleaner look for the calendar and task views |
 | [system-tray.md](system-tray.md) | Tray icon and menu, `--tray` start option, close-to-tray, Linux StatusNotifier caveat |
+| [graceful-shutdown.md](graceful-shutdown.md) | Guarded exit clean-up, cancelling syncs on exit, unhandled-exception logging (Windows shutdown crash) |
 | [launch-at-login.md](launch-at-login.md) | Settings option to start at login on Windows, Linux and macOS, optionally tray-only |
 | [complete-tasks.md](complete-tasks.md) | Complete and reopen Todoist tasks from the app: write interface, pending-changes queue, opt-in per source |
 | [reminders.md](reminders.md) | Desktop notifications before events and at task due times: planner, scheduler, per-OS notifier; implementation notes |

@@ -35,6 +35,7 @@ public sealed partial class SyncEngine(
     private readonly Dictionary<string, Task> _running = [];
     private readonly Dictionary<string, SourceStatus> _statuses = [];
     private readonly SemaphoreSlim _parallel = new(Math.Max(1, (options ?? new SyncOptions()).MaxParallelSources));
+    private readonly CancellationTokenSource _stopping = new();
     private bool _loaded;
 
     /// <summary>Raised after a source's cached data changed, including when a source is removed (from any thread).</summary>
@@ -114,7 +115,11 @@ public sealed partial class SyncEngine(
         StatusChanged?.Invoke(this, updated);
     }
 
-    public void Dispose() => _parallel.Dispose();
+    /// <summary>
+    /// Cancels syncs that are still running. The semaphore and the token source are left for the garbage collector
+    /// on purpose: a sync that is winding down still releases the semaphore, and releasing a disposed one throws.
+    /// </summary>
+    public void Dispose() => _stopping.Cancel();
 
     /// <summary>
     /// Forgets a source that was removed and raises <see cref="SourceSynced"/>, because its cached items are gone
@@ -135,10 +140,12 @@ public sealed partial class SyncEngine(
         Exception? failure = null;
         try
         {
-            await _parallel.WaitAsync(cancellationToken).ConfigureAwait(false);
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _stopping.Token);
+            var token = linked.Token;
+            await _parallel.WaitAsync(token).ConfigureAwait(false);
             try
             {
-                await SyncCoreAsync(sourceId, cancellationToken).ConfigureAwait(false);
+                await SyncCoreAsync(sourceId, token).ConfigureAwait(false);
             }
             finally
             {
@@ -158,7 +165,7 @@ public sealed partial class SyncEngine(
 
         if (failure is OperationCanceledException)
         {
-            completion.SetCanceled(cancellationToken);
+            completion.SetCanceled(CancellationToken.None);
         }
         else if (failure is not null)
         {
