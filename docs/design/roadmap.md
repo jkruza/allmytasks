@@ -106,6 +106,8 @@ New since the refocus on a read-only overview (version 1 unless stated):
 - Version 2: write support for completing tasks, changing task dates and rescheduling events, and more services: [write-support.md](write-support.md), [#75](https://github.com/jkruza/allmytasks/issues/75).
 - Research, unscheduled: [research.md](research.md).
 
+- About page in Settings: [about-dialog.md](about-dialog.md) ([#156](https://github.com/jkruza/allmytasks/issues/156)). Implemented.
+
 Proposed 2026-11-11 (designs only, nothing built):
 
 - Version 1: [first-run-onboarding.md](first-run-onboarding.md) ([#135](https://github.com/jkruza/allmytasks/issues/135)), [conflict-highlight.md](conflict-highlight.md) ([#136](https://github.com/jkruza/allmytasks/issues/136)), [duplicate-detection.md](duplicate-detection.md) ([#137](https://github.com/jkruza/allmytasks/issues/137)), [source-diagnostics.md](source-diagnostics.md) ([#138](https://github.com/jkruza/allmytasks/issues/138)), [update-check.md](update-check.md) ([#139](https://github.com/jkruza/allmytasks/issues/139)), [workload-glance.md](workload-glance.md) ([#140](https://github.com/jkruza/allmytasks/issues/140)).

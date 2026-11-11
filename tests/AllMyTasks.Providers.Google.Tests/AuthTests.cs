@@ -1,4 +1,5 @@
 using System.Net;
+using AllMyTasks.Core.About;
 using AllMyTasks.Core.Providers;
 using AllMyTasks.Core.Storage;
 using AllMyTasks.Core.Sync;
@@ -333,6 +334,14 @@ public class AuthTests
         var with = new GoogleFactory(new FakeHandler(), defaultClientId: Setup.ClientId, defaultClientSecret: Setup.ClientSecret).ConfigSchema.Fields;
         Assert.False(with.Single(f => f.Key == GoogleFactory.ClientIdField).Required);
         Assert.False(with.Single(f => f.Key == GoogleFactory.ClientSecretField).Required);
+    }
+
+    [Fact]
+    public void Built_in_client_status_needs_both_id_and_secret()
+    {
+        Assert.Equal(ClientStatus.Included, new GoogleFactory(new FakeHandler(), defaultClientId: Setup.ClientId, defaultClientSecret: Setup.ClientSecret).BuiltInClientStatus);
+        Assert.Equal(ClientStatus.Incomplete, new GoogleFactory(new FakeHandler(), defaultClientId: Setup.ClientId).BuiltInClientStatus);
+        Assert.Equal(ClientStatus.Incomplete, new GoogleFactory(new FakeHandler(), defaultClientSecret: Setup.ClientSecret).BuiltInClientStatus);
     }
 
     [Fact]

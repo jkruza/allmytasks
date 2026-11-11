@@ -22,7 +22,7 @@ Todoist tasks can also be completed and reopened from the app once you switch on
 - **Further research:** runtime plug-in support, MCP support, and AI summaries and planning with local models.
 
 Also in version 1: a first-run welcome and checklist, overlap highlighting, one entry for the same event from two
-sources, per-source diagnostics, an optional update check and a seven-day workload strip in Upcoming. Further ideas
+sources, per-source diagnostics, an optional update check, a seven-day workload strip in Upcoming and an About page in Settings (version, links, built-in sign-in clients). Further ideas
 (compact window, command palette, localisation, database encryption for version 2) are designed but not built; they are
 listed in the roadmap.
 

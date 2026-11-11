@@ -1,7 +1,7 @@
 # About dialog
 
-A small **About** dialog that says what is running: the version, where the project lives, and
-whether this build carries built-in OAuth clients. Version 1, read-only, no network access.
+An **About** page in Settings that says what is running: the version, where the project lives, and
+whether this build carries built-in OAuth clients. Version 1, read-only, no network access. Implemented.
 
 ## Goals
 
@@ -51,26 +51,24 @@ local and CI builds usually have none, so "Not included" is the normal state for
 
 Logic in Core, thin view model, as per the project conventions.
 
-- Core, `About/`: `BuildInfo` record (`Version`, `Commit`, `Runtime`, `Clients`), `ClientStatus`
-  enum (`Included`, `Incomplete`, `NotIncluded`), and a pure `ClientStatus.From(id, secret, requiresSecret)`
-  with tests (blank and whitespace values count as absent). `AboutText.Format(BuildInfo)` builds the
-  copy-to-clipboard text, tested to contain no client values by construction, because it never receives them.
-- Providers: `GoogleFactory` and `MicrosoftFactory` already read the assembly metadata. Each gets a
-  public `ClientStatus BuiltInClientStatus` property computed from what they already hold. A small Core
-  interface `IBuiltInClientInfo` (`string Provider`, `ClientStatus Status`) lets the app list them without
-  knowing the provider kinds. Nothing but the status leaves the factory.
-- App: `AboutViewModel` (version, links, client rows, `CopyDetailsCommand`) and `AboutWindow`
-  (`x:DataType`, design-system classes). Links open through `TopLevel.Launcher`, as the details pane does.
-  URLs are constants in one place, shared with the update banner's fallback link.
-- Version: `AppVersion.Current`. When the informational version is absent the dialog shows "unknown".
+- Core, `About/`: `ClientStatus` enum (`Included`, `Incomplete`, `NotIncluded`) with the pure
+  `ClientStatusRules.From(id, secret, requiresSecret)` (blank and whitespace count as absent);
+  `AboutInfo` (version, short commit, runtime, OS, one `ClientLine` per provider) with `ToText()` for the
+  clipboard. `AboutInfo` never receives a client value, so it cannot leak one. `ProjectLinks` holds the URLs.
+- Providers: `GoogleFactory` and `MicrosoftFactory` already read the assembly metadata. Each implements the
+  small Core interface `IBuiltInClientInfo` (`ClientProvider`, `BuiltInClientStatus`), so the app lists them
+  without knowing provider kinds. Nothing but the status leaves the factory.
+- App: `SettingsViewModel.About` (an `AboutInfo`), the About `TabItem` in `SettingsWindow.axaml`, and
+  click handlers in the code-behind for the three links and Copy details. `AppVersion` also exposes the
+  short commit from the informational version.
+- When the informational version is absent the page shows "unknown".
 
 ## Where it lives
 
-Entry points: a **About All My Tasks** item in the tray menu, and a button in Settings. The Settings page
-is being redesigned in the "Redesign the long Settings page" work; if that lands tabs or sections, About
-becomes the last tab or section and the dialog is the same view hosted there. This doc is final on the
-content and logic; the entry point is confirmed against the merged Settings layout before implementation,
-and implementation starts only after that PR is merged to avoid conflicts in the Settings view.
+An **About** page, the fifth and last page of the Settings side navigation
+([settings-layout.md](settings-layout.md)). It is a page, not a separate window: Settings already has
+the navigation, scrolling and Close button, and the content is short. Links open in the system browser
+through `TopLevel.Launcher`; **Copy details** uses the clipboard.
 
 ## Security and privacy
 
@@ -81,12 +79,6 @@ and implementation starts only after that PR is merged to avoid conflicts in the
 ## Tests
 
 - `ClientStatus.From`: both present, id only, secret only, blank, whitespace, Microsoft (no secret needed).
-- `AboutText.Format`: contains version and status lines, never a value passed elsewhere (property test with a sentinel client ID set on the factory).
-- Factory status: `GoogleFactory` and `MicrosoftFactory` constructed with default client args report the expected status.
-- View model: link commands use the constant URLs; copy text matches `AboutText`.
-- Manual: screenshots on Linux, light and dark.
-
-## Docs to update with the implementation
-
-README features list, `docs/oauth-setup.md` ("check the About dialog to see whether your build has a client"),
-[settings.md](settings.md), the site's feature list, and the roadmap row.
+- `AboutInfo.ToText`: version, commit and status lines in provider order; unknown version; split of the informational version.
+- Factory status: `GoogleFactory` (both, id only, secret only) and `MicrosoftFactory` report the expected status.
+- Manual (not done from the cloud): open Settings > About in light and dark.

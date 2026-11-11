@@ -31,6 +31,7 @@ knows. A single-column accordion was rejected because it still scrolls and hides
 | **Calendar** | Week start; overlapping events and all-day busy ([conflict-highlight.md](conflict-highlight.md)); duplicates ([duplicate-detection.md](duplicate-detection.md)); the Upcoming workload strip and its limits ([workload-glance.md](workload-glance.md)) |
 | **Notifications** | Show reminders, lead time for events, task reminders, time for date-only tasks, snooze ([reminders.md](reminders.md)) |
 | **System** | Launch at login and start in tray ([launch-at-login.md](launch-at-login.md)); keep running in the tray ([system-tray.md](system-tray.md)); check for new versions ([update-check.md](update-check.md)) |
+| **About** | Version, build, links to the site and GitHub, built-in sign-in client status ([about-dialog.md](about-dialog.md)) |
 
 Inside a page, related rows sit under the existing quiet section headings (the Calendar page has
 *Calendar* and *Workload*; System has *Startup*, *Window* and *Updates*).

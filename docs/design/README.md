@@ -41,7 +41,7 @@ fix whichever is wrong in the same pull request.
 | [formatted-notes.md](formatted-notes.md) | Detecting Markdown and HTML in notes and descriptions and showing basic formatting safely: whitelist, comments hidden, no scripts or iframes, Markdig and AngleSharp |
 | [task-details.md](task-details.md) | Read-only details of a clicked task: fields, subtasks, where the data comes from |
 | [settings.md](settings.md) | Settings dialog, persistence of app preferences, week start |
-| [about-dialog.md](about-dialog.md) | About dialog (v1): version, site and GitHub links, whether the build has built-in OAuth client IDs (never the values) |
+| [about-dialog.md](about-dialog.md) | About page in Settings (v1, implemented): version, site and GitHub links, whether the build has built-in OAuth client IDs (never the values) |
 | [settings-layout.md](settings-layout.md) | Settings dialog layout: side navigation with four pages instead of one long column |
 | [ci-docs-only-changes.md](ci-docs-only-changes.md) | How CI skips build and test for docs-only changes while required checks still report |
 | [verified-commits.md](verified-commits.md) | Signed commits on main: squash-only merges, Claude branch commits stay unsigned, SSH signing for Jarek |

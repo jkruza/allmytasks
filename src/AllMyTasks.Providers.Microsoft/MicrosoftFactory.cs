@@ -1,4 +1,5 @@
 using System.Reflection;
+using AllMyTasks.Core.About;
 using AllMyTasks.Core.Providers;
 using AllMyTasks.Core.Storage;
 using AllMyTasks.Core.Sync;
@@ -14,7 +15,7 @@ public sealed class MicrosoftFactory(
     HttpMessageHandler? handler = null,
     ILogger? logger = null,
     TimeZoneInfo? displayZone = null,
-    string? defaultClientId = null) : ISourceFactory, ISourceConfigValidator, IDisposable
+    string? defaultClientId = null) : ISourceFactory, ISourceConfigValidator, IBuiltInClientInfo, IDisposable
 {
     public const string ClientIdField = "clientId";
     public const string CalendarField = "calendar";
@@ -23,6 +24,10 @@ public sealed class MicrosoftFactory(
     private readonly HttpMessageHandler _handler = handler ?? GraphClient.CreateDefaultHandler();
     private readonly bool _ownsHandler = handler is null;
     private readonly string? _defaultClientId = defaultClientId ?? BuiltInClientId();
+
+    public string ClientProvider => "Microsoft";
+
+    public ClientStatus BuiltInClientStatus => ClientStatusRules.From(_defaultClientId, null, requiresSecret: false);
 
     public string Kind => MicrosoftSource.KindName;
 

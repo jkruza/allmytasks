@@ -1,4 +1,5 @@
 using System.Reflection;
+using AllMyTasks.Core.About;
 using AllMyTasks.Core.Providers;
 using AllMyTasks.Core.Storage;
 using AllMyTasks.Core.Sync;
@@ -14,7 +15,7 @@ public sealed class GoogleFactory(
     HttpMessageHandler? handler = null,
     ILogger? logger = null,
     string? defaultClientId = null,
-    string? defaultClientSecret = null) : ISourceFactory, IDisposable
+    string? defaultClientSecret = null) : ISourceFactory, IBuiltInClientInfo, IDisposable
 {
     public const string ClientIdField = "clientId";
     public const string ClientSecretField = "clientSecret";
@@ -25,6 +26,10 @@ public sealed class GoogleFactory(
     private readonly bool _ownsHandler = handler is null;
     private readonly string? _defaultClientId = defaultClientId ?? BuiltIn("GoogleClientId");
     private readonly string? _defaultClientSecret = defaultClientSecret ?? BuiltIn("GoogleClientSecret");
+
+    public string ClientProvider => "Google";
+
+    public ClientStatus BuiltInClientStatus => ClientStatusRules.From(_defaultClientId, _defaultClientSecret, requiresSecret: true);
 
     public string Kind => GoogleSource.KindName;
 

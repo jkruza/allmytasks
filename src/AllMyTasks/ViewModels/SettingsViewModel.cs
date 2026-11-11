@@ -1,4 +1,5 @@
 using System.Globalization;
+using AllMyTasks.Core.About;
 using AllMyTasks.Core.Autostart;
 using AllMyTasks.Core.Settings;
 using AllMyTasks.Services;
@@ -26,8 +27,12 @@ public sealed partial class SettingsViewModel : ViewModelBase
     // True while the properties are being set from stored settings or reverted, so setting them does not touch the OS.
     private bool _applying;
 
-    public SettingsViewModel(SettingsService settings, AutostartManager autostart)
+    /// <summary>Version, build and built-in client status shown on the About page.</summary>
+    public AboutInfo About { get; }
+
+    public SettingsViewModel(SettingsService settings, AutostartManager autostart, AboutInfo about)
     {
+        About = about;
         _settings = settings;
         _autostart = autostart;
         var system = WeekStart.Resolve(WeekStartSetting.System, CultureInfo.CurrentCulture);
