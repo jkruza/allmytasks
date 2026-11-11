@@ -1,3 +1,5 @@
+using System.Runtime.InteropServices;
+using AllMyTasks.Core.About;
 using AllMyTasks.Core.Autostart;
 using AllMyTasks.Core.Changes;
 using AllMyTasks.Core.Diagnostics;
@@ -139,7 +141,7 @@ public sealed partial class App : Application
                 new SourceDiagnosticsService(engine, sources, items),
                 new LogControls(log.Directory, () => log.Verbose, on => log.Verbose = on))),
             appSettings,
-            () => _ = dialogs.ShowSettingsAsync(new SettingsViewModel(appSettings, autostart)),
+            () => _ = dialogs.ShowSettingsAsync(new SettingsViewModel(appSettings, autostart, AboutInfo.Create(AppVersion.Current, AppVersion.Commit, RuntimeInformation.FrameworkDescription, RuntimeInformation.OSDescription, [microsoftFactory, googleFactory]))),
             changes,
             new SearchService(viewItems, sources, new IcalRecurrenceExpander(), clock),
             new SavedFilterStore(settings),

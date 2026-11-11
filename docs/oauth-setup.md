@@ -12,6 +12,8 @@ own (free, about ten minutes) and give it to the app. This page covers both:
 Nothing here is a secret of yours that the app uploads anywhere: the app talks only to Microsoft and Google directly, and
 keeps only a refresh token, in your system keyring.
 
+Settings > About shows whether your build has a Google or Microsoft client built in (Included, Incomplete or Not included), never the values.
+
 ## Using your own client in the app
 
 1. Create the client below (Microsoft, Google, or both).

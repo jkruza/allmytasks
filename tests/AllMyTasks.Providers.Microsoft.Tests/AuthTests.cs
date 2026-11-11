@@ -1,4 +1,5 @@
 using System.Net;
+using AllMyTasks.Core.About;
 using AllMyTasks.Core.Providers;
 using AllMyTasks.Core.Storage;
 
@@ -219,5 +220,12 @@ public class AuthTests
         Assert.Empty(without.ValidateValues(new Dictionary<string, string> { [MicrosoftFactory.ClientIdField] = "11111111-2222-3333-4444-555555555555" }));
         Assert.Empty(without.ValidateValues(new Dictionary<string, string>()));
         Assert.Single(without.ValidateValues(new Dictionary<string, string> { [MicrosoftFactory.ClientIdField] = "consumers" }));
+    }
+
+    [Fact]
+    public void Built_in_client_status_reports_only_presence()
+    {
+        Assert.Equal(ClientStatus.Included, new MicrosoftFactory(new FakeHandler(), defaultClientId: "11111111-2222-3333-4444-555555555555").BuiltInClientStatus);
+        Assert.Equal(ClientStatus.NotIncluded, new MicrosoftFactory(new FakeHandler(), defaultClientId: " ").BuiltInClientStatus);
     }
 }
