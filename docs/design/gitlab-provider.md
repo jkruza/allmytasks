@@ -2,7 +2,7 @@
 
 Project `AllMyTasks.Providers.GitLab`, source kind `gitlab`. Implements `ITaskSource` only. Tracking issue:
 [#73](https://github.com/jkruza/allmytasks/issues/73). **Status: implemented, read-only.** API details come from
-GitLab's public documentation and have not been tried against a live instance (see [Unverified](#unverified)).
+GitLab's public documentation and have since been tried against a live instance (2026-11-11); the points under [Unverified](#unverified) were not individually recorded.
 
 ## Scope
 
@@ -78,8 +78,8 @@ GitLab version, and `updated_after` semantics for items that change assignee.
 
 ## Implementation notes
 
-Differences from the design above, and the choices made while building it. Nothing here was run against a live
-GitLab instance; the tests use a fake HTTP handler.
+Differences from the design above, and the choices made while building it. No live GitLab instance was available when this was written (the tests use a fake HTTP handler); the maintainer has since used the provider on a live
+instance (2026-11-11), without recording each point under [Unverified](#unverified).
 
 - **Setup form:** the GitLab address (blank means `https://gitlab.com`; https only, plain http for localhost; a path
   prefix such as `https://example.com/gitlab` is kept; no credentials, query or fragment) and the personal access token
