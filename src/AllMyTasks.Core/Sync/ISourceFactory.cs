@@ -25,9 +25,14 @@ public sealed record SourceConfigField(string Key, string Label, FieldKind Kind,
 }
 
 /// <summary>The fields a provider needs; the app builds its form from this, so Core needs no provider-specific UI.</summary>
-public sealed record SourceConfigSchema(IReadOnlyList<SourceConfigField> Fields)
+/// <param name="Fields">The inputs of the form.</param>
+/// <param name="WhatYouNeed">
+/// One or two plain sentences shown above the fields: what the user must have ready (a token and where to find it, or
+/// which account signs in). Required, so a new provider cannot forget it. See docs/design/first-run-onboarding.md.
+/// </param>
+public sealed record SourceConfigSchema(IReadOnlyList<SourceConfigField> Fields, string WhatYouNeed)
 {
-    public static SourceConfigSchema Empty { get; } = new([]);
+    public static SourceConfigSchema Empty { get; } = new([], "Nothing.");
 }
 
 /// <summary>Describes one kind of provider and creates sources of it.</summary>

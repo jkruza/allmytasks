@@ -6,7 +6,10 @@
              x:DataType="vm:EntryItem">
   <Grid ColumnDefinitions="130,Auto,*,Auto" ColumnSpacing="10" Margin="0,4" Opacity="{Binding Opacity}"
         AutomationProperties.Name="{Binding Spoken}" c:EntryActivation.Enabled="True" Background="Transparent">
-    <TextBlock Grid.Column="0" Classes="small" Text="{Binding TimeText}" VerticalAlignment="Center" />
+    <!-- Thin warning edge on a conflicting row; see docs/design/conflict-highlight.md. -->
+    <Border Grid.ColumnSpan="4" HorizontalAlignment="Left" Width="3" CornerRadius="1.5"
+            Background="{DynamicResource AmtWarningBrush}" IsVisible="{Binding HasConflict}" IsHitTestVisible="False" />
+    <TextBlock Grid.Column="0" Classes="small" Text="{Binding TimeText}" VerticalAlignment="Center" Margin="8,0,0,0" />
     <Border Grid.Column="1" Classes="dot" Background="{Binding Accent}" />
     <StackPanel Grid.Column="2" VerticalAlignment="Center">
       <StackPanel Orientation="Horizontal" Spacing="6">
@@ -15,6 +18,9 @@
         <PathIcon Data="M2,4 H11 V12 H2 Z M12,7 L16,4 V12 L12,9 Z" Width="14" Height="14" IsVisible="{Binding HasMeeting}" Foreground="{DynamicResource AmtMutedBrush}"
                   ToolTip.Tip="Online meeting" />
         <TextBlock Classes="small" Text="(tentative)" IsVisible="{Binding IsTentative}" />
+        <Border Classes="badge" IsVisible="{Binding HasConflict}" ToolTip.Tip="{Binding ConflictText}">
+          <TextBlock Classes="meta" Text="⚠ Conflict" Foreground="{DynamicResource AmtWarningBrush}" />
+        </Border>
         <TextBlock Classes="overdue" Text="overdue" IsVisible="{Binding IsOverdue}" />
       </StackPanel>
       <TextBlock Classes="small" Text="{Binding Location}" IsVisible="{Binding HasLocation}" />

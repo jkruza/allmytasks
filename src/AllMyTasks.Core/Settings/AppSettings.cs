@@ -39,6 +39,18 @@ public sealed record AppSettings
     /// <summary>Minutes a snoozed reminder waits.</summary>
     public int SnoozeMinutes { get; init; } = 10;
 
+    /// <summary>Mark events that overlap in time (docs/design/conflict-highlight.md).</summary>
+    public bool HighlightConflicts { get; init; } = true;
+
+    /// <summary>Also let all-day events that the source marks as busy take part in conflicts.</summary>
+    public bool CountAllDayBusy { get; init; }
+
+    /// <summary>Ask GitHub once a day whether a newer release exists. When off, the app makes no such request.</summary>
+    public bool CheckForUpdates { get; init; } = true;
+
+    /// <summary>The user closed the first-run checklist for good (docs/design/first-run-onboarding.md).</summary>
+    public bool OnboardingDismissed { get; init; }
+
     /// <summary>Show an event once when the same event arrives from two sources (docs/design/duplicate-detection.md).</summary>
     public bool HideDuplicateEvents { get; init; } = true;
 
@@ -88,6 +100,10 @@ public sealed record AppSettings
                 RemindAboutTasks = ReadBool(root, "remindAboutTasks", result.RemindAboutTasks),
                 DateOnlyTaskReminderTime = ReadTime(root, "dateOnlyTaskReminderTime", result.DateOnlyTaskReminderTime),
                 SnoozeMinutes = ReadMinutes(root, "snoozeMinutes", result.SnoozeMinutes, 1),
+                HighlightConflicts = ReadBool(root, "highlightConflicts", result.HighlightConflicts),
+                CountAllDayBusy = ReadBool(root, "countAllDayBusy", result.CountAllDayBusy),
+                CheckForUpdates = ReadBool(root, "checkForUpdates", result.CheckForUpdates),
+                OnboardingDismissed = ReadBool(root, "onboardingDismissed", result.OnboardingDismissed),
                 HideDuplicateEvents = ReadBool(root, "hideDuplicateEvents", result.HideDuplicateEvents),
                 HideDuplicateTasks = ReadBool(root, "hideDuplicateTasks", result.HideDuplicateTasks),
             };
@@ -115,6 +131,10 @@ public sealed record AppSettings
             ["remindAboutTasks"] = RemindAboutTasks,
             ["dateOnlyTaskReminderTime"] = DateOnlyTaskReminderTime.ToString("HH:mm", CultureInfo.InvariantCulture),
             ["snoozeMinutes"] = SnoozeMinutes,
+            ["highlightConflicts"] = HighlightConflicts,
+            ["countAllDayBusy"] = CountAllDayBusy,
+            ["checkForUpdates"] = CheckForUpdates,
+            ["onboardingDismissed"] = OnboardingDismissed,
             ["hideDuplicateEvents"] = HideDuplicateEvents,
             ["hideDuplicateTasks"] = HideDuplicateTasks,
         });

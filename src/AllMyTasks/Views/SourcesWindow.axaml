@@ -9,6 +9,11 @@
     <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="8" Margin="0,0,0,12">
       <Button Content="Add source…" Command="{Binding AddCommand}" />
       <Button Content="Refresh all" Command="{Binding RefreshAllCommand}" />
+      <Button Content="Copy diagnostics…" Command="{Binding CopyDiagnosticsCommand}" IsVisible="{Binding CanDiagnose}"
+              ToolTip.Tip="Shows a report without tokens, names or item text, which you can copy into a bug report" />
+      <Button Content="Open log folder" Click="OnOpenLogFolder" IsVisible="{Binding CanDiagnose}" />
+      <CheckBox Content="Verbose logging" IsChecked="{Binding VerboseLogging}" IsVisible="{Binding CanDiagnose}" VerticalAlignment="Center"
+                ToolTip.Tip="Writes extra detail to verbose.log until you quit the app. Off again at the next start." />
     </StackPanel>
     <TextBlock Classes="empty" Text="No sources yet. Add one to see its calendars and tasks." IsVisible="{Binding IsEmpty}" />
     <ScrollViewer>
@@ -29,6 +34,10 @@
                   <Expander Header="Technical details" Margin="0,6,0,0" IsVisible="{Binding HasErrorDetail}">
                     <TextBox Text="{Binding ErrorDetail, Mode=OneWay}" IsReadOnly="True" TextWrapping="Wrap" AcceptsReturn="True"
                              Classes="mono" AutomationProperties.Name="Technical details" />
+                  </Expander>
+                  <Expander Header="Details" Margin="0,6,0,0" IsVisible="{Binding HasDiagnostics}">
+                    <TextBox Text="{Binding DiagnosticsText, Mode=OneWay}" IsReadOnly="True" TextWrapping="NoWrap" AcceptsReturn="True"
+                             FontFamily="Cascadia Mono, Consolas, Menlo, monospace" FontSize="12" AutomationProperties.Name="Source details" />
                   </Expander>
                   <Expander Header="Calendars and lists" Margin="0,6,0,0" IsVisible="{Binding HasCollections}">
                     <ItemsControl ItemsSource="{Binding Collections}">

@@ -44,6 +44,20 @@ public sealed class DialogService(IClassicDesktopStyleApplicationLifetime lifeti
         }
     }
 
+    /// <summary>Shows the diagnostics report for reading and copying. Returns when it is closed.</summary>
+    public async Task ShowDiagnosticsAsync(string report)
+    {
+        var window = new DiagnosticsWindow(report);
+        if (Owner is null)
+        {
+            window.Show();
+        }
+        else
+        {
+            await window.ShowDialog(Owner);
+        }
+    }
+
     /// <summary>Asks a yes/no question. Returns true for the primary button.</summary>
     public async Task<bool> ConfirmAsync(string heading, string body, string yes, string no)
     {

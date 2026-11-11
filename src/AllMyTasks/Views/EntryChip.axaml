@@ -7,7 +7,7 @@
   <Border Classes="chip-box" Background="{Binding ChipBackground}" BorderBrush="{Binding Accent}" Opacity="{Binding Opacity}"
           AutomationProperties.Name="{Binding Spoken}" ToolTip.Tip="{Binding Spoken}" c:EntryActivation.Enabled="True">
     <TextBlock TextTrimming="CharacterEllipsis">
-      <Run Text="{Binding Glyph}" /><Run Text="{Binding Title}" />
+      <Run Text="{Binding ConflictMark}" Foreground="{DynamicResource AmtWarningBrush}" /><Run Text="{Binding Glyph}" /><Run Text="{Binding Title}" />
     </TextBlock>
   </Border>
 </UserControl>

@@ -27,7 +27,8 @@ public sealed class CalDavFactory(HttpMessageHandler? handler = null, ILogger? l
         new SourceConfigField(PasswordField, "Password", FieldKind.Password, Required: true, Help: "Use an app password if your provider offers them. It is stored in your system keyring."),
         new SourceConfigField(InsecureField, "Allow insecure connection (http)", FieldKind.Bool, Help: "Sends the password unencrypted. Only for servers on a network you fully trust."),
         new SourceConfigField(SyncScheduler.IntervalKey, "Refresh every (minutes)", FieldKind.Number, Help: "Leave blank for 15."),
-    ]);
+    ],
+    "The address of your CalDAV server (Nextcloud, for example), your user name and a password; use an app password if your provider offers one.");
 
     public void Dispose()
     {

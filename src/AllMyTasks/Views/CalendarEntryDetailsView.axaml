@@ -29,6 +29,23 @@
           </DataTemplate>
         </ItemsControl.ItemTemplate>
       </ItemsControl>
+      <StackPanel IsVisible="{Binding HasOverlaps}" Spacing="4">
+        <TextBlock Classes="meta" Text="Overlaps with" />
+        <ItemsControl ItemsSource="{Binding Overlaps}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:OverlapLine">
+              <Button Classes="tool" Command="{Binding OpenCommand}" HorizontalAlignment="Left" Padding="0,2"
+                      AutomationProperties.Name="{Binding Title}">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <TextBlock Text="⚠" Foreground="{DynamicResource AmtWarningBrush}" />
+                  <TextBlock Text="{Binding Title}" />
+                  <TextBlock Classes="small" Text="{Binding TimeText}" />
+                </StackPanel>
+              </Button>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </StackPanel>
       <Button x:Name="OpenLink" Content="Open link" ToolTip.Tip="{Binding LinkTooltip}" IsVisible="{Binding HasLink}" HorizontalAlignment="Left" Click="OnOpenLink" />
       <StackPanel IsVisible="{Binding HasPeople}" Spacing="4">
         <TextBlock Classes="meta" Text="Attendees" />

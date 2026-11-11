@@ -32,7 +32,8 @@ public sealed class TodoistFactory(HttpMessageHandler? handler = null, ILogger? 
             FieldKind.Bool,
             Help: "Preview of a version 2 feature: lets you complete and reopen tasks from the app. Off by default: the app then only reads."),
         new SourceConfigField(SyncScheduler.IntervalKey, "Refresh every (minutes)", FieldKind.Number, Help: "Leave blank for 15."),
-    ]);
+    ],
+    "An API token from Todoist: open Settings, Integrations, Developer and copy it.");
 
     public void Dispose()
     {

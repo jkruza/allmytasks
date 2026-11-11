@@ -10,7 +10,9 @@ internal sealed class ListLogger : ILogger
     public IDisposable? BeginScope<TState>(TState state)
         where TState : notnull => null;
 
-    public bool IsEnabled(LogLevel logLevel) => true;
+    public LogLevel MinimumLevel { get; init; } = LogLevel.Trace;
+
+    public bool IsEnabled(LogLevel logLevel) => logLevel >= MinimumLevel;
 
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter) =>
         Entries.Add(formatter(state, exception));

@@ -19,6 +19,9 @@ public sealed partial class UpcomingViewModel(IAgendaService agenda) : ContentVi
     [ObservableProperty]
     public partial bool IsEmpty { get; set; }
 
+    [ObservableProperty]
+    public partial string EmptyText { get; set; } = "Nothing coming up";
+
     public void LoadMore() => _days += 14;
 
     public override async Task LoadAsync(ViewContext context, CancellationToken cancellationToken)
@@ -27,6 +30,7 @@ public sealed partial class UpcomingViewModel(IAgendaService agenda) : ContentVi
         var query = new ViewQuery(today, today.AddDays(_days), context.Zone, context.Filter, IncludeOverdue: true);
         var entries = await agenda.GetEntriesAsync(query, cancellationToken);
         var list = UpcomingList.Build(entries, context.Now, context.Zone, _days);
+        var conflicts = Conflicts = context.Conflicts is { } options ? ConflictFinder.Find(entries, options) : ConflictMap.Empty;
 
         Items.Clear();
         foreach (var group in list.Groups)
@@ -34,11 +38,12 @@ public sealed partial class UpcomingViewModel(IAgendaService agenda) : ContentVi
             Items.Add(new DayGroupHeader(Heading(group)));
             foreach (var s in group.Segments)
             {
-                Items.Add(new EntryItem(s, context.Now, context.Zone));
+                Items.Add(new EntryItem(s, context.Now, context.Zone, conflicts));
             }
         }
 
         IsEmpty = list.IsEmpty;
+        EmptyText = context.FirstSyncRunning ? "Waiting for the first sync…" : "Nothing coming up";
     }
 
     private static string Heading(DayGroup group) => group.Kind switch

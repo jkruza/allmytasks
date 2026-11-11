@@ -41,7 +41,8 @@ public sealed class MicrosoftFactory(
         new SourceConfigField(CalendarField, "Outlook calendar", FieldKind.Bool, Help: "Leave both switches off to read both calendar and tasks."),
         new SourceConfigField(TodoField, "Microsoft To Do", FieldKind.Bool),
         new SourceConfigField(SyncScheduler.IntervalKey, "Refresh every (minutes)", FieldKind.Number, Help: "Leave blank for 15. After you save, a browser window opens to sign in to your Microsoft account."),
-    ]);
+    ],
+    "A personal Microsoft account (Outlook.com, Hotmail or Live). After you save, a browser window opens to sign in. Work and school accounts are not supported yet.");
 
     public IEnumerable<SourceConfigError> ValidateValues(IReadOnlyDictionary<string, string> values)
     {
