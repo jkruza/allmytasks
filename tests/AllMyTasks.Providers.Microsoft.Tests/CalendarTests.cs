@@ -167,6 +167,14 @@ public class CalendarTests
     }
 
     [Fact]
+    public async Task The_ical_uid_is_kept_for_duplicate_detection()
+    {
+        var (mapped, _) = await MapOneAsync(Event("e1", "2026-11-02T08:00:00.0000000", "2026-11-02T09:00:00.0000000", "\"iCalUId\":\"040000008200E0\""));
+
+        Assert.Equal("040000008200E0", mapped.Uid);
+    }
+
+    [Fact]
     public async Task Organiser_and_attendees_are_mapped_with_roles_and_answers()
     {
         var extra = """

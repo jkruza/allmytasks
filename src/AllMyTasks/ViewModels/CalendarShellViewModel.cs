@@ -103,7 +103,7 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
         _day = new DayViewModel(agenda);
         _week = new WeekViewModel(agenda);
         _month = new MonthViewModel(agenda, OpenDay);
-        _upcoming = new UpcomingViewModel(agenda);
+        _upcoming = new UpcomingViewModel(agenda, () => _settings?.Current ?? new AppSettings(), OpenDay, OpenOverdueTasks);
         _taskList = taskList;
         _tasks = new TasksViewModel(taskList, clock, state, ToggleTaskAsync, savedFilters, ExistingCollectionsAsync);
         _inbox = new TasksViewModel(taskList, clock, state, ToggleTaskAsync, null, ExistingCollectionsAsync, isInbox: true);
@@ -797,6 +797,12 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
     {
         CurrentDate = day;
         Mode = ViewMode.Day;
+    }
+
+    private void OpenOverdueTasks()
+    {
+        _tasks.Due = TasksViewModel.DueChoices.First(c => c.Value == DueOption.Overdue);
+        Mode = ViewMode.Tasks;
     }
 
     private DateOnly Today() => DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(_clock.GetUtcNow(), _zone).DateTime);

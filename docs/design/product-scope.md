@@ -45,7 +45,7 @@ do here can damage data elsewhere. Version 2 revisits it deliberately, in a narr
 
 Also in version 1 but not a goal in itself: reminders, system tray, launch at login, search, installers.
 
-Proposed for version 1 (designed 2026-11-11, not built; they make the overview better without adding sources or writes):
+Added to version 1 (designed 2026-11-11, implemented in the PRs that close their issues; they make the overview better without adding sources or writes):
 [first-run onboarding](first-run-onboarding.md) ([#135](https://github.com/jkruza/allmytasks/issues/135)), [conflict highlighting](conflict-highlight.md) ([#136](https://github.com/jkruza/allmytasks/issues/136)), [duplicate detection](duplicate-detection.md) ([#137](https://github.com/jkruza/allmytasks/issues/137)), [source diagnostics](source-diagnostics.md) ([#138](https://github.com/jkruza/allmytasks/issues/138)), [update check](update-check.md) ([#139](https://github.com/jkruza/allmytasks/issues/139)) and [workload glance](workload-glance.md) ([#140](https://github.com/jkruza/allmytasks/issues/140)).
 
 ## Version 2: more services and careful write support

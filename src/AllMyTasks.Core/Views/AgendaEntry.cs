@@ -28,6 +28,12 @@ public abstract record AgendaEntry(
     DateOnly FirstDay,
     DateOnly LastDayExclusive)
 {
+    /// <summary>
+    /// Collections that hold the same item and were hidden in favour of this one (see <see cref="DuplicateFinder"/>).
+    /// Empty when nothing was merged.
+    /// </summary>
+    public IReadOnlyList<string> AlsoIn { get; init; } = [];
+
     /// <summary>True when the item covers more than one calendar day.</summary>
     public bool IsMultiDay => LastDayExclusive.DayNumber - FirstDay.DayNumber > 1;
 

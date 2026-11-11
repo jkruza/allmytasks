@@ -40,6 +40,26 @@
           </ComboBox.ItemTemplate>
         </ComboBox>
       </StackPanel>
+      <CheckBox IsChecked="{Binding HideDuplicateEvents}">
+        <TextBlock Text="Show the same event once when it comes from two sources" TextWrapping="Wrap" />
+      </CheckBox>
+      <CheckBox IsChecked="{Binding HideDuplicateTasks}">
+        <TextBlock Text="Show the same task once (same title, date and link)" TextWrapping="Wrap" />
+      </CheckBox>
+      <TextBlock Classes="small" TextWrapping="Wrap" Text="Nothing is deleted; the other copy is only hidden, and the one you see says where else it appears. The source added first is shown." />
+    </StackPanel>
+    <StackPanel Spacing="8">
+      <TextBlock Classes="section" Text="Workload" />
+      <CheckBox IsChecked="{Binding ShowWorkload}">
+        <TextBlock Text="Show the next seven days at the top of Upcoming" TextWrapping="Wrap" />
+      </CheckBox>
+      <StackPanel Spacing="4" IsEnabled="{Binding ShowWorkload}">
+        <TextBlock Text="A day is heavy from this many hours of meetings" />
+        <ComboBox ItemsSource="{Binding MeetingHourOptions}" SelectedItem="{Binding SelectedMeetingHours}" HorizontalAlignment="Stretch" />
+        <TextBlock Text="or this many tasks due" />
+        <ComboBox ItemsSource="{Binding TaskCountOptions}" SelectedItem="{Binding SelectedTaskCount}" HorizontalAlignment="Stretch" />
+        <TextBlock Classes="small" TextWrapping="Wrap" Text="Meetings are timed, busy events; overlaps count once. Heavy days are marked in amber." />
+      </StackPanel>
     </StackPanel>
     <StackPanel Spacing="8">
       <TextBlock Classes="section" Text="Notifications" />

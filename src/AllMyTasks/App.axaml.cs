@@ -118,7 +118,7 @@ public sealed partial class App : Application
         var updates = new UpdateCheckService(settings, releaseChecker, () => appSettings.Current.CheckForUpdates, AppVersion.Current);
         appSettings.Changed += (_, _) => _ = updates.CheckAsync();
 
-        var agenda = new AgendaService(viewItems, sources, new IcalRecurrenceExpander(), clock);
+        var agenda = new AgendaService(viewItems, sources, new IcalRecurrenceExpander(), clock, () => appSettings.Current.ToDuplicateOptions());
         CalendarShellViewModel? shell = null;
         shell = new CalendarShellViewModel(
             agenda,

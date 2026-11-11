@@ -21,9 +21,10 @@ Todoist tasks can also be completed and reopened from the app once you switch on
   rescheduling events.
 - **Further research:** runtime plug-in support, MCP support, and AI summaries and planning with local models.
 
-Several further ideas are designed but not built yet (onboarding, overlap highlighting, duplicate detection, source
-diagnostics, update check, workload glance for version 1; compact window, command palette, localisation, database
-encryption for version 2); they are listed in the roadmap.
+Also in version 1: a first-run welcome and checklist, overlap highlighting, one entry for the same event from two
+sources, per-source diagnostics, an optional update check and a seven-day workload strip in Upcoming. Further ideas
+(compact window, command palette, localisation, database encryption for version 2) are designed but not built; they are
+listed in the roadmap.
 
 Details: [product scope](docs/design/product-scope.md) and [roadmap](docs/design/roadmap.md).
 

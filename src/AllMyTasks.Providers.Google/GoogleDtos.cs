@@ -113,6 +113,9 @@ internal sealed record EventDto
 
     public string? RecurringEventId { get; init; }
 
+    [JsonPropertyName("iCalUID")]
+    public string? ICalUid { get; init; }
+
     public EventTimeDto? OriginalStartTime { get; init; }
 
     public string? Transparency { get; init; }

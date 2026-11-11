@@ -4,11 +4,43 @@
              xmlns:views="using:AllMyTasks.Views"
              x:Class="AllMyTasks.Views.UpcomingView"
              x:DataType="vm:UpcomingViewModel">
-  <Grid RowDefinitions="*,Auto">
-    <TextBlock Classes="empty" Text="{Binding EmptyText}" IsVisible="{Binding IsEmpty}"
+  <Grid RowDefinitions="Auto,*,Auto">
+    <!-- The next seven days at a glance: meeting time and tasks due per day (docs/design/workload-glance.md). -->
+    <Border Grid.Row="0" IsVisible="{Binding Workload, Converter={x:Static ObjectConverters.IsNotNull}}" Margin="24,12,24,0">
+      <Grid ColumnDefinitions="Auto,*" x:DataType="vm:UpcomingViewModel">
+        <Button Grid.Column="0" Classes="tool" Command="{Binding Workload.OpenOverdueCommand}" IsVisible="{Binding Workload.HasOverdue}"
+                VerticalAlignment="Stretch" Margin="0,0,8,0" Padding="10,6"
+                AutomationProperties.Name="{Binding Workload.OverdueSpoken}">
+          <StackPanel VerticalAlignment="Center">
+            <TextBlock Text="{Binding Workload.Overdue}" FontSize="20" FontWeight="SemiBold" Foreground="{DynamicResource AmtOverdueBrush}" HorizontalAlignment="Center" />
+            <TextBlock Classes="small" Text="overdue" HorizontalAlignment="Center" />
+          </StackPanel>
+        </Button>
+        <ItemsControl Grid.Column="1" ItemsSource="{Binding Workload.Days}">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate><UniformGrid Rows="1" /></ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:WorkloadDayItem">
+              <Button Classes="tool" Command="{Binding OpenCommand}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
+                      Padding="8,6" Margin="2,0" AutomationProperties.Name="{Binding Spoken}">
+                <StackPanel Spacing="3">
+                  <TextBlock Classes="section" Text="{Binding DayName}" />
+                  <TextBlock Classes="small" Text="{Binding DateText}" />
+                  <ProgressBar Minimum="0" Maximum="{Binding BarMaximum}" Value="{Binding BarHours}" Height="4" MinHeight="4" ShowProgressText="False" />
+                  <TextBlock Classes="meta" Text="{Binding MeetingText}" Classes.warning="{Binding IsHeavy}" />
+                  <TextBlock Classes="small" Text="{Binding TasksText}" />
+                </StackPanel>
+              </Button>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </Grid>
+    </Border>
+    <TextBlock Grid.Row="1" Classes="empty" Text="{Binding EmptyText}" IsVisible="{Binding IsEmpty}"
                HorizontalAlignment="Center" VerticalAlignment="Center" />
     <!-- The only unbounded list, so it is virtualised. -->
-    <ScrollViewer Grid.Row="0" Margin="24,12">
+    <ScrollViewer Grid.Row="1" Margin="24,12">
     <ItemsControl ItemsSource="{Binding Items}">
       <ItemsControl.ItemsPanel>
         <ItemsPanelTemplate><VirtualizingStackPanel /></ItemsPanelTemplate>
@@ -21,7 +53,7 @@
       </ItemsControl.DataTemplates>
     </ItemsControl>
     </ScrollViewer>
-    <Button Grid.Row="1" Classes="tool" Content="Load more" Command="{ReflectionBinding $parent[Window].DataContext.LoadMoreCommand}"
+    <Button Grid.Row="2" Classes="tool" Content="Load more" Command="{ReflectionBinding $parent[Window].DataContext.LoadMoreCommand}"
             HorizontalAlignment="Center" Margin="0,0,0,12" IsVisible="{Binding !IsEmpty}" />
   </Grid>
 </UserControl>
