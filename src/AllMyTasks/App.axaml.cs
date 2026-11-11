@@ -116,7 +116,7 @@ public sealed partial class App : Application
             _ = autostart.Apply(true, appSettings.Current.StartInTrayAtLogin);
         }
 
-        var agenda = new AgendaService(viewItems, sources, new IcalRecurrenceExpander(), clock);
+        var agenda = new AgendaService(viewItems, sources, new IcalRecurrenceExpander(), clock, () => appSettings.Current.ToDuplicateOptions());
         CalendarShellViewModel? shell = null;
         shell = new CalendarShellViewModel(
             agenda,

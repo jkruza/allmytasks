@@ -14,7 +14,8 @@ public sealed class AgendaService(
     IItemStore store,
     ISourceRepository sources,
     IRecurrenceExpander expander,
-    TimeProvider clock) : IAgendaService
+    TimeProvider clock,
+    Func<DuplicateOptions>? duplicates = null) : IAgendaService
 {
     public async Task<IReadOnlyList<AgendaEntry>> GetEntriesAsync(ViewQuery query, CancellationToken cancellationToken = default)
     {
@@ -66,7 +67,9 @@ public sealed class AgendaService(
             }
         }
 
-        return [.. entries
+        var sourceOrder = (await sources.GetSourcesAsync(cancellationToken).ConfigureAwait(false)).Select(s => s.Id).ToList();
+        IReadOnlyList<AgendaEntry> unique = DuplicateFinder.Collapse(entries, duplicates?.Invoke() ?? DuplicateOptions.Off, sourceOrder);
+        return [.. unique
             .OrderBy(e => e.Start)
             .ThenByDescending(e => e.IsAllDay)
             .ThenBy(e => e.Title, StringComparer.CurrentCultureIgnoreCase)];

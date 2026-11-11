@@ -50,6 +50,8 @@ public sealed partial class SettingsViewModel : ViewModelBase
         LeadOptions = MinutesChoices([0, 5, 10, 15, 30, 60], settings.Current.EventReminderMinutes, minutes => minutes == 0 ? "At the start" : $"{Minutes(minutes)} before");
         SnoozeOptions = MinutesChoices([5, 10, 15, 30, 60], settings.Current.SnoozeMinutes, Minutes);
         TaskTimeOptions = TimeChoices(settings.Current.DateOnlyTaskReminderTime);
+        HideDuplicateEvents = settings.Current.HideDuplicateEvents;
+        HideDuplicateTasks = settings.Current.HideDuplicateTasks;
         RemindersEnabled = settings.Current.RemindersEnabled;
         RemindAboutTasks = settings.Current.RemindAboutTasks;
         SelectedLead = LeadOptions.First(o => o.Minutes == settings.Current.EventReminderMinutes);
@@ -62,6 +64,18 @@ public sealed partial class SettingsViewModel : ViewModelBase
     public IReadOnlyList<MinutesOption> SnoozeOptions { get; }
 
     public IReadOnlyList<TimeOption> TaskTimeOptions { get; }
+
+    [ObservableProperty]
+    public partial bool HideDuplicateEvents { get; set; }
+
+    partial void OnHideDuplicateEventsChanged(bool value) =>
+        _settings.Update(s => s with { HideDuplicateEvents = value });
+
+    [ObservableProperty]
+    public partial bool HideDuplicateTasks { get; set; }
+
+    partial void OnHideDuplicateTasksChanged(bool value) =>
+        _settings.Update(s => s with { HideDuplicateTasks = value });
 
     [ObservableProperty]
     public partial bool RemindersEnabled { get; set; }

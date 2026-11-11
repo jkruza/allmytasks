@@ -85,6 +85,9 @@ internal sealed record EventDto
 
     public bool IsOrganizer { get; init; }
 
+    [JsonPropertyName("iCalUId")]
+    public string? ICalUid { get; init; }
+
     public RecipientDto? Organizer { get; init; }
 
     public List<AttendeeDto>? Attendees { get; init; }

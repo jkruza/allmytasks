@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.Json;
+using AllMyTasks.Core.Views;
 
 namespace AllMyTasks.Core.Settings;
 
@@ -37,6 +38,12 @@ public sealed record AppSettings
 
     /// <summary>Minutes a snoozed reminder waits.</summary>
     public int SnoozeMinutes { get; init; } = 10;
+
+    /// <summary>Show an event once when the same event arrives from two sources (docs/design/duplicate-detection.md).</summary>
+    public bool HideDuplicateEvents { get; init; } = true;
+
+    /// <summary>Show a task once when the same task (same title, due date and link) arrives from two sources.</summary>
+    public bool HideDuplicateTasks { get; init; }
 
     /// <summary>Reads settings from JSON. Missing, unknown or corrupt values give the defaults.</summary>
     public static AppSettings Parse(string? json)
@@ -81,6 +88,8 @@ public sealed record AppSettings
                 RemindAboutTasks = ReadBool(root, "remindAboutTasks", result.RemindAboutTasks),
                 DateOnlyTaskReminderTime = ReadTime(root, "dateOnlyTaskReminderTime", result.DateOnlyTaskReminderTime),
                 SnoozeMinutes = ReadMinutes(root, "snoozeMinutes", result.SnoozeMinutes, 1),
+                HideDuplicateEvents = ReadBool(root, "hideDuplicateEvents", result.HideDuplicateEvents),
+                HideDuplicateTasks = ReadBool(root, "hideDuplicateTasks", result.HideDuplicateTasks),
             };
 
             return result;
@@ -90,6 +99,8 @@ public sealed record AppSettings
             return new AppSettings();
         }
     }
+
+    public DuplicateOptions ToDuplicateOptions() => new(HideDuplicateEvents, HideDuplicateTasks);
 
     public string ToJson() => JsonSerializer.Serialize(
         new Dictionary<string, object>
@@ -104,6 +115,8 @@ public sealed record AppSettings
             ["remindAboutTasks"] = RemindAboutTasks,
             ["dateOnlyTaskReminderTime"] = DateOnlyTaskReminderTime.ToString("HH:mm", CultureInfo.InvariantCulture),
             ["snoozeMinutes"] = SnoozeMinutes,
+            ["hideDuplicateEvents"] = HideDuplicateEvents,
+            ["hideDuplicateTasks"] = HideDuplicateTasks,
         });
 
     private static bool ReadBool(JsonElement root, string name, bool fallback) =>

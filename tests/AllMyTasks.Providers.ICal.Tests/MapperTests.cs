@@ -251,6 +251,12 @@ public class MapperTests
     }
 
     [Fact]
+    public void The_uid_is_kept_for_duplicate_detection()
+    {
+        Assert.Equal("m1", Meeting("SUMMARY:x").Uid);
+    }
+
+    [Fact]
     public void Organiser_and_attendees_read_parameters_and_mailto_values()
     {
         var e = Meeting(

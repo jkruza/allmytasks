@@ -34,6 +34,13 @@
           </ComboBox.ItemTemplate>
         </ComboBox>
       </StackPanel>
+      <CheckBox IsChecked="{Binding HideDuplicateEvents}">
+        <TextBlock Text="Show the same event once when it comes from two sources" TextWrapping="Wrap" />
+      </CheckBox>
+      <CheckBox IsChecked="{Binding HideDuplicateTasks}">
+        <TextBlock Text="Show the same task once (same title, date and link)" TextWrapping="Wrap" />
+      </CheckBox>
+      <TextBlock Classes="small" TextWrapping="Wrap" Text="Nothing is deleted; the other copy is only hidden, and the one you see says where else it appears. The source added first is shown." />
     </StackPanel>
     <StackPanel Spacing="8">
       <TextBlock Classes="section" Text="Notifications" />
