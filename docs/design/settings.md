@@ -60,7 +60,10 @@ Stored as JSON under the key `settings.app` in the existing `settings` table (se
 {
   "weekStart": "System", "accent": "blue", "closeToTray": true, "launchAtLogin": false, "startInTrayAtLogin": false,
   "remindersEnabled": true, "eventReminderMinutes": 10, "remindAboutTasks": true,
-  "dateOnlyTaskReminderTime": "09:00", "snoozeMinutes": 10
+  "dateOnlyTaskReminderTime": "09:00", "snoozeMinutes": 10,
+  "checkForUpdates": true, "highlightConflicts": true, "countAllDayBusy": false, "onboardingDismissed": false,
+  "hideDuplicateEvents": true, "hideDuplicateTasks": false,
+  "showWorkload": true, "workloadMeetingHours": 6, "workloadTasks": 8
 }
 ```
 
@@ -91,6 +94,9 @@ window included). Opened from a toolbar button next to Sources.
   half-applied state.
 - Rows are grouped under headings (**Appearance**, **Calendar**, **Notifications**, **Startup** and **Window**; later sections get their own heading).
 - **Appearance** has *Accent colour*: Blue (default), System accent, or a colour of the collection palette (`accent`, see [design-system.md](design-system.md#decisions)). It applies immediately: `AccentService` swaps `AmtAccentColor` and Fluent's palette accent. System accent reads the OS value and falls back to blue where the platform gives none; `AccentColors.Resolve` in Core holds the rules. Collection colours and overdue red are unaffected.
+- **Calendar** also has *Highlight overlapping events* and *Count all-day events that are marked busy* ([conflict-highlight.md](conflict-highlight.md)), and *Show the same event once* (on) and *Show the same task once* (off) ([duplicate-detection.md](duplicate-detection.md)).
+- **Workload** has the switch for the Upcoming strip and the two limits at which a day counts as heavy ([workload-glance.md](workload-glance.md)).
+- **Updates** has *Check for new versions* ([update-check.md](update-check.md)). Source diagnostics have no setting; verbose logging is a switch in the Sources window ([source-diagnostics.md](source-diagnostics.md)).
 - **Notifications** has *Show reminders*, how long before events, whether to remind about tasks, the time for tasks with a date but no time, and the snooze length. See [reminders.md](reminders.md).
 - **Startup** has *Launch All My Tasks when I log in* and its sub-option *Start minimized to tray*. See [launch-at-login.md](launch-at-login.md).
 - **Window** has one checkbox, *Keep running in the system tray when the window is closed* (`closeToTray`, default on). See [system-tray.md](system-tray.md).
