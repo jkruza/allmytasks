@@ -55,7 +55,15 @@ public sealed partial class SettingsViewModel : ViewModelBase
         SelectedLead = LeadOptions.First(o => o.Minutes == settings.Current.EventReminderMinutes);
         SelectedSnooze = SnoozeOptions.First(o => o.Minutes == settings.Current.SnoozeMinutes);
         SelectedTaskTime = TaskTimeOptions.First(o => o.Value == settings.Current.DateOnlyTaskReminderTime);
+        CheckForUpdates = settings.Current.CheckForUpdates;
     }
+
+    /// <summary>Whether the app may ask GitHub once a day for newer releases (docs/design/update-check.md).</summary>
+    [ObservableProperty]
+    public partial bool CheckForUpdates { get; set; }
+
+    partial void OnCheckForUpdatesChanged(bool value) =>
+        _settings.Update(s => s with { CheckForUpdates = value });
 
     public IReadOnlyList<MinutesOption> LeadOptions { get; }
 

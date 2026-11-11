@@ -89,6 +89,15 @@
         </Grid>
       </StackPanel>
     </Border>
+    <!-- New version available: quiet, never blocks; docs/design/update-check.md. -->
+    <Border DockPanel.Dock="Top" DataContext="{Binding Update}" x:DataType="vm:UpdateBannerViewModel" IsVisible="{Binding IsVisible}"
+            Padding="16,6" Background="{DynamicResource AmtRaisedBrush}">
+      <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+        <TextBlock Text="{Binding Text}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+        <Button Grid.Column="1" Classes="tool" Content="View release" Click="OnViewRelease" />
+        <Button Grid.Column="2" Classes="tool" Content="Skip this version" Command="{Binding SkipCommand}" />
+      </Grid>
+    </Border>
     <!-- Short message after a change, with Undo; see docs/design/complete-tasks.md. -->
     <Border DockPanel.Dock="Top" IsVisible="{Binding HasNotice}" Padding="16,6" Background="{DynamicResource AmtRaisedBrush}">
       <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">

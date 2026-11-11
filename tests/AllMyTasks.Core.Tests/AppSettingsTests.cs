@@ -105,4 +105,12 @@ public class AppSettingsTests
         Assert.Equal(10, parsed.SnoozeMinutes);
         Assert.Equal(new TimeOnly(9, 0), parsed.DateOnlyTaskReminderTime);
     }
+
+    [Fact]
+    public void Update_check_defaults_to_on_and_round_trips()
+    {
+        Assert.True(new AppSettings().CheckForUpdates);
+        Assert.False(AppSettings.Parse(new AppSettings { CheckForUpdates = false }.ToJson()).CheckForUpdates);
+        Assert.True(AppSettings.Parse("""{"checkForUpdates":"no"}""").CheckForUpdates);
+    }
 }

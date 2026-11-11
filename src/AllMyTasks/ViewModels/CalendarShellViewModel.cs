@@ -64,8 +64,10 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
         Action? openSettings = null,
         ITaskChangeService? changes = null,
         ISearchService? search = null,
-        SavedFilterStore? savedFilters = null)
+        SavedFilterStore? savedFilters = null,
+        UpdateBannerViewModel? update = null)
     {
+        Update = update;
         _state = state;
         _changes = changes;
         if (changes is not null)
@@ -108,6 +110,9 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
         // Rolls the "today" boundary over at midnight without the user having to refresh.
         _midnightTimer = clock.CreateTimer(_ => OnTick(), null, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
     }
+
+    /// <summary>The new-version banner, or null when update checks are not wired up.</summary>
+    public UpdateBannerViewModel? Update { get; }
 
     public ObservableCollection<CollectionToggle> Collections { get; } = [];
 
@@ -614,6 +619,7 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
             _engine.StatusChanged -= OnStatusChanged;
         }
 
+        Update?.Dispose();
         _midnightTimer.Dispose();
         _tasks.Dispose();
         _inbox.Dispose();
