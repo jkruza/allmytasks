@@ -27,6 +27,7 @@ public sealed partial class UpcomingViewModel(IAgendaService agenda) : ContentVi
         var query = new ViewQuery(today, today.AddDays(_days), context.Zone, context.Filter, IncludeOverdue: true);
         var entries = await agenda.GetEntriesAsync(query, cancellationToken);
         var list = UpcomingList.Build(entries, context.Now, context.Zone, _days);
+        var conflicts = Conflicts = context.Conflicts is { } options ? ConflictFinder.Find(entries, options) : ConflictMap.Empty;
 
         Items.Clear();
         foreach (var group in list.Groups)
@@ -34,7 +35,7 @@ public sealed partial class UpcomingViewModel(IAgendaService agenda) : ContentVi
             Items.Add(new DayGroupHeader(Heading(group)));
             foreach (var s in group.Segments)
             {
-                Items.Add(new EntryItem(s, context.Now, context.Zone));
+                Items.Add(new EntryItem(s, context.Now, context.Zone, conflicts));
             }
         }
 

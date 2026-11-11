@@ -396,6 +396,46 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
         await ReloadAsync();
     }
 
+    /// <summary>"2 conflicts this week", shown next to the navigation; empty when nothing overlaps or highlighting is off.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasConflicts))]
+    public partial string ConflictText { get; set; } = string.Empty;
+
+    public bool HasConflicts => ConflictText.Length > 0;
+
+    private ConflictOptions? ConflictOptionsNow() =>
+        _settings is null || _settings.Current.HighlightConflicts ? new ConflictOptions(_settings?.Current.CountAllDayBusy ?? false) : null;
+
+    private void UpdateConflicts()
+    {
+        var count = Content.Conflicts.Count;
+        var scope = Content switch
+        {
+            DayViewModel => "on this day",
+            WeekViewModel => "this week",
+            MonthViewModel => "this month",
+            UpcomingViewModel => "coming up",
+            _ => string.Empty,
+        };
+        ConflictText = count == 0 || scope.Length == 0 ? string.Empty : $"{count} conflict{(count == 1 ? string.Empty : "s")} {scope}";
+    }
+
+    /// <summary>Opens the first conflict of the current view: its day, with the first event's details.</summary>
+    [RelayCommand]
+    private async Task OpenConflictAsync()
+    {
+        if (Content.Conflicts.Groups.Count == 0)
+        {
+            return;
+        }
+
+        var entry = Content.Conflicts.Groups[0].Entries[0];
+        var day = DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(entry.Start, _zone).DateTime);
+        Mode = ViewMode.Day;
+        CurrentDate = day;
+        await ShowDetailsAsync(entry);
+    }
+
     [RelayCommand]
     private void OpenSources() => _openSources?.Invoke();
 
@@ -423,7 +463,23 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
 
         var sources = await _sources.GetSourcesAsync();
         var sourceName = sources.FirstOrDefault(s => s.Id == entry.Key.SourceId)?.DisplayName;
-        SelectedDetails = new CalendarEntryDetailsViewModel(EntryDetailsBuilder.Create(entry, _zone, sourceName));
+        SelectedDetails = new CalendarEntryDetailsViewModel(
+            EntryDetailsBuilder.Create(entry, _zone, sourceName),
+            await OverlapsOfAsync(entry),
+            ShowDetailsAsync,
+            _zone);
+    }
+
+    // The events that overlap this one, found the same way the views find them (docs/design/conflict-highlight.md).
+    private async Task<IReadOnlyList<EventEntry>> OverlapsOfAsync(AgendaEntry entry)
+    {
+        if (entry is not EventEntry || ConflictOptionsNow() is not { } options)
+        {
+            return [];
+        }
+
+        var entries = await _agenda.GetEntriesAsync(new ViewQuery(entry.FirstDay, entry.LastDayExclusive, _zone, new ViewFilter(ShowEvents: true, ShowTasks: false)));
+        return ConflictFinder.Find(entries, options).OverlapsWith(entry);
     }
 
     /// <summary>Shows the details pane for a task as it is now, or closes it if the task is no longer cached. Read-only.</summary>
@@ -784,11 +840,12 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
         var culture = CultureInfo.CurrentCulture;
         Title = FormatTitle(culture);
 
-        var context = new ViewContext(CurrentDate, new ViewFilter(ShowEvents, ShowTasks, ShowCompleted), now, _zone, FirstDayOfWeek);
+        var context = new ViewContext(CurrentDate, new ViewFilter(ShowEvents, ShowTasks, ShowCompleted), now, _zone, FirstDayOfWeek, ConflictOptionsNow());
         IsLoading = true;
         try
         {
             await Content.LoadAsync(context, cts.Token);
+            UpdateConflicts();
             InboxCount = await _taskList.CountAsync(TaskFilter.Inbox, _zone, cts.Token);
             LastRefreshed = $"Updated {TimeZoneInfo.ConvertTime(now, _zone).ToString("t", culture)}";
         }

@@ -59,7 +59,9 @@
                 <DataTemplate x:DataType="vm:SpanBarItem">
                   <Border Classes="chip-box" Background="{Binding ChipBackground}" BorderBrush="{Binding Accent}" Padding="4,0" ToolTip.Tip="{Binding Spoken}"
                           AutomationProperties.Name="{Binding Spoken}" c:EntryActivation.Enabled="True">
-                    <TextBlock Text="{Binding BarText}" TextTrimming="CharacterEllipsis" />
+                    <TextBlock TextTrimming="CharacterEllipsis">
+                      <Run Text="{Binding ConflictMark}" Foreground="{DynamicResource AmtWarningBrush}" /><Run Text="{Binding BarText}" />
+                    </TextBlock>
                   </Border>
                 </DataTemplate>
               </ItemsControl.ItemTemplate>

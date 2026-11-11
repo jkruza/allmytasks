@@ -38,6 +38,12 @@ public sealed record AppSettings
     /// <summary>Minutes a snoozed reminder waits.</summary>
     public int SnoozeMinutes { get; init; } = 10;
 
+    /// <summary>Mark events that overlap in time (docs/design/conflict-highlight.md).</summary>
+    public bool HighlightConflicts { get; init; } = true;
+
+    /// <summary>Also let all-day events that the source marks as busy take part in conflicts.</summary>
+    public bool CountAllDayBusy { get; init; }
+
     /// <summary>Ask GitHub once a day whether a newer release exists. When off, the app makes no such request.</summary>
     public bool CheckForUpdates { get; init; } = true;
 
@@ -84,6 +90,8 @@ public sealed record AppSettings
                 RemindAboutTasks = ReadBool(root, "remindAboutTasks", result.RemindAboutTasks),
                 DateOnlyTaskReminderTime = ReadTime(root, "dateOnlyTaskReminderTime", result.DateOnlyTaskReminderTime),
                 SnoozeMinutes = ReadMinutes(root, "snoozeMinutes", result.SnoozeMinutes, 1),
+                HighlightConflicts = ReadBool(root, "highlightConflicts", result.HighlightConflicts),
+                CountAllDayBusy = ReadBool(root, "countAllDayBusy", result.CountAllDayBusy),
                 CheckForUpdates = ReadBool(root, "checkForUpdates", result.CheckForUpdates),
             };
 
@@ -108,6 +116,8 @@ public sealed record AppSettings
             ["remindAboutTasks"] = RemindAboutTasks,
             ["dateOnlyTaskReminderTime"] = DateOnlyTaskReminderTime.ToString("HH:mm", CultureInfo.InvariantCulture),
             ["snoozeMinutes"] = SnoozeMinutes,
+            ["highlightConflicts"] = HighlightConflicts,
+            ["countAllDayBusy"] = CountAllDayBusy,
             ["checkForUpdates"] = CheckForUpdates,
         });
 
