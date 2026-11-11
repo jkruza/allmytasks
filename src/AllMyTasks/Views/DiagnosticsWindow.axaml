@@ -1,0 +1,20 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="AllMyTasks.Views.DiagnosticsWindow"
+        Title="Diagnostics report" Width="640" Height="520" MinWidth="420" MinHeight="300"
+        WindowStartupLocation="CenterOwner">
+  <DockPanel Margin="20">
+    <StackPanel DockPanel.Dock="Top" Spacing="6" Margin="0,0,0,12">
+      <TextBlock Classes="title" Text="Diagnostics report" />
+      <TextBlock Classes="small" TextWrapping="Wrap"
+                 Text="This is exactly what will be copied. It has no tokens, passwords, names, e-mail addresses, item titles or notes, and nothing leaves this computer until you paste it somewhere." />
+    </StackPanel>
+    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right" Margin="0,12,0,0">
+      <TextBlock x:Name="Copied" Classes="small" VerticalAlignment="Center" IsVisible="False" Text="Copied." />
+      <Button Content="Copy" IsDefault="True" Click="OnCopy" />
+      <Button Content="Close" IsCancel="True" Click="OnClose" />
+    </StackPanel>
+    <TextBox x:Name="ReportBox" IsReadOnly="True" AcceptsReturn="True" TextWrapping="NoWrap"
+             FontFamily="Cascadia Mono, Consolas, Menlo, monospace" FontSize="12" AutomationProperties.Name="Diagnostics report" />
+  </DockPanel>
+</Window>

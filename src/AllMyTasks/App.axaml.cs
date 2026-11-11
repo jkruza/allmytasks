@@ -1,5 +1,6 @@
 using AllMyTasks.Core.Autostart;
 using AllMyTasks.Core.Changes;
+using AllMyTasks.Core.Diagnostics;
 using AllMyTasks.Core.Reminders;
 using AllMyTasks.Core.Samples;
 using AllMyTasks.Core.Search;
@@ -132,7 +133,15 @@ public sealed partial class App : Application
             zone,
             viewState,
             engine,
-            () => dialogs.ShowSources(new SourcesViewModel(engine, registry, sources, clock, dialogs, () => shell!.OnCollectionsChangedAsync())),
+            () => dialogs.ShowSources(new SourcesViewModel(
+                engine,
+                registry,
+                sources,
+                clock,
+                dialogs,
+                () => shell!.OnCollectionsChangedAsync(),
+                new SourceDiagnosticsService(engine, sources, items),
+                new LogControls(log.Directory, () => log.Verbose, on => log.Verbose = on))),
             appSettings,
             () => _ = dialogs.ShowSettingsAsync(new SettingsViewModel(appSettings, autostart)),
             changes,
