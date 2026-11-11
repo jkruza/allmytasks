@@ -75,9 +75,5 @@ internal static class Program
             .LogToTrace();
 
     // The informational version carries the build metadata ("1.2.0+<commit>"); only the version proper is printed.
-    private static string VersionText()
-    {
-        var info = typeof(Program).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
-        return info is null ? "unknown" : info.Split('+')[0];
-    }
+    private static string VersionText() => AppVersion.Current;
 }
