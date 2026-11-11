@@ -9,4 +9,5 @@ public sealed record ViewContext(
     DateTimeOffset Now,
     TimeZoneInfo Zone,
     DayOfWeek FirstDayOfWeek,
+    ConflictOptions? Conflicts = null,
     bool FirstSyncRunning = false);

@@ -15,14 +15,14 @@ public sealed class MonthCellViewModel : ObservableObject
     private IReadOnlyList<EntryItem> _items;
     private int _hidden;
 
-    public MonthCellViewModel(DayCell cell, int laneCount, DateTimeOffset now, TimeZoneInfo zone, Action<DateOnly> openDay)
+    public MonthCellViewModel(DayCell cell, int laneCount, DateTimeOffset now, TimeZoneInfo zone, Action<DateOnly> openDay, ConflictMap? conflicts = null)
     {
         Date = cell.Date;
         DayNumber = cell.Date.Day.ToString(CultureInfo.CurrentCulture);
         IsCurrentMonth = cell.IsCurrentMonth;
         IsToday = cell.IsToday;
         LaneCount = laneCount;
-        _all = [.. cell.Items.Select(s => new EntryItem(s, now, zone))];
+        _all = [.. cell.Items.Select(s => new EntryItem(s, now, zone, conflicts))];
         _items = [];
         ShowCount(Math.Min(_all.Count, Math.Max(1, InitialItems - laneCount)));
         ItemsMargin = new Avalonia.Thickness(0, laneCount * 20, 0, 0);
@@ -100,15 +100,16 @@ public sealed partial class MonthViewModel(IAgendaService agenda, Action<DateOnl
         var query = new ViewQuery(gridStart, gridStart.AddDays(42), context.Zone, context.Filter);
         var entries = await agenda.GetEntriesAsync(query, cancellationToken);
         var grid = MonthGrid.Build(context.Date, entries, context.Now, context.Zone, context.FirstDayOfWeek);
+        var conflicts = Conflicts = context.Conflicts is { } options ? ConflictFinder.Find(entries, options) : ConflictMap.Empty;
 
         Rows.Clear();
         foreach (var row in grid.Rows)
         {
             var bars = row.SpanBars
-                .Select(b => new SpanBarItem(b.Entry, b.StartColumn, b.ColumnSpan, b.Lane, b.ContinuedFromBefore, b.ContinuesAfter, context.Now, context.Zone))
+                .Select(b => new SpanBarItem(b.Entry, b.StartColumn, b.ColumnSpan, b.Lane, b.ContinuedFromBefore, b.ContinuesAfter, context.Now, context.Zone, conflicts))
                 .ToList();
             Rows.Add(new MonthRowViewModel(
-                [.. row.Days.Select(c => new MonthCellViewModel(c, row.LaneCount, context.Now, context.Zone, openDay))],
+                [.. row.Days.Select(c => new MonthCellViewModel(c, row.LaneCount, context.Now, context.Zone, openDay, conflicts))],
                 bars,
                 row.LaneCount));
         }

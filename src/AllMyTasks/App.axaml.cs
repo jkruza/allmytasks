@@ -1,11 +1,13 @@
 using AllMyTasks.Core.Autostart;
 using AllMyTasks.Core.Changes;
+using AllMyTasks.Core.Diagnostics;
 using AllMyTasks.Core.Reminders;
 using AllMyTasks.Core.Samples;
 using AllMyTasks.Core.Search;
 using AllMyTasks.Core.Startup;
 using AllMyTasks.Core.Storage;
 using AllMyTasks.Core.Sync;
+using AllMyTasks.Core.Updates;
 using AllMyTasks.Core.Views;
 using AllMyTasks.Providers.GitHub;
 using AllMyTasks.Providers.GitLab;
@@ -112,6 +114,10 @@ public sealed partial class App : Application
             _ = autostart.Apply(true, appSettings.Current.StartInTrayAtLogin);
         }
 
+        var releaseChecker = new GitHubReleaseChecker();
+        var updates = new UpdateCheckService(settings, releaseChecker, () => appSettings.Current.CheckForUpdates, AppVersion.Current);
+        appSettings.Changed += (_, _) => _ = updates.CheckAsync();
+
         var agenda = new AgendaService(viewItems, sources, new IcalRecurrenceExpander(), clock);
         CalendarShellViewModel? shell = null;
         shell = new CalendarShellViewModel(
@@ -123,12 +129,21 @@ public sealed partial class App : Application
             zone,
             viewState,
             engine,
-            () => dialogs.ShowSources(new SourcesViewModel(engine, registry, sources, clock, dialogs, () => shell!.OnCollectionsChangedAsync())),
+            () => dialogs.ShowSources(new SourcesViewModel(
+                engine,
+                registry,
+                sources,
+                clock,
+                dialogs,
+                () => shell!.OnCollectionsChangedAsync(),
+                new SourceDiagnosticsService(engine, sources, items),
+                new LogControls(log.Directory, () => log.Verbose, on => log.Verbose = on))),
             appSettings,
             () => _ = dialogs.ShowSettingsAsync(new SettingsViewModel(appSettings, autostart)),
             changes,
             new SearchService(viewItems, sources, new IcalRecurrenceExpander(), clock),
             new SavedFilterStore(settings),
+            new UpdateBannerViewModel(updates),
             new OnboardingViewModel(
                 appSettings,
                 async () =>
@@ -178,6 +193,11 @@ public sealed partial class App : Application
         var shutdown = Shutdown;
         shutdown.Add("reminders", reminders.Dispose);
         shutdown.Add("scheduler", scheduler.Dispose);
+        shutdown.Add("update check", () =>
+        {
+            updates.Dispose();
+            releaseChecker.Dispose();
+        });
         shutdown.Add("sync engine", engine.Dispose);
         shutdown.Add("tray icon", tray.Dispose);
         shutdown.Add("view models", shell.Dispose);
@@ -206,6 +226,9 @@ public sealed partial class App : Application
 
         // Show cached data first, then sync in the background.
         _ = StartAsync(shell, scheduler, reminders);
+
+        // Never blocks start-up and never shows an error; a failed check is retried later.
+        _ = updates.CheckAsync();
     }
 
     private static async Task StartAsync(CalendarShellViewModel shell, SyncScheduler scheduler, ReminderScheduler reminders)

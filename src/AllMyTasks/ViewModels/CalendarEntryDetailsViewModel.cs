@@ -6,11 +6,22 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace AllMyTasks.ViewModels;
 
+/// <summary>An event that overlaps the one shown: its title and time, and a command that opens it.</summary>
+public sealed record OverlapLine(string Title, string TimeText, System.Windows.Input.ICommand OpenCommand);
+
 /// <summary>Read-only details of one calendar entry, shown in the details pane.</summary>
 public sealed partial class CalendarEntryDetailsViewModel : ViewModelBase
 {
-    public CalendarEntryDetailsViewModel(EntryDetails details)
+    public CalendarEntryDetailsViewModel(
+        EntryDetails details,
+        IReadOnlyList<EventEntry>? overlaps = null,
+        Func<AgendaEntry, Task>? open = null,
+        TimeZoneInfo? zone = null)
     {
+        Overlaps = [.. (overlaps ?? []).Select(o => new OverlapLine(
+            string.IsNullOrWhiteSpace(o.Title) ? "(no title)" : o.Title,
+            o.TimeRangeText(zone ?? TimeZoneInfo.Local),
+            new RelayCommand(() => _ = open?.Invoke(o))))];
         Title = details.Title;
         IsTask = details.IsTask;
         Accent = Brush.Parse(details.AccentColor);
@@ -25,6 +36,11 @@ public sealed partial class CalendarEntryDetailsViewModel : ViewModelBase
     }
 
     private readonly EntryDetails _details;
+
+    /// <summary>The other events that overlap this one; each opens its own details.</summary>
+    public IReadOnlyList<OverlapLine> Overlaps { get; }
+
+    public bool HasOverlaps => Overlaps.Count > 0;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(VisiblePeople), nameof(CanShowAll))]
