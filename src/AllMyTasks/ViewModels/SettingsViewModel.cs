@@ -55,7 +55,23 @@ public sealed partial class SettingsViewModel : ViewModelBase
         SelectedLead = LeadOptions.First(o => o.Minutes == settings.Current.EventReminderMinutes);
         SelectedSnooze = SnoozeOptions.First(o => o.Minutes == settings.Current.SnoozeMinutes);
         SelectedTaskTime = TaskTimeOptions.First(o => o.Value == settings.Current.DateOnlyTaskReminderTime);
+        HighlightConflicts = settings.Current.HighlightConflicts;
+        CountAllDayBusy = settings.Current.CountAllDayBusy;
     }
+
+    /// <summary>Mark events that overlap in time (docs/design/conflict-highlight.md).</summary>
+    [ObservableProperty]
+    public partial bool HighlightConflicts { get; set; }
+
+    partial void OnHighlightConflictsChanged(bool value) =>
+        _settings.Update(s => s with { HighlightConflicts = value });
+
+    /// <summary>Also let busy all-day events take part in conflicts.</summary>
+    [ObservableProperty]
+    public partial bool CountAllDayBusy { get; set; }
+
+    partial void OnCountAllDayBusyChanged(bool value) =>
+        _settings.Update(s => s with { CountAllDayBusy = value });
 
     public IReadOnlyList<MinutesOption> LeadOptions { get; }
 

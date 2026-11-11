@@ -38,11 +38,12 @@ public sealed partial class DayViewModel(IAgendaService agenda) : ContentViewMod
         var query = new ViewQuery(context.Date, context.Date.AddDays(1), context.Zone, context.Filter, IncludeOverdue: context.Date == today);
         var entries = await agenda.GetEntriesAsync(query, cancellationToken);
         var day = DayAgenda.Build(context.Date, entries, context.Now, context.Zone);
+        var conflicts = Conflicts = context.Conflicts is { } options ? ConflictFinder.Find(entries, options) : ConflictMap.Empty;
 
         AllDay.Clear();
         foreach (var s in day.AllDay)
         {
-            AllDay.Add(new EntryItem(s, context.Now, context.Zone));
+            AllDay.Add(new EntryItem(s, context.Now, context.Zone, conflicts));
         }
 
         Timeline.Clear();
@@ -53,7 +54,7 @@ public sealed partial class DayViewModel(IAgendaService agenda) : ContentViewMod
                 Timeline.Add(NowMarker.Instance);
             }
 
-            Timeline.Add(new EntryItem(day.Timed[i], context.Now, context.Zone));
+            Timeline.Add(new EntryItem(day.Timed[i], context.Now, context.Zone, conflicts));
         }
 
         if (day.NowIndex == day.Timed.Count && day.Timed.Count > 0)
@@ -64,7 +65,7 @@ public sealed partial class DayViewModel(IAgendaService agenda) : ContentViewMod
         Overdue.Clear();
         foreach (var s in day.Overdue)
         {
-            Overdue.Add(new EntryItem(s, context.Now, context.Zone));
+            Overdue.Add(new EntryItem(s, context.Now, context.Zone, conflicts));
         }
 
         var culture = CultureInfo.CurrentCulture;

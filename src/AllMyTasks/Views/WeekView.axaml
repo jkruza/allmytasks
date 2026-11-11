@@ -36,7 +36,9 @@
           <DataTemplate x:DataType="vm:SpanBarItem">
             <Border Classes="chip-box" Background="{Binding ChipBackground}" BorderBrush="{Binding Accent}" ToolTip.Tip="{Binding Spoken}"
                     AutomationProperties.Name="{Binding Spoken}" c:EntryActivation.Enabled="True">
-              <TextBlock Text="{Binding BarText}" TextTrimming="CharacterEllipsis" />
+              <TextBlock TextTrimming="CharacterEllipsis">
+                <Run Text="{Binding ConflictMark}" Foreground="{DynamicResource AmtWarningBrush}" /><Run Text="{Binding BarText}" />
+              </TextBlock>
             </Border>
           </DataTemplate>
         </ItemsControl.ItemTemplate>
@@ -73,7 +75,9 @@
                               ToolTip.Tip="{Binding Spoken}" AutomationProperties.Name="{Binding Spoken}" ClipToBounds="True"
                               c:EntryActivation.Enabled="True">
                         <StackPanel>
-                          <TextBlock Text="{Binding Title}" FontSize="{DynamicResource AmtFontSizeMeta}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                          <TextBlock FontSize="{DynamicResource AmtFontSizeMeta}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis">
+                            <Run Text="{Binding ConflictMark}" Foreground="{DynamicResource AmtWarningBrush}" /><Run Text="{Binding Title}" />
+                          </TextBlock>
                           <TextBlock Classes="meta" Text="{Binding TimeText}" />
                         </StackPanel>
                       </Border>

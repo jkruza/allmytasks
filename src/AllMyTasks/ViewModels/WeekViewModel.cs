@@ -4,7 +4,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace AllMyTasks.ViewModels;
 
-public sealed class WeekDayViewModel(DayColumn column, DateTimeOffset now, TimeZoneInfo zone)
+public sealed class WeekDayViewModel(DayColumn column, DateTimeOffset now, TimeZoneInfo zone, ConflictMap? conflicts = null)
 {
     public DateOnly Date { get; } = column.Date;
 
@@ -18,7 +18,7 @@ public sealed class WeekDayViewModel(DayColumn column, DateTimeOffset now, TimeZ
 
     public int TotalMinutes { get; } = column.TotalMinutes;
 
-    public ObservableCollection<TimedEntryItem> Entries { get; } = [.. column.Timed.Select(p => new TimedEntryItem(p, now, zone))];
+    public ObservableCollection<TimedEntryItem> Entries { get; } = [.. column.Timed.Select(p => new TimedEntryItem(p, now, zone, conflicts))];
 }
 
 public sealed partial class WeekViewModel(IAgendaService agenda) : ContentViewModel
@@ -65,17 +65,18 @@ public sealed partial class WeekViewModel(IAgendaService agenda) : ContentViewMo
         var query = new ViewQuery(start, start.AddDays(7), context.Zone, context.Filter);
         var entries = await agenda.GetEntriesAsync(query, cancellationToken);
         var layout = WeekLayout.Build(start, entries, context.Now, context.Zone, HideWeekends);
+        var conflicts = Conflicts = context.Conflicts is { } options ? ConflictFinder.Find(entries, options) : ConflictMap.Empty;
 
         Days.Clear();
         foreach (var d in layout.Days)
         {
-            Days.Add(new WeekDayViewModel(d, context.Now, context.Zone));
+            Days.Add(new WeekDayViewModel(d, context.Now, context.Zone, conflicts));
         }
 
         AllDayBars.Clear();
         foreach (var b in layout.AllDaySpans)
         {
-            AllDayBars.Add(new SpanBarItem(b.Entry, b.StartColumn, b.ColumnSpan, b.Lane, b.ContinuedFromBefore, b.ContinuesAfter, context.Now, context.Zone));
+            AllDayBars.Add(new SpanBarItem(b.Entry, b.StartColumn, b.ColumnSpan, b.Lane, b.ContinuedFromBefore, b.ContinuesAfter, context.Now, context.Zone, conflicts));
         }
 
         HourLabels.Clear();

@@ -30,7 +30,7 @@ public interface ITimelinePlacement
 /// <summary>An event or task prepared for display: text, colours and a spoken description.</summary>
 public class EntryItem
 {
-    public EntryItem(DaySegment segment, DateTimeOffset now, TimeZoneInfo zone)
+    public EntryItem(DaySegment segment, DateTimeOffset now, TimeZoneInfo zone, ConflictMap? conflicts = null)
     {
         var entry = segment.Entry;
         Entry = entry;
@@ -48,7 +48,10 @@ public class EntryItem
         ChipBackground = Tint(color);
         Glyph = !IsTask ? string.Empty : IsCompleted ? "☑" : "☐";
         CollectionName = entry.CollectionName;
-        Spoken = entry.SpokenText(zone);
+        var overlaps = conflicts?.OverlapsWith(entry) ?? [];
+        HasConflict = overlaps.Count > 0;
+        ConflictText = HasConflict ? "Overlaps with " + string.Join(", ", overlaps.Select(o => string.IsNullOrWhiteSpace(o.Title) ? "(no title)" : o.Title)) : string.Empty;
+        Spoken = entry.SpokenText(zone) + (HasConflict ? ", " + ConflictText.ToLowerInvariant() : string.Empty);
         Opacity = IsPast || IsCompleted ? 0.7 : 1;
     }
 
@@ -80,6 +83,15 @@ public class EntryItem
 
     /// <summary>The collection colour at 15 % opacity, the calendar chip fill; text on it is the theme's ink colour.</summary>
     public IBrush ChipBackground { get; }
+
+    /// <summary>Whether another busy event overlaps this one (docs/design/conflict-highlight.md).</summary>
+    public bool HasConflict { get; }
+
+    /// <summary>"Overlaps with Team sync, Dentist", or empty.</summary>
+    public string ConflictText { get; }
+
+    /// <summary>"⚠ " before the title of a conflicting chip, or empty.</summary>
+    public string ConflictMark => HasConflict ? "⚠ " : string.Empty;
 
     public string Spoken { get; }
 
@@ -114,8 +126,8 @@ public class EntryItem
 }
 
 /// <summary>An entry on a week column's time axis.</summary>
-public sealed class TimedEntryItem(PositionedEntry positioned, DateTimeOffset now, TimeZoneInfo zone)
-    : EntryItem(positioned.Segment, now, zone), ITimelinePlacement
+public sealed class TimedEntryItem(PositionedEntry positioned, DateTimeOffset now, TimeZoneInfo zone, ConflictMap? conflicts = null)
+    : EntryItem(positioned.Segment, now, zone, conflicts), ITimelinePlacement
 {
     public int StartMinute { get; } = positioned.StartMinute;
 
@@ -129,11 +141,12 @@ public sealed class TimedEntryItem(PositionedEntry positioned, DateTimeOffset no
 /// <summary>An all-day bar spanning day columns.</summary>
 public sealed class SpanBarItem : EntryItem, ISpanPlacement
 {
-    public SpanBarItem(AgendaEntry entry, int startColumn, int columnSpan, int lane, bool fromBefore, bool continues, DateTimeOffset now, TimeZoneInfo zone)
+    public SpanBarItem(AgendaEntry entry, int startColumn, int columnSpan, int lane, bool fromBefore, bool continues, DateTimeOffset now, TimeZoneInfo zone, ConflictMap? conflicts = null)
         : base(
             new DaySegment(entry, entry.FirstDay, entry.Start, entry.End, fromBefore, continues),
             now,
-            zone)
+            zone,
+            conflicts)
     {
         StartColumn = startColumn;
         ColumnSpan = columnSpan;
