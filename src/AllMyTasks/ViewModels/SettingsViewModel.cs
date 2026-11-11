@@ -50,18 +50,88 @@ public sealed partial class SettingsViewModel : ViewModelBase
         LeadOptions = MinutesChoices([0, 5, 10, 15, 30, 60], settings.Current.EventReminderMinutes, minutes => minutes == 0 ? "At the start" : $"{Minutes(minutes)} before");
         SnoozeOptions = MinutesChoices([5, 10, 15, 30, 60], settings.Current.SnoozeMinutes, Minutes);
         TaskTimeOptions = TimeChoices(settings.Current.DateOnlyTaskReminderTime);
+        ShowWorkload = settings.Current.ShowWorkload;
+        MeetingHourOptions = WithCurrent([3, 4, 5, 6, 7, 8, 10], settings.Current.WorkloadMeetingHours);
+        TaskCountOptions = WithCurrent([4, 5, 6, 8, 10, 12, 15], settings.Current.WorkloadTasks);
+        SelectedMeetingHours = settings.Current.WorkloadMeetingHours;
+        SelectedTaskCount = settings.Current.WorkloadTasks;
+        HideDuplicateEvents = settings.Current.HideDuplicateEvents;
+        HideDuplicateTasks = settings.Current.HideDuplicateTasks;
         RemindersEnabled = settings.Current.RemindersEnabled;
         RemindAboutTasks = settings.Current.RemindAboutTasks;
         SelectedLead = LeadOptions.First(o => o.Minutes == settings.Current.EventReminderMinutes);
         SelectedSnooze = SnoozeOptions.First(o => o.Minutes == settings.Current.SnoozeMinutes);
         SelectedTaskTime = TaskTimeOptions.First(o => o.Value == settings.Current.DateOnlyTaskReminderTime);
+        HighlightConflicts = settings.Current.HighlightConflicts;
+        CountAllDayBusy = settings.Current.CountAllDayBusy;
+        CheckForUpdates = settings.Current.CheckForUpdates;
     }
+
+    /// <summary>Mark events that overlap in time (docs/design/conflict-highlight.md).</summary>
+    [ObservableProperty]
+    public partial bool HighlightConflicts { get; set; }
+
+    partial void OnHighlightConflictsChanged(bool value) =>
+        _settings.Update(s => s with { HighlightConflicts = value });
+
+    /// <summary>Also let busy all-day events take part in conflicts.</summary>
+    [ObservableProperty]
+    public partial bool CountAllDayBusy { get; set; }
+
+    partial void OnCountAllDayBusyChanged(bool value) =>
+        _settings.Update(s => s with { CountAllDayBusy = value });
+
+
+    /// <summary>Whether the app may ask GitHub once a day for newer releases (docs/design/update-check.md).</summary>
+    [ObservableProperty]
+    public partial bool CheckForUpdates { get; set; }
+
+    partial void OnCheckForUpdatesChanged(bool value) =>
+        _settings.Update(s => s with { CheckForUpdates = value });
 
     public IReadOnlyList<MinutesOption> LeadOptions { get; }
 
     public IReadOnlyList<MinutesOption> SnoozeOptions { get; }
 
     public IReadOnlyList<TimeOption> TaskTimeOptions { get; }
+
+    public IReadOnlyList<int> MeetingHourOptions { get; }
+
+    public IReadOnlyList<int> TaskCountOptions { get; }
+
+    [ObservableProperty]
+    public partial bool ShowWorkload { get; set; }
+
+    partial void OnShowWorkloadChanged(bool value) =>
+        _settings.Update(s => s with { ShowWorkload = value });
+
+    [ObservableProperty]
+    public partial int SelectedMeetingHours { get; set; }
+
+    partial void OnSelectedMeetingHoursChanged(int value) =>
+        _settings.Update(s => s with { WorkloadMeetingHours = value });
+
+    [ObservableProperty]
+    public partial int SelectedTaskCount { get; set; }
+
+    partial void OnSelectedTaskCountChanged(int value) =>
+        _settings.Update(s => s with { WorkloadTasks = value });
+
+    /// <summary>The standard choices, plus the stored value when it is not one of them (for example from a hand-edited file).</summary>
+    private static List<int> WithCurrent(int[] standard, int current) =>
+        [.. standard.Append(current).Distinct().Order()];
+
+    [ObservableProperty]
+    public partial bool HideDuplicateEvents { get; set; }
+
+    partial void OnHideDuplicateEventsChanged(bool value) =>
+        _settings.Update(s => s with { HideDuplicateEvents = value });
+
+    [ObservableProperty]
+    public partial bool HideDuplicateTasks { get; set; }
+
+    partial void OnHideDuplicateTasksChanged(bool value) =>
+        _settings.Update(s => s with { HideDuplicateTasks = value });
 
     [ObservableProperty]
     public partial bool RemindersEnabled { get; set; }

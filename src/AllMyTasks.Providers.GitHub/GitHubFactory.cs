@@ -26,7 +26,8 @@ public sealed class GitHubFactory(HttpMessageHandler? handler = null, ILogger? l
             Required: true,
             Help: "In GitHub open Settings, Developer settings, Personal access tokens and create a fine-grained token with read-only access to Issues, Pull requests and Metadata on the repositories you want to see (a classic token with the repo scope also works). The app only reads with it. It is stored in your system keyring."),
         new SourceConfigField(SyncScheduler.IntervalKey, "Refresh every (minutes)", FieldKind.Number, Help: "Leave blank for 15."),
-    ]);
+    ],
+    "A personal access token with read access to issues and pull requests, created under Settings, Developer settings.");
 
     public void Dispose()
     {

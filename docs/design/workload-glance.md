@@ -1,6 +1,6 @@
 # Workload glance
 
-Tracked in [#140](https://github.com/jkruza/allmytasks/issues/140). **Status: proposed, version 1.**
+Tracked in [#140](https://github.com/jkruza/allmytasks/issues/140). **Status: implemented, version 1.**
 
 ## Goal
 
@@ -39,6 +39,19 @@ Pure function; the view model only binds.
 ## Testing
 
 Overlap union, all-day exclusion, cancelled exclusion, DST day, threshold flag, hidden collection, empty week.
+
+## Implementation notes
+
+- `WorkloadSummary.Build(entries, today, zone, options, days)` in Core is a pure function over the entries the Upcoming
+  view already loads, so hidden collections, collapsed duplicates and the shared filters apply without extra code.
+  `DayLoad(Date, MeetingTime, TasksDue, IsHeavy)` plus the overdue count; meeting time is the union of the day's busy,
+  timed, non-cancelled events (tentative ones count) clipped to the day's real length in the display zone.
+- A day is heavy when it **reaches** the limit (at least 6 hours, or at least 8 tasks, by default). Heavy days show
+  their meeting time in the amber text colour; there is no red and no message.
+- Shown only in Upcoming and on by default, with a Settings switch (Workload section) and the two limits as choices.
+  The week view does not show it yet.
+- Clicking a day opens that day; the overdue number opens All tasks filtered to Overdue.
+- The strip counts the whole day, so meetings that have already ended today are included.
 
 ## Open questions
 

@@ -66,6 +66,9 @@ public sealed partial class SourceEditorViewModel : ViewModelBase
 
     public IReadOnlyList<ISourceFactory> Kinds { get; }
 
+    /// <summary>A line or two on what to have ready for the selected kind, from its schema (docs/design/first-run-onboarding.md).</summary>
+    public string WhatYouNeed => SelectedKind?.ConfigSchema.WhatYouNeed ?? string.Empty;
+
     public bool IsEdit => _editing is not null;
 
     public string Title { get; }
@@ -100,7 +103,11 @@ public sealed partial class SourceEditorViewModel : ViewModelBase
         }
     }
 
-    partial void OnSelectedKindChanged(ISourceFactory value) => BuildFields();
+    partial void OnSelectedKindChanged(ISourceFactory value)
+    {
+        OnPropertyChanged(nameof(WhatYouNeed));
+        BuildFields();
+    }
 
     /// <summary>Validates and saves. Returns false (with errors set on the fields) if the input is not acceptable.</summary>
     public async Task<bool> SaveAsync()

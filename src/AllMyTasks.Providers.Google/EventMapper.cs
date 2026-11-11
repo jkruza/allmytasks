@@ -98,7 +98,8 @@ internal sealed class EventMapper(string sourceId)
             MeetingUrl: MeetingUrlOf(dto),
             Organizer: dto.Organizer is { } o ? new Attendee(o.DisplayName, o.Email, AttendeeRole.Required, ResponseStatus.Accepted, o.Self) : null,
             Attendees: attendees,
-            AttendeeCount: total);
+            AttendeeCount: total,
+            Uid: string.IsNullOrWhiteSpace(dto.ICalUid) ? null : dto.ICalUid.Trim());
     }
 
     /// <summary>The video entry point of the conference data, else the classic <c>hangoutLink</c>. Other entry points (phone, SIP) are not links to open.</summary>

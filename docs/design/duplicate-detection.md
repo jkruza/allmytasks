@@ -1,6 +1,6 @@
 # Detect duplicate events and tasks across sources
 
-Tracked in [#137](https://github.com/jkruza/allmytasks/issues/137). **Status: proposed, version 1.**
+Tracked in [#137](https://github.com/jkruza/allmytasks/issues/137). **Status: implemented for events, version 1; task matching is a first cut.**
 
 ## Goal
 
@@ -49,6 +49,22 @@ survivors only.
 
 Same UID, same URL, same time different title (not merged), same title different time (not merged), three-way
 group, priority change, hidden source, recurring series with one moved occurrence, setting off.
+
+## Implementation notes
+
+- `CalendarEvent.Uid` carries the iCalendar UID: Google `iCalUID`, Outlook `iCalUId`, iCalendar feeds and CalDAV `UID`.
+  It is stored in the item JSON, so no migration is needed; events cached before this change get a UID on their next
+  sync.
+- `DuplicateFinder.Collapse` runs in `AgendaService` after recurrences are expanded, so every calendar view, upcoming
+  and reminders see the same list. A UID match still requires the same start and end, because every occurrence of a
+  series shares one UID. Cancelled (including declined) copies are never merged with live ones.
+- A task is a duplicate only with the same title, due value **and** link, from different sources. Setting is off by
+  default. The task list, Inbox and search are not collapsed yet.
+- Survivor: the source added first. The user-ordered priority list from the design is supported by the finder
+  (`DuplicateOptions.SourcePriority`) but has no editor yet.
+- The survivor lists the others under "Also in" in its details pane. Settings, Calendar: two checkboxes
+  (`hideDuplicateEvents` on, `hideDuplicateTasks` off).
+- Hidden duplicates are excluded from anything built on the agenda, which includes the workload glance.
 
 ## Open questions
 

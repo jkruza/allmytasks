@@ -259,7 +259,8 @@ public static class IcalMapper
             MeetingUrl: MeetingUrlOf(ev),
             Organizer: ev.Organizer is { } organizer ? PersonOf(organizer.CommonName, organizer.Value, null, null, null) : null,
             Attendees: attendees,
-            AttendeeCount: total);
+            AttendeeCount: total,
+            Uid: uid);
     }
 
     /// <summary>

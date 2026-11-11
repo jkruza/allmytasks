@@ -1,11 +1,13 @@
 using AllMyTasks.Core.Autostart;
 using AllMyTasks.Core.Changes;
+using AllMyTasks.Core.Diagnostics;
 using AllMyTasks.Core.Reminders;
 using AllMyTasks.Core.Samples;
 using AllMyTasks.Core.Search;
 using AllMyTasks.Core.Startup;
 using AllMyTasks.Core.Storage;
 using AllMyTasks.Core.Sync;
+using AllMyTasks.Core.Updates;
 using AllMyTasks.Core.Views;
 using AllMyTasks.Providers.GitHub;
 using AllMyTasks.Providers.GitLab;
@@ -95,13 +97,9 @@ public sealed partial class App : Application
         var scheduler = new SyncScheduler(engine, sources, clock);
         var dialogs = new DialogService(desktop);
 
-        // First run: add the sample source through the registry; the first sync below fills the database through
-        // the normal sync path. After that the app only reads from the local database, so a restart shows the same
-        // data with no network.
-        if (sources.GetSourcesAsync().GetAwaiter().GetResult().Count == 0)
-        {
-            registry.AddAsync(SampleSourceFactory.KindName, "Sample data", new Dictionary<string, string>()).GetAwaiter().GetResult();
-        }
+        // First run: nothing is added. The window shows the welcome state (docs/design/first-run-onboarding.md), where the
+        // user adds a first source or chooses the sample data, which then goes through the registry and the normal sync path.
+        // After that the app only reads from the local database, so a restart shows the same data with no network.
 
         var viewState = new ViewStateStore(settings);
         var appSettings = new SettingsService(viewState);
@@ -116,7 +114,11 @@ public sealed partial class App : Application
             _ = autostart.Apply(true, appSettings.Current.StartInTrayAtLogin);
         }
 
-        var agenda = new AgendaService(viewItems, sources, new IcalRecurrenceExpander(), clock);
+        var releaseChecker = new GitHubReleaseChecker();
+        var updates = new UpdateCheckService(settings, releaseChecker, () => appSettings.Current.CheckForUpdates, AppVersion.Current);
+        appSettings.Changed += (_, _) => _ = updates.CheckAsync();
+
+        var agenda = new AgendaService(viewItems, sources, new IcalRecurrenceExpander(), clock, () => appSettings.Current.ToDuplicateOptions());
         CalendarShellViewModel? shell = null;
         shell = new CalendarShellViewModel(
             agenda,
@@ -127,12 +129,41 @@ public sealed partial class App : Application
             zone,
             viewState,
             engine,
-            () => dialogs.ShowSources(new SourcesViewModel(engine, registry, sources, clock, dialogs, () => shell!.OnCollectionsChangedAsync())),
+            () => dialogs.ShowSources(new SourcesViewModel(
+                engine,
+                registry,
+                sources,
+                clock,
+                dialogs,
+                () => shell!.OnCollectionsChangedAsync(),
+                new SourceDiagnosticsService(engine, sources, items),
+                new LogControls(log.Directory, () => log.Verbose, on => log.Verbose = on))),
             appSettings,
             () => _ = dialogs.ShowSettingsAsync(new SettingsViewModel(appSettings, autostart)),
             changes,
             new SearchService(viewItems, sources, new IcalRecurrenceExpander(), clock),
-            new SavedFilterStore(settings));
+            new SavedFilterStore(settings),
+            new UpdateBannerViewModel(updates),
+            new OnboardingViewModel(
+                appSettings,
+                async () =>
+                {
+                    var editor = new SourceEditorViewModel(registry, null, sources);
+                    if (await dialogs.ShowSourceEditorAsync(editor))
+                    {
+                        await shell!.OnCollectionsChangedAsync();
+                        if (editor.SavedSourceId is { } id)
+                        {
+                            _ = engine.SyncSourceAsync(id);
+                        }
+                    }
+                },
+                async () =>
+                {
+                    var sample = await registry.AddAsync(SampleSourceFactory.KindName, "Sample data", new Dictionary<string, string>());
+                    await shell!.OnCollectionsChangedAsync();
+                    _ = engine.SyncSourceAsync(sample.Id);
+                }));
 
         var window = new MainWindow { DataContext = shell };
         window.Activated += (_, _) => _ = scheduler.OnWindowActivatedAsync();
@@ -162,6 +193,11 @@ public sealed partial class App : Application
         var shutdown = Shutdown;
         shutdown.Add("reminders", reminders.Dispose);
         shutdown.Add("scheduler", scheduler.Dispose);
+        shutdown.Add("update check", () =>
+        {
+            updates.Dispose();
+            releaseChecker.Dispose();
+        });
         shutdown.Add("sync engine", engine.Dispose);
         shutdown.Add("tray icon", tray.Dispose);
         shutdown.Add("view models", shell.Dispose);
@@ -190,6 +226,9 @@ public sealed partial class App : Application
 
         // Show cached data first, then sync in the background.
         _ = StartAsync(shell, scheduler, reminders);
+
+        // Never blocks start-up and never shows an error; a failed check is retried later.
+        _ = updates.CheckAsync();
     }
 
     private static async Task StartAsync(CalendarShellViewModel shell, SyncScheduler scheduler, ReminderScheduler reminders)

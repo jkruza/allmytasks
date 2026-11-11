@@ -67,6 +67,14 @@ public class CalendarTests
     }
 
     [Fact]
+    public async Task The_ical_uid_is_kept_for_duplicate_detection()
+    {
+        var (e, _) = await MapOneAsync("{" + _window + ",\"iCalUID\":\" abc@google.com \"}");
+
+        Assert.Equal("abc@google.com", e!.Uid);
+    }
+
+    [Fact]
     public async Task Organiser_and_attendees_are_mapped_and_declined_still_means_cancelled()
     {
         var (e, _) = await MapOneAsync("{" + _window + """
