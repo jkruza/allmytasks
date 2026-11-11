@@ -45,6 +45,9 @@ do here can damage data elsewhere. Version 2 revisits it deliberately, in a narr
 
 Also in version 1 but not a goal in itself: reminders, system tray, launch at login, search, installers.
 
+Proposed for version 1 (designed 2026-11-11, not built; they make the overview better without adding sources or writes):
+[first-run onboarding](first-run-onboarding.md) ([#135](https://github.com/jkruza/allmytasks/issues/135)), [conflict highlighting](conflict-highlight.md) ([#136](https://github.com/jkruza/allmytasks/issues/136)), [duplicate detection](duplicate-detection.md) ([#137](https://github.com/jkruza/allmytasks/issues/137)), [source diagnostics](source-diagnostics.md) ([#138](https://github.com/jkruza/allmytasks/issues/138)), [update check](update-check.md) ([#139](https://github.com/jkruza/allmytasks/issues/139)) and [workload glance](workload-glance.md) ([#140](https://github.com/jkruza/allmytasks/issues/140)).
+
 ## Version 2: more services and careful write support
 
 - **More services**, which ones still to be decided. Candidates are listed in [write-support.md](write-support.md#more-services)
@@ -52,6 +55,8 @@ Also in version 1 but not a goal in itself: reminders, system tray, launch at lo
 - **Write support**, limited to three things: completing tasks, changing task dates, and rescheduling events.
   Not creating, editing text, moving or deleting. Tracking issue [#75](https://github.com/jkruza/allmytasks/issues/75),
   design in [write-support.md](write-support.md).
+
+- **Also proposed for version 2:** [compact upcoming window](compact-upcoming-window.md) ([#141](https://github.com/jkruza/allmytasks/issues/141)), [command palette](command-palette.md) ([#142](https://github.com/jkruza/allmytasks/issues/142)), [localisation](localisation.md) ([#143](https://github.com/jkruza/allmytasks/issues/143)) and [database encryption](database-encryption.md) ([#144](https://github.com/jkruza/allmytasks/issues/144)).
 
 Todoist task completion ([#54](https://github.com/jkruza/allmytasks/issues/54), [complete-tasks.md](complete-tasks.md))
 was built before this refocus. It stays, as an opt-in preview of version 2; see

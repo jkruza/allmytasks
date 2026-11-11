@@ -10,8 +10,8 @@ The goal is a **read-only overview** of tasks and events from many sources; see 
 
 | Version | Goals | State |
 | --- | --- | --- |
-| 1 | General framework; Todoist, Microsoft Outlook / To Do, Google Calendar / Tasks, Jira, GitHub, GitLab; views: calendar grids, Upcoming, All tasks, Inbox | Framework, Todoist, Microsoft, Google, GitHub (all four tried on live accounts), Jira ([#71](https://github.com/jkruza/allmytasks/issues/71), not yet tried on a live site), GitHub ([#72](https://github.com/jkruza/allmytasks/issues/72)), GitLab ([#73](https://github.com/jkruza/allmytasks/issues/73), not yet tried on a live instance) and all views including the Inbox ([#74](https://github.com/jkruza/allmytasks/issues/74)) are in. Open: live-account checks of the providers |
-| 2 | More services (to be chosen); write support for completing tasks, changing task dates and rescheduling events | Planned: [write-support.md](write-support.md), [#75](https://github.com/jkruza/allmytasks/issues/75). Todoist completion exists as an opt-in preview |
+| 1 | General framework; Todoist, Microsoft Outlook / To Do, Google Calendar / Tasks, Jira, GitHub, GitLab; views: calendar grids, Upcoming, All tasks, Inbox | Framework, Todoist, Microsoft, Google, GitHub (all four tried on live accounts), Jira ([#71](https://github.com/jkruza/allmytasks/issues/71), not yet tried on a live site), GitHub ([#72](https://github.com/jkruza/allmytasks/issues/72)), GitLab ([#73](https://github.com/jkruza/allmytasks/issues/73), not yet tried on a live instance) and all views including the Inbox ([#74](https://github.com/jkruza/allmytasks/issues/74)) are in. Open: live-account checks of the providers. Proposed additions, designed but not built: onboarding ([#135](https://github.com/jkruza/allmytasks/issues/135)), conflicts ([#136](https://github.com/jkruza/allmytasks/issues/136)), duplicates ([#137](https://github.com/jkruza/allmytasks/issues/137)), diagnostics ([#138](https://github.com/jkruza/allmytasks/issues/138)), update check ([#139](https://github.com/jkruza/allmytasks/issues/139)), workload glance ([#140](https://github.com/jkruza/allmytasks/issues/140)) |
+| 2 | More services (to be chosen); write support for completing tasks, changing task dates and rescheduling events | Planned: [write-support.md](write-support.md), [#75](https://github.com/jkruza/allmytasks/issues/75). Todoist completion exists as an opt-in preview. Also proposed: compact window ([#141](https://github.com/jkruza/allmytasks/issues/141)), command palette ([#142](https://github.com/jkruza/allmytasks/issues/142)), localisation ([#143](https://github.com/jkruza/allmytasks/issues/143)), database encryption ([#144](https://github.com/jkruza/allmytasks/issues/144)) |
 | Research | Runtime plug-ins, MCP support, AI summaries and planning with local models | Unscheduled: [research.md](research.md), [#76](https://github.com/jkruza/allmytasks/issues/76), [#77](https://github.com/jkruza/allmytasks/issues/77), [#78](https://github.com/jkruza/allmytasks/issues/78) |
 
 The milestones M1 to M6 below are the history of how the framework was built. The "Later" list that follows them
@@ -106,6 +106,11 @@ New since the refocus on a read-only overview (version 1 unless stated):
 - Version 2: write support for completing tasks, changing task dates and rescheduling events, and more services: [write-support.md](write-support.md), [#75](https://github.com/jkruza/allmytasks/issues/75).
 - Research, unscheduled: [research.md](research.md).
 
+Proposed 2026-11-11 (designs only, nothing built):
+
+- Version 1: [first-run-onboarding.md](first-run-onboarding.md) ([#135](https://github.com/jkruza/allmytasks/issues/135)), [conflict-highlight.md](conflict-highlight.md) ([#136](https://github.com/jkruza/allmytasks/issues/136)), [duplicate-detection.md](duplicate-detection.md) ([#137](https://github.com/jkruza/allmytasks/issues/137)), [source-diagnostics.md](source-diagnostics.md) ([#138](https://github.com/jkruza/allmytasks/issues/138)), [update-check.md](update-check.md) ([#139](https://github.com/jkruza/allmytasks/issues/139)), [workload-glance.md](workload-glance.md) ([#140](https://github.com/jkruza/allmytasks/issues/140)).
+- Version 2: [compact-upcoming-window.md](compact-upcoming-window.md) ([#141](https://github.com/jkruza/allmytasks/issues/141)), [command-palette.md](command-palette.md) ([#142](https://github.com/jkruza/allmytasks/issues/142)), [localisation.md](localisation.md) ([#143](https://github.com/jkruza/allmytasks/issues/143)), [database-encryption.md](database-encryption.md) ([#144](https://github.com/jkruza/allmytasks/issues/144)).
+
 Earlier items:
 
 - `VTODO` tasks over CalDAV.
@@ -123,7 +128,7 @@ Earlier items:
 - Global search and saved filters for All tasks: [search-and-saved-filters.md](search-and-saved-filters.md), [#56](https://github.com/jkruza/allmytasks/issues/56). Implemented; not yet used against large real data sets, and the saved-filter and search screens have not been looked at on every OS.
 - Meeting join links and attendees on events: [meeting-url-and-attendees.md](meeting-url-and-attendees.md), [#57](https://github.com/jkruza/allmytasks/issues/57). Implemented for Google, Outlook and iCalendar/CalDAV; Google and Outlook tried on real accounts.
 - Installers and signing: [packaging.md](packaging.md) (Windows MSI and Linux packages built, unsigned, not yet tried on a release; macOS open), Windows [#58](https://github.com/jkruza/allmytasks/issues/58), macOS [#59](https://github.com/jkruza/allmytasks/issues/59), Linux [#60](https://github.com/jkruza/allmytasks/issues/60).
-- Database encryption.
+- Database encryption: now [database-encryption.md](database-encryption.md) (version 2).
 
 ## Risks
 
@@ -153,9 +158,9 @@ discussion or an issue, then record the outcome in the decision log in
 | # | Question | Proposal |
 | --- | --- | --- |
 | 1 | Is "iCal/WebDAV" meant to mean CalDAV (calendar sync), or also plain WebDAV file hosting of `.ics` files? | CalDAV plus plain `.ics` URLs; a bare WebDAV file is just a URL |
-| 5 | Encrypt database at rest? | Not in v1; document it |
+| 5 | Encrypt database at rest? | Not in v1; opt-in in version 2, see [database-encryption.md](database-encryption.md) |
 | 6 | Sync time-range limiting for CalDAV | Not in v1; sync everything |
 | 7 | Default refresh interval | 15 minutes, per-source override |
 | 8 | Separate projects per provider from the start, or one `Providers` project until there are two? | Own project for iCal (it brings a dependency); decide again at provider two |
-| 9 | UI localisation and culture | Use OS culture for dates and week start from day one; translations later |
+| 9 | UI localisation and culture | Use OS culture for dates and week start from day one; translations in version 2, see [localisation.md](localisation.md) |
 | 10 | App name | Decided 2026-11-01: "All My Tasks" is the official name |
