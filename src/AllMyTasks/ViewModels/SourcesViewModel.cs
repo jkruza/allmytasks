@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Globalization;
+using AllMyTasks.Core.Diagnostics;
 using AllMyTasks.Core.Model;
 using AllMyTasks.Core.Storage;
 using AllMyTasks.Core.Sync;
@@ -11,6 +12,9 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 namespace AllMyTasks.ViewModels;
+
+/// <summary>What the Sources page needs for the log: the folder, and the verbose switch. Verbose is never remembered across restarts.</summary>
+public sealed record LogControls(string Folder, Func<bool> GetVerbose, Action<bool> SetVerbose);
 
 /// <summary>One row of the source status list.</summary>
 public sealed partial class SourceItemViewModel : ObservableObject
@@ -44,6 +48,13 @@ public sealed partial class SourceItemViewModel : ObservableObject
     public partial string ErrorDetail { get; set; } = string.Empty;
 
     public bool HasErrorDetail => ErrorDetail.Length > 0;
+
+    /// <summary>Health details of this source (docs/design/source-diagnostics.md): times, strategy, error category, counts.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasDiagnostics))]
+    public partial string DiagnosticsText { get; set; } = string.Empty;
+
+    public bool HasDiagnostics => DiagnosticsText.Length > 0;
 
     [ObservableProperty]
     public partial IBrush StatusBrush { get; set; } = Brushes.Gray;
@@ -119,6 +130,8 @@ public sealed partial class SourcesViewModel : ViewModelBase, IDisposable
     private readonly ITimer _ticker;
     private readonly Func<Task>? _collectionsChanged;
     private readonly Dictionary<string, SourceStatus> _latest = [];
+    private readonly SourceDiagnosticsService? _diagnostics;
+    private readonly LogControls? _log;
 
     public SourcesViewModel(
         SyncEngine engine,
@@ -126,8 +139,13 @@ public sealed partial class SourcesViewModel : ViewModelBase, IDisposable
         ISourceRepository repository,
         TimeProvider clock,
         DialogService dialogs,
-        Func<Task>? collectionsChanged = null)
+        Func<Task>? collectionsChanged = null,
+        SourceDiagnosticsService? diagnostics = null,
+        LogControls? log = null)
     {
+        _diagnostics = diagnostics;
+        _log = log;
+        _verboseLogging = log?.GetVerbose() ?? false;
         _collectionsChanged = collectionsChanged;
         _engine = engine;
         _registry = registry;
@@ -140,6 +158,44 @@ public sealed partial class SourcesViewModel : ViewModelBase, IDisposable
     }
 
     public ObservableCollection<SourceItemViewModel> Sources { get; } = [];
+
+    /// <summary>Whether the diagnostics report and log folder are available.</summary>
+    public bool CanDiagnose => _diagnostics is not null;
+
+    /// <summary>The folder with the log files, or null when there is no log.</summary>
+    public string? LogFolder => _log?.Folder;
+
+    private bool _verboseLogging;
+
+    /// <summary>Writes extra detail to the verbose log. Off at every start; it follows the same no-secrets rule.</summary>
+    public bool VerboseLogging
+    {
+        get => _verboseLogging;
+        set
+        {
+            if (SetProperty(ref _verboseLogging, value))
+            {
+                _log?.SetVerbose(value);
+            }
+        }
+    }
+
+    /// <summary>Shows the report for all sources, so the user reads it before copying.</summary>
+    [RelayCommand]
+    private async Task CopyDiagnosticsAsync()
+    {
+        if (_diagnostics is null)
+        {
+            return;
+        }
+
+        var found = await _diagnostics.GetAsync();
+        var environment = new ReportEnvironment(
+            AppVersion.Current,
+            System.Runtime.InteropServices.RuntimeInformation.OSDescription,
+            System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription);
+        await _dialogs.ShowDiagnosticsAsync(DiagnosticsReportBuilder.Build(environment, found, _clock.GetUtcNow()));
+    }
 
     [ObservableProperty]
     public partial bool IsEmpty { get; set; }
@@ -169,6 +225,25 @@ public sealed partial class SourcesViewModel : ViewModelBase, IDisposable
         }
 
         IsEmpty = Sources.Count == 0;
+        await RefreshDiagnosticsAsync();
+    }
+
+    private async Task RefreshDiagnosticsAsync()
+    {
+        if (_diagnostics is null)
+        {
+            return;
+        }
+
+        var now = _clock.GetUtcNow();
+        foreach (var found in await _diagnostics.GetAsync())
+        {
+            var item = Sources.FirstOrDefault(s => SourceDiagnosticsService.ShortId(s.Info.Id) == found.ShortId);
+            if (item is not null)
+            {
+                item.DiagnosticsText = DiagnosticsReportBuilder.BuildSource(found, now);
+            }
+        }
     }
 
     [RelayCommand]
@@ -268,6 +343,7 @@ public sealed partial class SourcesViewModel : ViewModelBase, IDisposable
             if (status.Kind != SourceStatusKind.Syncing)
             {
                 await ReloadCollectionsAsync(item);
+                await RefreshDiagnosticsAsync();
             }
         });
 

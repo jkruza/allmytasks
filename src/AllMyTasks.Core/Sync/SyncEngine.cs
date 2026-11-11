@@ -1,5 +1,6 @@
 using AllMyTasks.Core.Calendar;
 using AllMyTasks.Core.Changes;
+using AllMyTasks.Core.Diagnostics;
 using AllMyTasks.Core.Model;
 using AllMyTasks.Core.Providers;
 using AllMyTasks.Core.Storage;
@@ -34,6 +35,7 @@ public sealed partial class SyncEngine(
     private readonly Lock _gate = new();
     private readonly Dictionary<string, Task> _running = [];
     private readonly Dictionary<string, SourceStatus> _statuses = [];
+    private readonly Dictionary<string, SyncAttempt> _attempts = [];
     private readonly SemaphoreSlim _parallel = new(Math.Max(1, (options ?? new SyncOptions()).MaxParallelSources));
     private bool _loaded;
 
@@ -63,6 +65,18 @@ public sealed partial class SyncEngine(
         lock (_gate)
         {
             return [.. infos.Select(i => _statuses.TryGetValue(i.Id, out var s) ? s : SourceStatus.NewFor(i.Id))];
+        }
+    }
+
+    /// <summary>
+    /// Facts about the last sync of a source in this run (when, how long, which kind of sync, what kind of failure).
+    /// Null before the first sync after start-up. Kept in memory only; see docs/design/source-diagnostics.md.
+    /// </summary>
+    public SyncAttempt? GetLastAttempt(string sourceId)
+    {
+        lock (_gate)
+        {
+            return _attempts.GetValueOrDefault(sourceId);
         }
     }
 
@@ -122,6 +136,7 @@ public sealed partial class SyncEngine(
         lock (_gate)
         {
             _statuses.Remove(sourceId);
+            _attempts.Remove(sourceId);
         }
     }
 
@@ -175,11 +190,18 @@ public sealed partial class SyncEngine(
         }
 
         var previous = Current(sourceId);
+        var shortId = SourceDiagnosticsService.ShortId(sourceId);
+        LogSyncStarted(_logger, shortId, info.Kind);
+
         await SetStatusAsync(previous with { Kind = SourceStatusKind.Syncing }, persist: false, cancellationToken).ConfigureAwait(false);
 
         var skipped = 0;
         string? warning = null;
         var changed = false;
+        var full = 0;
+        var delta = 0;
+        var startedAt = clock.GetUtcNow();
+        var startStamp = clock.GetTimestamp();
         try
         {
             var source = await sources.GetAsync(info, cancellationToken).ConfigureAwait(false);
@@ -201,9 +223,15 @@ public sealed partial class SyncEngine(
                 skipped += outcome.Skipped;
                 warning ??= outcome.Warning;
                 changed |= outcome.Changed;
+                var strategy = outcome.Full is null ? "skipped" : outcome.Full == true ? "full" : "delta";
+                LogCollectionSynced(_logger, shortId, collection.Kind, strategy, outcome.Skipped);
+
+                full += outcome.Full == true ? 1 : 0;
+                delta += outcome.Full == false ? 1 : 0;
             }
 
             var now = clock.GetUtcNow();
+            Record(sourceId, startedAt, startStamp, ErrorCategory.None, full, delta);
             await SetStatusAsync(
                 new SourceStatus(sourceId, SourceStatusKind.Ok, now, null, warning, skipped, 0, null),
                 persist: true,
@@ -219,6 +247,7 @@ public sealed partial class SyncEngine(
             // Retrying with the same credentials would only get the account locked. Wait for the user.
             const string Error = "The server rejected the credentials.";
             var detail = DetailFor(ex);
+            Record(sourceId, startedAt, startStamp, ErrorCategory.Authentication, full, delta);
             LogSyncFailed(_logger, sourceId, info.Kind, Error, DiagnosticText.Describe(ex, includeMessage: true), detail);
             await SetStatusAsync(
                 previous with { Kind = SourceStatusKind.NeedsAttention, LastError = Error, LastErrorDetail = detail, NextRetryAt = null },
@@ -228,12 +257,14 @@ public sealed partial class SyncEngine(
         catch (SourceUnavailableException ex)
         {
             const string Error = "The server could not be reached.";
+            Record(sourceId, startedAt, startStamp, ex.RetryAfter is null ? ErrorCategory.Offline : ErrorCategory.RateLimit, full, delta);
             LogSyncFailed(_logger, sourceId, info.Kind, Error, DiagnosticText.Describe(ex, includeMessage: true), DetailFor(ex));
             await FailAsync(previous, SourceStatusKind.Offline, Error, DetailFor(ex), ex.RetryAfter).ConfigureAwait(false);
         }
         catch (SourceException ex)
         {
             var error = Describe(ex);
+            Record(sourceId, startedAt, startStamp, ErrorCategory.ServerError, full, delta);
             LogSyncFailed(_logger, sourceId, info.Kind, error, DiagnosticText.Describe(ex, includeMessage: true), DetailFor(ex));
             await FailAsync(previous, SourceStatusKind.Error, error, DetailFor(ex)).ConfigureAwait(false);
         }
@@ -243,6 +274,7 @@ public sealed partial class SyncEngine(
             // other sources. The message is kept out of the status (it may contain private details); the type and
             // the first stack frames are shown, and the local log gets the message with addresses removed.
             const string Error = "The sync failed unexpectedly.";
+            Record(sourceId, startedAt, startStamp, ErrorCategory.Unexpected, full, delta);
             LogSyncFailed(_logger, sourceId, info.Kind, Error, DiagnosticText.Describe(ex, includeMessage: true), string.Empty);
             await FailAsync(previous, SourceStatusKind.Error, Error, DiagnosticText.Describe(ex, includeMessage: false)).ConfigureAwait(false);
         }
@@ -310,7 +342,7 @@ public sealed partial class SyncEngine(
         return (warning, changed);
     }
 
-    private async Task<(int Skipped, string? Warning, bool Changed)> SyncCollectionAsync(
+    private async Task<(int Skipped, string? Warning, bool Changed, bool? Full)> SyncCollectionAsync(
         ISource source,
         CollectionInfo collection,
         CancellationToken cancellationToken)
@@ -341,7 +373,7 @@ public sealed partial class SyncEngine(
                 cancellationToken).ConfigureAwait(false);
         }
 
-        return (0, null, false);
+        return (0, null, false, null);
     }
 
     private static async Task<SyncResult<T>> WithExpiryRetryAsync<T>(Func<SyncState?, Task<SyncResult<T>>> sync, SyncState? previous)
@@ -357,7 +389,7 @@ public sealed partial class SyncEngine(
         }
     }
 
-    private async Task<(int Skipped, string? Warning, bool Changed)> ApplyAsync<T>(
+    private async Task<(int Skipped, string? Warning, bool Changed, bool? Full)> ApplyAsync<T>(
         CollectionInfo collection,
         SyncResult<T> result,
         Func<SyncResult<T>, CancellationToken, Task> apply,
@@ -369,7 +401,7 @@ public sealed partial class SyncEngine(
             if (existing >= _options.EmptySnapshotGuardThreshold)
             {
                 // Likely an error page parsed as "no items". Keep the cache and the old state; say so.
-                return (result.Warnings.Count, $"'{collection.DisplayName}' came back empty, so its {existing} cached items were kept.", false);
+                return (result.Warnings.Count, $"'{collection.DisplayName}' came back empty, so its {existing} cached items were kept.", false, true);
             }
         }
 
@@ -383,7 +415,7 @@ public sealed partial class SyncEngine(
         await apply(result, cancellationToken).ConfigureAwait(false);
         await repository.SaveSyncStateAsync(collection.SourceId, collection.Id, result.NewState, cancellationToken).ConfigureAwait(false);
         var changed = result.IsFullSnapshot || result.Upserts.Count > 0 || result.DeletedItemIds.Count > 0;
-        return (result.Warnings.Count, null, changed);
+        return (result.Warnings.Count, null, changed, result.IsFullSnapshot);
     }
 
     private async Task FailAsync(SourceStatus previous, SourceStatusKind kind, string message, string? detail, TimeSpan? serverWait = null)
@@ -427,11 +459,34 @@ public sealed partial class SyncEngine(
     [LoggerMessage(Level = LogLevel.Warning, Message = "Sync of source {SourceId} ({Kind}) failed: {Error}\n{Cause}\n{Detail}")]
     private static partial void LogSyncFailed(ILogger logger, string sourceId, string kind, string error, string cause, string? detail);
 
+    // Verbose (debug) messages use the short generated id and never a name, an address or item text.
+    [LoggerMessage(Level = LogLevel.Debug, Message = "Sync of {ShortId} ({Kind}) started")]
+    private static partial void LogSyncStarted(ILogger logger, string shortId, string kind);
+
+    [LoggerMessage(Level = LogLevel.Debug, Message = "Sync of {ShortId}: {CollectionKind} collection read as {Strategy}, {Skipped} items skipped")]
+    private static partial void LogCollectionSynced(ILogger logger, string shortId, CollectionKind collectionKind, string strategy, int skipped);
+
+    [LoggerMessage(Level = LogLevel.Debug, Message = "Sync of {ShortId} finished: {Category} in {Milliseconds} ms")]
+    private static partial void LogSyncFinished(ILogger logger, string shortId, ErrorCategory category, long milliseconds);
+
     [LoggerMessage(Level = LogLevel.Warning, Message = "Source {SourceId} refused a change ({Kind}): {Cause}")]
     private static partial void LogChangeFailed(ILogger logger, string sourceId, PendingKind kind, string cause);
 
     [LoggerMessage(Level = LogLevel.Warning, Message = "Source {SourceId}, collection {CollectionId}, item {ItemId}: {Problem}")]
     private static partial void LogItemWarning(ILogger logger, string sourceId, string collectionId, string? itemId, string problem);
+
+    private void Record(string sourceId, DateTimeOffset startedAt, long startStamp, ErrorCategory category, int full, int delta)
+    {
+        var attempt = new SyncAttempt(startedAt, clock.GetElapsedTime(startStamp), category, full, delta);
+        lock (_gate)
+        {
+            _attempts[sourceId] = attempt;
+        }
+
+        var shortId = SourceDiagnosticsService.ShortId(sourceId);
+        var milliseconds = (long)attempt.Duration.TotalMilliseconds;
+        LogSyncFinished(_logger, shortId, category, milliseconds);
+    }
 
     private SourceStatus Current(string sourceId)
     {

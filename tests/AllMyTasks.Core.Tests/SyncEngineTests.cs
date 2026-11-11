@@ -3,6 +3,7 @@ using AllMyTasks.Core.Providers;
 using AllMyTasks.Core.Storage;
 using AllMyTasks.Core.Sync;
 using AllMyTasks.Core.Tasks;
+using Microsoft.Extensions.Logging;
 using static AllMyTasks.Core.Tests.SyncRig;
 
 namespace AllMyTasks.Core.Tests;
@@ -207,7 +208,7 @@ public class SyncEngineTests
     public async Task Failures_are_logged_with_their_details()
     {
         using var rig = new SyncRig();
-        var log = new ListLogger();
+        var log = new ListLogger { MinimumLevel = LogLevel.Warning };
         using var engine = new SyncEngine(rig.Store, rig.Store, rig.Provider, rig.Clock, logger: log);
         var source = await rig.AddAsync();
         source.OnTasks = (_, _) => throw new SourceDataException("bad") { Diagnostics = "HTTP 200 text/html" };
