@@ -38,6 +38,9 @@ public sealed record AppSettings
     /// <summary>Minutes a snoozed reminder waits.</summary>
     public int SnoozeMinutes { get; init; } = 10;
 
+    /// <summary>Ask GitHub once a day whether a newer release exists. When off, the app makes no such request.</summary>
+    public bool CheckForUpdates { get; init; } = true;
+
     /// <summary>Reads settings from JSON. Missing, unknown or corrupt values give the defaults.</summary>
     public static AppSettings Parse(string? json)
     {
@@ -81,6 +84,7 @@ public sealed record AppSettings
                 RemindAboutTasks = ReadBool(root, "remindAboutTasks", result.RemindAboutTasks),
                 DateOnlyTaskReminderTime = ReadTime(root, "dateOnlyTaskReminderTime", result.DateOnlyTaskReminderTime),
                 SnoozeMinutes = ReadMinutes(root, "snoozeMinutes", result.SnoozeMinutes, 1),
+                CheckForUpdates = ReadBool(root, "checkForUpdates", result.CheckForUpdates),
             };
 
             return result;
@@ -104,6 +108,7 @@ public sealed record AppSettings
             ["remindAboutTasks"] = RemindAboutTasks,
             ["dateOnlyTaskReminderTime"] = DateOnlyTaskReminderTime.ToString("HH:mm", CultureInfo.InvariantCulture),
             ["snoozeMinutes"] = SnoozeMinutes,
+            ["checkForUpdates"] = CheckForUpdates,
         });
 
     private static bool ReadBool(JsonElement root, string name, bool fallback) =>
