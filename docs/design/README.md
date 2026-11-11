@@ -53,11 +53,11 @@ fix whichever is wrong in the same pull request.
 | [inbox-view.md](inbox-view.md) | Inbox view of tasks without a date (implemented, version 1) |
 | [write-support.md](write-support.md) | Version 2: complete tasks, change dates, reschedule events; how the Todoist preview fits |
 | [research.md](research.md) | Unscheduled topics: runtime plug-ins, MCP support, local-model AI summaries |
-| [first-run-onboarding.md](first-run-onboarding.md) | Proposed (v1): welcome state, guided add-source, first-sync checklist |
-| [conflict-highlight.md](conflict-highlight.md) | Proposed (v1): mark overlapping events across calendars |
-| [duplicate-detection.md](duplicate-detection.md) | Proposed (v1): show one entry for the same meeting or issue from two sources |
-| [source-diagnostics.md](source-diagnostics.md) | Proposed (v1): per-source health details and a secret-free copyable report |
-| [update-check.md](update-check.md) | Proposed (v1): opt-out, notify-only check for a new release |
+| [first-run-onboarding.md](first-run-onboarding.md) | Implemented (v1): welcome state, guided add-source, first-sync checklist |
+| [conflict-highlight.md](conflict-highlight.md) | Implemented (v1): mark overlapping events across calendars |
+| [duplicate-detection.md](duplicate-detection.md) | Implemented (v1, events; tasks first cut): show one entry for the same meeting or issue from two sources |
+| [source-diagnostics.md](source-diagnostics.md) | Implemented (v1): per-source health details and a secret-free copyable report |
+| [update-check.md](update-check.md) | Implemented (v1): opt-out, notify-only check for a new release |
 | [workload-glance.md](workload-glance.md) | Implemented (v1): meeting hours and tasks due per day for the coming week |
 | [compact-upcoming-window.md](compact-upcoming-window.md) | Proposed (v2): small window with the next entries |
 | [command-palette.md](command-palette.md) | Proposed (v2): Ctrl+K jump to dates, views, filters, sources and items |

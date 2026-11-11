@@ -35,6 +35,7 @@ public static class EntryDetailsBuilder
                     : ev.Recurrence is { } r ? RecurrenceDescriber.Describe(r, culture) : null);
                 Add(rows, "Where", ev.Location);
                 Add(rows, "Calendar", CalendarText(entry.CollectionName, sourceName));
+                Add(rows, "Also in", string.Join(", ", entry.AlsoIn));
                 Add(rows, "Status", ev.Status == EventStatus.Confirmed ? null : ev.Status.ToString());
                 Add(rows, "Show as", ev.Availability == Availability.Free ? "Free" : null);
                 Add(rows, "Categories", string.Join(", ", ev.Categories));

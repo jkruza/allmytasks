@@ -1,6 +1,6 @@
 # Highlight overlapping events across calendars
 
-Tracked in [#136](https://github.com/jkruza/allmytasks/issues/136). **Status: proposed, version 1.**
+Tracked in [#136](https://github.com/jkruza/allmytasks/issues/136). **Status: implemented, version 1.**
 
 ## Goal
 
@@ -41,3 +41,27 @@ hidden collections are ignored, so hiding a calendar removes its conflicts.
 
 Chain, full cluster, touching, nested, all-day, cancelled, hidden collection, DST day, same-source overlap, many
 events (linear time after sorting).
+
+## Implementation notes
+
+- Core: `Views/ConflictFinder.cs` (`ConflictFinder.Find`, `ConflictOptions`, `ConflictGroup`, `ConflictMap`). One sweep over the
+  entries sorted by start. The result has the groups (transitive clusters, in start order) and, for each entry, the
+  entries it **directly** overlaps; the "Overlaps with" line and the spoken text list only those, so a chain A-B-C tells A
+  about B only. The model does carry `Availability` (busy or free), so the free rule is applied; tentative events and
+  cancelled events are also left out, as the rules above say. An event shorter than a minute cannot overlap by a minute.
+- Entries are keyed by item key plus start, so occurrences of one recurring series are told apart.
+- Wiring: `ViewContext.Conflicts` (null when the setting is off) is handed to each view; Day, Week, Month and Upcoming run the
+  finder on the entries they already loaded and expose `ContentViewModel.Conflicts`. Hidden collections never reach it, because
+  `AgendaService` already drops them. The details pane runs the same finder on the day range of the clicked event, so it works
+  from search and reminders too.
+- Marks: rows (Day, Upcoming) get a "Conflict" badge with the other titles as tooltip and a thin warning edge; chips and bars
+  (Week, Month) get a warning glyph before the title. The spoken text gains "overlaps with Team sync". The warning colour is
+  the amber token of the design system.
+- Toolbar: "2 conflicts this week" (or "on this day", "this month", "coming up") sits beside the navigation buttons and opens the
+  first conflict: its day, with that event's details.
+- Settings: the two check boxes are under **Calendar** in the Settings dialog (not Appearance, which only holds the accent):
+  *Highlight overlapping events* (`highlightConflicts`, on) and *Count all-day events that are marked busy*
+  (`countAllDayBusy`, off, only enabled while highlighting is on). Turning highlighting off removes every mark at once.
+- Tests: `ConflictFinderTests` (pair, same source, touching, under a minute, exactly a minute, chain, full cluster, nested,
+  separate groups, all-day and tasks, busy all-day with the option, cancelled/tentative/free, zero length, series occurrences,
+  a DST day, 20,000 events in linear time, empty) and the two settings in `AppSettingsTests`.

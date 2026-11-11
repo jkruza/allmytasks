@@ -37,7 +37,7 @@
         </ItemsControl>
       </Grid>
     </Border>
-    <TextBlock Grid.Row="1" Classes="empty" Text="Nothing coming up" IsVisible="{Binding IsEmpty}"
+    <TextBlock Grid.Row="1" Classes="empty" Text="{Binding EmptyText}" IsVisible="{Binding IsEmpty}"
                HorizontalAlignment="Center" VerticalAlignment="Center" />
     <!-- The only unbounded list, so it is virtualised. -->
     <ScrollViewer Grid.Row="1" Margin="24,12">

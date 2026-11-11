@@ -26,6 +26,12 @@
     </StackPanel>
     <StackPanel Spacing="8">
       <TextBlock Classes="section" Text="Calendar" />
+      <CheckBox IsChecked="{Binding HighlightConflicts}">
+        <TextBlock Text="Highlight overlapping events" TextWrapping="Wrap" />
+      </CheckBox>
+      <CheckBox Margin="24,0,0,0" IsChecked="{Binding CountAllDayBusy}" IsEnabled="{Binding HighlightConflicts}">
+        <TextBlock Text="Count all-day events that are marked busy" TextWrapping="Wrap" />
+      </CheckBox>
       <StackPanel Spacing="4">
         <TextBlock Text="Week starts on" />
         <ComboBox ItemsSource="{Binding WeekStartOptions}" SelectedItem="{Binding SelectedWeekStart}" HorizontalAlignment="Stretch">
@@ -34,6 +40,13 @@
           </ComboBox.ItemTemplate>
         </ComboBox>
       </StackPanel>
+      <CheckBox IsChecked="{Binding HideDuplicateEvents}">
+        <TextBlock Text="Show the same event once when it comes from two sources" TextWrapping="Wrap" />
+      </CheckBox>
+      <CheckBox IsChecked="{Binding HideDuplicateTasks}">
+        <TextBlock Text="Show the same task once (same title, date and link)" TextWrapping="Wrap" />
+      </CheckBox>
+      <TextBlock Classes="small" TextWrapping="Wrap" Text="Nothing is deleted; the other copy is only hidden, and the one you see says where else it appears. The source added first is shown." />
     </StackPanel>
     <StackPanel Spacing="8">
       <TextBlock Classes="section" Text="Workload" />
@@ -93,6 +106,13 @@
       <CheckBox IsChecked="{Binding CloseToTray}">
         <TextBlock Text="Keep running in the system tray when the window is closed" TextWrapping="Wrap" />
       </CheckBox>
+    </StackPanel>
+    <StackPanel Spacing="8">
+      <TextBlock Classes="section" Text="Updates" />
+      <CheckBox IsChecked="{Binding CheckForUpdates}">
+        <TextBlock Text="Check for new versions" TextWrapping="Wrap" />
+      </CheckBox>
+      <TextBlock Classes="small" TextWrapping="Wrap" Text="Once a day the app asks GitHub for the list of releases. The request carries no information about you or this computer. Nothing is downloaded or installed; you are only told, and the release page opens in your browser." />
     </StackPanel>
     <Button Content="Close" IsDefault="True" IsCancel="True" HorizontalAlignment="Right" Click="OnClose" />
   </StackPanel>

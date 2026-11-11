@@ -7,6 +7,8 @@ namespace AllMyTasks.Services;
 /// <summary>
 /// A small append-only log file in the data folder (<c>logs/allmytasks.log</c>), for troubleshooting sync problems.
 /// Information and above are written; when the file passes 1 MB it is moved to <c>allmytasks.log.1</c>.
+/// With <see cref="Verbose"/> on, debug messages are also written, to <c>verbose.log</c>, which is deleted when the app
+/// starts and is off again after every start. Debug messages follow the same rule as the rest: no secrets, addresses or item text.
 /// Callers are responsible for keeping credentials and feed addresses out of what they log.
 /// </summary>
 public sealed class FileLog : ILogger
@@ -21,7 +23,22 @@ public sealed class FileLog : ILogger
         _clock = clock;
         Directory = System.IO.Path.Combine(dataDirectory, "logs");
         Path = System.IO.Path.Combine(Directory, "allmytasks.log");
+        VerbosePath = System.IO.Path.Combine(Directory, "verbose.log");
+        try
+        {
+            File.Delete(VerbosePath);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            // Not worth failing for.
+        }
     }
+
+    /// <summary>Whether debug messages are written too. Off by default and never remembered across restarts.</summary>
+    public bool Verbose { get; set; }
+
+    /// <summary>The verbose log file, which only exists while verbose logging was used since the last start.</summary>
+    public string VerbosePath { get; }
 
     /// <summary>The folder that holds the log files.</summary>
     public string Directory { get; }
@@ -32,7 +49,7 @@ public sealed class FileLog : ILogger
     public IDisposable? BeginScope<TState>(TState state)
         where TState : notnull => null;
 
-    public bool IsEnabled(LogLevel logLevel) => logLevel >= LogLevel.Information;
+    public bool IsEnabled(LogLevel logLevel) => logLevel >= LogLevel.Information || (Verbose && logLevel >= LogLevel.Debug);
 
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
     {
@@ -54,13 +71,14 @@ public sealed class FileLog : ILogger
         {
             try
             {
+                var path = logLevel < LogLevel.Information ? VerbosePath : Path;
                 System.IO.Directory.CreateDirectory(Directory);
-                if (File.Exists(Path) && new FileInfo(Path).Length > MaxBytes)
+                if (File.Exists(path) && new FileInfo(path).Length > MaxBytes)
                 {
-                    File.Move(Path, Path + ".1", overwrite: true);
+                    File.Move(path, path + ".1", overwrite: true);
                 }
 
-                File.AppendAllText(Path, line, Encoding.UTF8);
+                File.AppendAllText(path, line, Encoding.UTF8);
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {

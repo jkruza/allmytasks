@@ -1,6 +1,6 @@
 # First-run onboarding and empty states
 
-Tracked in [#135](https://github.com/jkruza/allmytasks/issues/135). **Status: proposed, version 1.**
+Tracked in [#135](https://github.com/jkruza/allmytasks/issues/135). **Status: implemented, version 1.**
 
 ## Goal
 
@@ -33,6 +33,17 @@ settings. The `dismissed` flag is stored in settings ([settings.md](settings.md)
 
 Checklist states for: no sources, one source syncing, one source failed, one source synced, dismissed. The
 per-provider help text exists for every registered kind (a test fails when a new provider forgets it).
+
+## Implementation notes
+
+- `OnboardingState.Compute(sources, statuses, settings)` in Core is a static function rather than an interface; the
+  view model (`OnboardingViewModel`) only binds to its result. The sample source does not count as "source added".
+- Sample data is no longer added automatically on first run. The welcome state offers "Look around with sample data",
+  which adds the sample source through the registry and the normal sync path. Remove it from Sources at any time;
+  removing the last source shows the welcome state again.
+- Every `ISourceFactory` must supply `SourceConfigSchema.WhatYouNeed` (required parameter). Tests per provider check
+  the text is present, so a new provider cannot forget it.
+- Setting: `OnboardingDismissed` (default off).
 
 ## Open questions
 

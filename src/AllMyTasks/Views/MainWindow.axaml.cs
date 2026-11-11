@@ -20,6 +20,15 @@ public sealed partial class MainWindow : Window
         BodyGrid.SizeChanged += (_, _) => ApplyPaneWidth();
     }
 
+    private async void OnViewRelease(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        // The address is checked in Core: it must be a release page of this repository.
+        if (DataContext is CalendarShellViewModel { Update.Url: { } url } && Uri.TryCreate(url, UriKind.Absolute, out var uri) && Launcher is { } launcher)
+        {
+            await launcher.LaunchUriAsync(uri);
+        }
+    }
+
     protected override void OnDataContextChanged(EventArgs e)
     {
         base.OnDataContextChanged(e);

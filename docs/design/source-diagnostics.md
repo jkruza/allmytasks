@@ -1,6 +1,6 @@
 # Source diagnostics
 
-Tracked in [#138](https://github.com/jkruza/allmytasks/issues/138). **Status: proposed, version 1.**
+Tracked in [#138](https://github.com/jkruza/allmytasks/issues/138). **Status: implemented, version 1.**
 
 ## Goal
 
@@ -39,3 +39,33 @@ Report content for each status; marker-string leak test; host-only reduction for
 
 - Add an "Open issue with this report" button that opens a prefilled GitHub issue URL? Proposal: later; copying is
   enough and nothing leaves the machine without the user pasting it.
+
+## Implementation notes
+
+- Core, `Diagnostics/`: `SourceDiagnostics` (no field for a name, secret, address or item, so none can leak),
+  `DiagnosticsReportBuilder` (the report and the per-source block; fixed order: sources by kind then short id,
+  collections by kind then size), `SourceDiagnosticsService` (reads the engine, the repository and the item counts).
+  `SyncAttempt` and `ErrorCategory` are in `Sync/`.
+- **What is recorded where.** The engine keeps the last attempt of each source **in memory** (start time, duration,
+  error category, how many collections were read in full and how many as a delta). Nothing new is written to the
+  database, so there is no migration. After a restart the details show "none since the app started" until the next
+  sync, and the error category is derived from the saved status (needs attention, offline, error). The last success,
+  consecutive failures, next retry and skipped items come from the saved status as before; counts come from the cache.
+- **Error categories**: offline or server unavailable, authentication, rate limit (the server sent a retry-after
+  time), server error (the answer could not be used) and unexpected. They are a fixed list; the provider's own message
+  is never part of the report.
+- **Source id**: `src-` plus the first six hex digits of a SHA-256 of the internal id. Stable across restarts, and it
+  does not reveal the id. The display name is never used.
+- **Host**: only for `gitlab` and `caldav`, reduced to the host name (no scheme, port, path, query or user info). A
+  blank GitLab address shows `gitlab.com`. Jira, iCalendar feeds, Google, Microsoft, Todoist and GitHub show no host,
+  because their addresses carry a tenant, an account or a secret.
+- **Collections** appear as "calendar" or "task list" with their item count and whether they are hidden; their names
+  are left out.
+- **UI**: the Sources window has a **Details** expander per source, **Copy diagnostics…** (opens the finished report in
+  a window, with Copy and Close, so the user reads it before it reaches the clipboard), **Open log folder** and a
+  **Verbose logging** check box. Verbose logging is never remembered: it is off at every start. While on, the engine's
+  debug messages (they use the short id, never a name, address or item text) go to `logs/verbose.log`, which is deleted
+  when the app starts.
+- **Tests**: `SourceDiagnosticsTests` (marker strings placed in the display name, settings, address, token, collection
+  and item titles, notes, provider message and error detail never reach the report or the verbose log; host
+  reduction; stable order; exact report text; categories; strategy; counts).

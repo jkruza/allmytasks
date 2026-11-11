@@ -8,4 +8,6 @@ public sealed record ViewContext(
     ViewFilter Filter,
     DateTimeOffset Now,
     TimeZoneInfo Zone,
-    DayOfWeek FirstDayOfWeek);
+    DayOfWeek FirstDayOfWeek,
+    ConflictOptions? Conflicts = null,
+    bool FirstSyncRunning = false);

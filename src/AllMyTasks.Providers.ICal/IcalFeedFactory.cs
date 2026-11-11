@@ -32,7 +32,8 @@ public sealed class IcalFeedFactory(HttpMessageHandler? handler = null, ILogger?
             "Refresh every (minutes)",
             FieldKind.Number,
             Help: "Leave blank for 15."),
-    ]);
+    ],
+    "The link of an iCalendar feed (an .ics or webcal:// address), for example the secret address your calendar provider gives for sharing.");
 
     public ISource Create(string sourceId, string displayName, SourceConfig config, ISecretStore secrets)
     {

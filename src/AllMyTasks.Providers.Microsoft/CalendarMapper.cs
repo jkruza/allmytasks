@@ -69,7 +69,8 @@ internal sealed class CalendarMapper(string sourceId)
             MeetingUrl: MeetingLinks.Sanitize(dto.OnlineMeeting?.JoinUrl) ?? MeetingLinks.Sanitize(dto.OnlineMeetingUrl),
             Organizer: dto.Organizer?.EmailAddress is { } o ? new Attendee(o.Name, o.Address, AttendeeRole.Required, ResponseStatus.Accepted, dto.IsOrganizer) : null,
             Attendees: attendees,
-            AttendeeCount: total);
+            AttendeeCount: total,
+            Uid: string.IsNullOrWhiteSpace(dto.ICalUid) ? null : dto.ICalUid.Trim());
     }
 
     private static ResponseStatus ResponseOf(string? response) => response?.ToLowerInvariant() switch

@@ -55,12 +55,39 @@ public sealed partial class SettingsViewModel : ViewModelBase
         TaskCountOptions = WithCurrent([4, 5, 6, 8, 10, 12, 15], settings.Current.WorkloadTasks);
         SelectedMeetingHours = settings.Current.WorkloadMeetingHours;
         SelectedTaskCount = settings.Current.WorkloadTasks;
+        HideDuplicateEvents = settings.Current.HideDuplicateEvents;
+        HideDuplicateTasks = settings.Current.HideDuplicateTasks;
         RemindersEnabled = settings.Current.RemindersEnabled;
         RemindAboutTasks = settings.Current.RemindAboutTasks;
         SelectedLead = LeadOptions.First(o => o.Minutes == settings.Current.EventReminderMinutes);
         SelectedSnooze = SnoozeOptions.First(o => o.Minutes == settings.Current.SnoozeMinutes);
         SelectedTaskTime = TaskTimeOptions.First(o => o.Value == settings.Current.DateOnlyTaskReminderTime);
+        HighlightConflicts = settings.Current.HighlightConflicts;
+        CountAllDayBusy = settings.Current.CountAllDayBusy;
+        CheckForUpdates = settings.Current.CheckForUpdates;
     }
+
+    /// <summary>Mark events that overlap in time (docs/design/conflict-highlight.md).</summary>
+    [ObservableProperty]
+    public partial bool HighlightConflicts { get; set; }
+
+    partial void OnHighlightConflictsChanged(bool value) =>
+        _settings.Update(s => s with { HighlightConflicts = value });
+
+    /// <summary>Also let busy all-day events take part in conflicts.</summary>
+    [ObservableProperty]
+    public partial bool CountAllDayBusy { get; set; }
+
+    partial void OnCountAllDayBusyChanged(bool value) =>
+        _settings.Update(s => s with { CountAllDayBusy = value });
+
+
+    /// <summary>Whether the app may ask GitHub once a day for newer releases (docs/design/update-check.md).</summary>
+    [ObservableProperty]
+    public partial bool CheckForUpdates { get; set; }
+
+    partial void OnCheckForUpdatesChanged(bool value) =>
+        _settings.Update(s => s with { CheckForUpdates = value });
 
     public IReadOnlyList<MinutesOption> LeadOptions { get; }
 
@@ -93,6 +120,18 @@ public sealed partial class SettingsViewModel : ViewModelBase
     /// <summary>The standard choices, plus the stored value when it is not one of them (for example from a hand-edited file).</summary>
     private static List<int> WithCurrent(int[] standard, int current) =>
         [.. standard.Append(current).Distinct().Order()];
+
+    [ObservableProperty]
+    public partial bool HideDuplicateEvents { get; set; }
+
+    partial void OnHideDuplicateEventsChanged(bool value) =>
+        _settings.Update(s => s with { HideDuplicateEvents = value });
+
+    [ObservableProperty]
+    public partial bool HideDuplicateTasks { get; set; }
+
+    partial void OnHideDuplicateTasksChanged(bool value) =>
+        _settings.Update(s => s with { HideDuplicateTasks = value });
 
     [ObservableProperty]
     public partial bool RemindersEnabled { get; set; }

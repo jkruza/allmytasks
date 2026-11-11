@@ -19,6 +19,7 @@ namespace AllMyTasks.Core.Calendar;
 /// <param name="MeetingUrl">Join link of an online meeting; always an absolute <c>https</c> URL (see <see cref="MeetingLinks"/>).</param>
 /// <param name="Organizer">Who organises the event, when the provider says.</param>
 /// <param name="Attendees">Invited people, at most <see cref="Attendee.MaxPerEvent"/>; may be empty.</param>
+/// <param name="Uid">iCalendar UID when the provider exposes it; invitations keep it across calendars, so it identifies duplicates.</param>
 /// <param name="AttendeeCount">How many attendees the provider reported; never less than <see cref="Attendees"/>.</param>
 public sealed record CalendarEvent(
     ItemKey Key,
@@ -35,7 +36,8 @@ public sealed record CalendarEvent(
     Uri? MeetingUrl = null,
     Attendee? Organizer = null,
     IReadOnlyList<Attendee>? Attendees = null,
-    int AttendeeCount = 0)
+    int AttendeeCount = 0,
+    string? Uid = null)
 {
     public ItemKey Key { get; init => field = Guard.NotNull(value); } = Guard.NotNull(Key);
 

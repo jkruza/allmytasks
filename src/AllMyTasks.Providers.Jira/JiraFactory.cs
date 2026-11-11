@@ -38,7 +38,8 @@ public sealed class JiraFactory(HttpMessageHandler? handler = null, ILogger? log
             Required: true,
             Help: "Create one in your Atlassian account settings under Security, API tokens. It gives the same access as your account, so the app only reads with it. It is stored in your system keyring."),
         new SourceConfigField(SyncScheduler.IntervalKey, "Refresh every (minutes)", FieldKind.Number, Help: "Leave blank for 15. The app shows open issues assigned to you."),
-    ]);
+    ],
+    "Your Jira Cloud site address, the email of your Atlassian account and an API token from your Atlassian account settings under Security.");
 
     public IEnumerable<SourceConfigError> ValidateValues(IReadOnlyDictionary<string, string> values)
     {
