@@ -3,117 +3,143 @@
         xmlns:vm="using:AllMyTasks.ViewModels"
         x:Class="AllMyTasks.Views.SettingsWindow"
         x:DataType="vm:SettingsViewModel"
-        Title="Settings" Width="440" SizeToContent="Height" CanResize="False"
+        Title="Settings" Width="700" Height="520" MinWidth="560" MinHeight="400"
         WindowStartupLocation="CenterOwner">
-  <StackPanel Margin="20" Spacing="16">
-    <TextBlock Classes="title" Text="Settings" />
-    <StackPanel Spacing="8">
-      <TextBlock Classes="section" Text="Appearance" />
-      <StackPanel Spacing="4">
-        <TextBlock Text="Accent colour" />
-        <ComboBox ItemsSource="{Binding AccentOptions}" SelectedItem="{Binding SelectedAccent}" HorizontalAlignment="Stretch">
-          <ComboBox.ItemTemplate>
-            <DataTemplate x:DataType="vm:AccentChoice">
-              <StackPanel Orientation="Horizontal" Spacing="8">
-                <Border Classes="dot" Background="{Binding Swatch}" IsVisible="{Binding Swatch, Converter={x:Static ObjectConverters.IsNotNull}}" />
-                <TextBlock Text="{Binding Label}" />
-              </StackPanel>
-            </DataTemplate>
-          </ComboBox.ItemTemplate>
-        </ComboBox>
-        <TextBlock Classes="small" TextWrapping="Wrap" Text="System accent follows your operating system and falls back to blue where it does not provide one. Calendar and list colours, and overdue red, do not change." />
-      </StackPanel>
-    </StackPanel>
-    <StackPanel Spacing="8">
-      <TextBlock Classes="section" Text="Calendar" />
-      <CheckBox IsChecked="{Binding HighlightConflicts}">
-        <TextBlock Text="Highlight overlapping events" TextWrapping="Wrap" />
-      </CheckBox>
-      <CheckBox Margin="24,0,0,0" IsChecked="{Binding CountAllDayBusy}" IsEnabled="{Binding HighlightConflicts}">
-        <TextBlock Text="Count all-day events that are marked busy" TextWrapping="Wrap" />
-      </CheckBox>
-      <StackPanel Spacing="4">
-        <TextBlock Text="Week starts on" />
-        <ComboBox ItemsSource="{Binding WeekStartOptions}" SelectedItem="{Binding SelectedWeekStart}" HorizontalAlignment="Stretch">
-          <ComboBox.ItemTemplate>
-            <DataTemplate x:DataType="vm:WeekStartOption"><TextBlock Text="{Binding Label}" /></DataTemplate>
-          </ComboBox.ItemTemplate>
-        </ComboBox>
-      </StackPanel>
-      <CheckBox IsChecked="{Binding HideDuplicateEvents}">
-        <TextBlock Text="Show the same event once when it comes from two sources" TextWrapping="Wrap" />
-      </CheckBox>
-      <CheckBox IsChecked="{Binding HideDuplicateTasks}">
-        <TextBlock Text="Show the same task once (same title, date and link)" TextWrapping="Wrap" />
-      </CheckBox>
-      <TextBlock Classes="small" TextWrapping="Wrap" Text="Nothing is deleted; the other copy is only hidden, and the one you see says where else it appears. The source added first is shown." />
-    </StackPanel>
-    <StackPanel Spacing="8">
-      <TextBlock Classes="section" Text="Workload" />
-      <CheckBox IsChecked="{Binding ShowWorkload}">
-        <TextBlock Text="Show the next seven days at the top of Upcoming" TextWrapping="Wrap" />
-      </CheckBox>
-      <StackPanel Spacing="4" IsEnabled="{Binding ShowWorkload}">
-        <TextBlock Text="A day is heavy from this many hours of meetings" />
-        <ComboBox ItemsSource="{Binding MeetingHourOptions}" SelectedItem="{Binding SelectedMeetingHours}" HorizontalAlignment="Stretch" />
-        <TextBlock Text="or this many tasks due" />
-        <ComboBox ItemsSource="{Binding TaskCountOptions}" SelectedItem="{Binding SelectedTaskCount}" HorizontalAlignment="Stretch" />
-        <TextBlock Classes="small" TextWrapping="Wrap" Text="Meetings are timed, busy events; overlaps count once. Heavy days are marked in amber." />
-      </StackPanel>
-    </StackPanel>
-    <StackPanel Spacing="8">
-      <TextBlock Classes="section" Text="Notifications" />
-      <CheckBox IsChecked="{Binding RemindersEnabled}">
-        <TextBlock Text="Show reminders" TextWrapping="Wrap" />
-      </CheckBox>
-      <TextBlock Text="Reminders only appear while All My Tasks is running. Turn on launching at login (below) to have it start with your computer." Classes="small" TextWrapping="Wrap" />
-      <StackPanel Spacing="4" IsEnabled="{Binding RemindersEnabled}">
-        <TextBlock Text="Remind before events" />
-        <ComboBox ItemsSource="{Binding LeadOptions}" SelectedItem="{Binding SelectedLead}" HorizontalAlignment="Stretch">
-          <ComboBox.ItemTemplate>
-            <DataTemplate x:DataType="vm:MinutesOption"><TextBlock Text="{Binding Label}" /></DataTemplate>
-          </ComboBox.ItemTemplate>
-        </ComboBox>
-        <CheckBox IsChecked="{Binding RemindAboutTasks}" Margin="0,4,0,0">
-          <TextBlock Text="Remind about tasks when they are due" TextWrapping="Wrap" />
-        </CheckBox>
-        <TextBlock Text="Time for tasks that have a date but no time" Margin="0,4,0,0" />
-        <ComboBox ItemsSource="{Binding TaskTimeOptions}" SelectedItem="{Binding SelectedTaskTime}" IsEnabled="{Binding RemindAboutTasks}" HorizontalAlignment="Stretch">
-          <ComboBox.ItemTemplate>
-            <DataTemplate x:DataType="vm:TimeOption"><TextBlock Text="{Binding Label}" /></DataTemplate>
-          </ComboBox.ItemTemplate>
-        </ComboBox>
-        <TextBlock Text="Snooze for" Margin="0,4,0,0" />
-        <ComboBox ItemsSource="{Binding SnoozeOptions}" SelectedItem="{Binding SelectedSnooze}" HorizontalAlignment="Stretch">
-          <ComboBox.ItemTemplate>
-            <DataTemplate x:DataType="vm:MinutesOption"><TextBlock Text="{Binding Label}" /></DataTemplate>
-          </ComboBox.ItemTemplate>
-        </ComboBox>
-      </StackPanel>
-    </StackPanel>
-    <StackPanel Spacing="8">
-      <TextBlock Classes="section" Text="Startup" />
-      <CheckBox IsChecked="{Binding LaunchAtLogin}" IsEnabled="{Binding CanChangeLaunchAtLogin}">
-        <TextBlock Text="Launch All My Tasks when I log in" TextWrapping="Wrap" />
-      </CheckBox>
-      <CheckBox Margin="24,0,0,0" IsChecked="{Binding StartInTrayAtLogin}" IsEnabled="{Binding LaunchAtLogin}">
-        <TextBlock Text="Start minimized to tray (only when started at login)" TextWrapping="Wrap" />
-      </CheckBox>
-      <TextBlock Text="{Binding AutostartMessage}" IsVisible="{Binding AutostartMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" Classes="small" TextWrapping="Wrap" />
-    </StackPanel>
-    <StackPanel Spacing="8">
-      <TextBlock Classes="section" Text="Window" />
-      <CheckBox IsChecked="{Binding CloseToTray}">
-        <TextBlock Text="Keep running in the system tray when the window is closed" TextWrapping="Wrap" />
-      </CheckBox>
-    </StackPanel>
-    <StackPanel Spacing="8">
-      <TextBlock Classes="section" Text="Updates" />
-      <CheckBox IsChecked="{Binding CheckForUpdates}">
-        <TextBlock Text="Check for new versions" TextWrapping="Wrap" />
-      </CheckBox>
-      <TextBlock Classes="small" TextWrapping="Wrap" Text="Once a day the app asks GitHub for the list of releases. The request carries no information about you or this computer. Nothing is downloaded or installed; you are only told, and the release page opens in your browser." />
-    </StackPanel>
-    <Button Content="Close" IsDefault="True" IsCancel="True" HorizontalAlignment="Right" Click="OnClose" />
-  </StackPanel>
+  <DockPanel Margin="20,16,20,16">
+    <Button DockPanel.Dock="Bottom" Margin="0,12,0,0" Content="Close" IsDefault="True" IsCancel="True" HorizontalAlignment="Right" Click="OnClose" />
+    <TextBlock DockPanel.Dock="Top" Classes="title" Text="Settings" Margin="0,0,0,12" />
+    <TabControl TabStripPlacement="Left">
+      <TabItem Header="Appearance">
+        <ScrollViewer>
+          <StackPanel Margin="24,16,24,16" Spacing="20" MaxWidth="460" HorizontalAlignment="Left">
+          <StackPanel Spacing="8">
+            <TextBlock Classes="section" Text="Appearance" />
+            <StackPanel Spacing="4">
+              <TextBlock Text="Accent colour" />
+              <ComboBox ItemsSource="{Binding AccentOptions}" SelectedItem="{Binding SelectedAccent}" HorizontalAlignment="Stretch">
+                <ComboBox.ItemTemplate>
+                  <DataTemplate x:DataType="vm:AccentChoice">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                      <Border Classes="dot" Background="{Binding Swatch}" IsVisible="{Binding Swatch, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                      <TextBlock Text="{Binding Label}" />
+                    </StackPanel>
+                  </DataTemplate>
+                </ComboBox.ItemTemplate>
+              </ComboBox>
+              <TextBlock Classes="small" TextWrapping="Wrap" Text="System accent follows your operating system and falls back to blue where it does not provide one. Calendar and list colours, and overdue red, do not change." />
+            </StackPanel>
+          </StackPanel>
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+      <TabItem Header="Calendar">
+        <ScrollViewer>
+          <StackPanel Margin="24,16,24,16" Spacing="20" MaxWidth="460" HorizontalAlignment="Left">
+          <StackPanel Spacing="8">
+            <TextBlock Classes="section" Text="Calendar" />
+            <CheckBox IsChecked="{Binding HighlightConflicts}">
+              <TextBlock Text="Highlight overlapping events" TextWrapping="Wrap" />
+            </CheckBox>
+            <CheckBox Margin="24,0,0,0" IsChecked="{Binding CountAllDayBusy}" IsEnabled="{Binding HighlightConflicts}">
+              <TextBlock Text="Count all-day events that are marked busy" TextWrapping="Wrap" />
+            </CheckBox>
+            <StackPanel Spacing="4">
+              <TextBlock Text="Week starts on" />
+              <ComboBox ItemsSource="{Binding WeekStartOptions}" SelectedItem="{Binding SelectedWeekStart}" HorizontalAlignment="Stretch">
+                <ComboBox.ItemTemplate>
+                  <DataTemplate x:DataType="vm:WeekStartOption"><TextBlock Text="{Binding Label}" /></DataTemplate>
+                </ComboBox.ItemTemplate>
+              </ComboBox>
+            </StackPanel>
+            <CheckBox IsChecked="{Binding HideDuplicateEvents}">
+              <TextBlock Text="Show the same event once when it comes from two sources" TextWrapping="Wrap" />
+            </CheckBox>
+            <CheckBox IsChecked="{Binding HideDuplicateTasks}">
+              <TextBlock Text="Show the same task once (same title, date and link)" TextWrapping="Wrap" />
+            </CheckBox>
+            <TextBlock Classes="small" TextWrapping="Wrap" Text="Nothing is deleted; the other copy is only hidden, and the one you see says where else it appears. The source added first is shown." />
+          </StackPanel>
+          <StackPanel Spacing="8">
+            <TextBlock Classes="section" Text="Workload" />
+            <CheckBox IsChecked="{Binding ShowWorkload}">
+              <TextBlock Text="Show the next seven days at the top of Upcoming" TextWrapping="Wrap" />
+            </CheckBox>
+            <StackPanel Spacing="4" IsEnabled="{Binding ShowWorkload}">
+              <TextBlock Text="A day is heavy from this many hours of meetings" />
+              <ComboBox ItemsSource="{Binding MeetingHourOptions}" SelectedItem="{Binding SelectedMeetingHours}" HorizontalAlignment="Stretch" />
+              <TextBlock Text="or this many tasks due" />
+              <ComboBox ItemsSource="{Binding TaskCountOptions}" SelectedItem="{Binding SelectedTaskCount}" HorizontalAlignment="Stretch" />
+              <TextBlock Classes="small" TextWrapping="Wrap" Text="Meetings are timed, busy events; overlaps count once. Heavy days are marked in amber." />
+            </StackPanel>
+          </StackPanel>
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+      <TabItem Header="Notifications">
+        <ScrollViewer>
+          <StackPanel Margin="24,16,24,16" Spacing="20" MaxWidth="460" HorizontalAlignment="Left">
+          <StackPanel Spacing="8">
+            <TextBlock Classes="section" Text="Notifications" />
+            <CheckBox IsChecked="{Binding RemindersEnabled}">
+              <TextBlock Text="Show reminders" TextWrapping="Wrap" />
+            </CheckBox>
+            <TextBlock Text="Reminders only appear while All My Tasks is running. Turn on launching at login (below) to have it start with your computer." Classes="small" TextWrapping="Wrap" />
+            <StackPanel Spacing="4" IsEnabled="{Binding RemindersEnabled}">
+              <TextBlock Text="Remind before events" />
+              <ComboBox ItemsSource="{Binding LeadOptions}" SelectedItem="{Binding SelectedLead}" HorizontalAlignment="Stretch">
+                <ComboBox.ItemTemplate>
+                  <DataTemplate x:DataType="vm:MinutesOption"><TextBlock Text="{Binding Label}" /></DataTemplate>
+                </ComboBox.ItemTemplate>
+              </ComboBox>
+              <CheckBox IsChecked="{Binding RemindAboutTasks}" Margin="0,4,0,0">
+                <TextBlock Text="Remind about tasks when they are due" TextWrapping="Wrap" />
+              </CheckBox>
+              <TextBlock Text="Time for tasks that have a date but no time" Margin="0,4,0,0" />
+              <ComboBox ItemsSource="{Binding TaskTimeOptions}" SelectedItem="{Binding SelectedTaskTime}" IsEnabled="{Binding RemindAboutTasks}" HorizontalAlignment="Stretch">
+                <ComboBox.ItemTemplate>
+                  <DataTemplate x:DataType="vm:TimeOption"><TextBlock Text="{Binding Label}" /></DataTemplate>
+                </ComboBox.ItemTemplate>
+              </ComboBox>
+              <TextBlock Text="Snooze for" Margin="0,4,0,0" />
+              <ComboBox ItemsSource="{Binding SnoozeOptions}" SelectedItem="{Binding SelectedSnooze}" HorizontalAlignment="Stretch">
+                <ComboBox.ItemTemplate>
+                  <DataTemplate x:DataType="vm:MinutesOption"><TextBlock Text="{Binding Label}" /></DataTemplate>
+                </ComboBox.ItemTemplate>
+              </ComboBox>
+            </StackPanel>
+          </StackPanel>
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+      <TabItem Header="System">
+        <ScrollViewer>
+          <StackPanel Margin="24,16,24,16" Spacing="20" MaxWidth="460" HorizontalAlignment="Left">
+          <StackPanel Spacing="8">
+            <TextBlock Classes="section" Text="Startup" />
+            <CheckBox IsChecked="{Binding LaunchAtLogin}" IsEnabled="{Binding CanChangeLaunchAtLogin}">
+              <TextBlock Text="Launch All My Tasks when I log in" TextWrapping="Wrap" />
+            </CheckBox>
+            <CheckBox Margin="24,0,0,0" IsChecked="{Binding StartInTrayAtLogin}" IsEnabled="{Binding LaunchAtLogin}">
+              <TextBlock Text="Start minimized to tray (only when started at login)" TextWrapping="Wrap" />
+            </CheckBox>
+            <TextBlock Text="{Binding AutostartMessage}" IsVisible="{Binding AutostartMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" Classes="small" TextWrapping="Wrap" />
+          </StackPanel>
+          <StackPanel Spacing="8">
+            <TextBlock Classes="section" Text="Window" />
+            <CheckBox IsChecked="{Binding CloseToTray}">
+              <TextBlock Text="Keep running in the system tray when the window is closed" TextWrapping="Wrap" />
+            </CheckBox>
+          </StackPanel>
+          <StackPanel Spacing="8">
+            <TextBlock Classes="section" Text="Updates" />
+            <CheckBox IsChecked="{Binding CheckForUpdates}">
+              <TextBlock Text="Check for new versions" TextWrapping="Wrap" />
+            </CheckBox>
+            <TextBlock Classes="small" TextWrapping="Wrap" Text="Once a day the app asks GitHub for the list of releases. The request carries no information about you or this computer. Nothing is downloaded or installed; you are only told, and the release page opens in your browser." />
+          </StackPanel>
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+    </TabControl>
+  </DockPanel>
 </Window>

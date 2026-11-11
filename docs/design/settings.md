@@ -92,7 +92,7 @@ window included). Opened from a toolbar button next to Sources.
 
 - Changes apply as they are made; one **Close** button. No Save/Cancel, so there is no
   half-applied state.
-- Rows are grouped under headings (**Appearance**, **Calendar**, **Notifications**, **Startup** and **Window**; later sections get their own heading).
+- The dialog has side navigation with four pages, **Appearance**, **Calendar**, **Notifications** and **System** ([settings-layout.md](settings-layout.md)); rows are grouped under quiet headings inside a page (**Appearance**, **Calendar**, **Workload**, **Notifications**, **Startup**, **Window**, **Updates**).
 - **Appearance** has *Accent colour*: Blue (default), System accent, or a colour of the collection palette (`accent`, see [design-system.md](design-system.md#decisions)). It applies immediately: `AccentService` swaps `AmtAccentColor` and Fluent's palette accent. System accent reads the OS value and falls back to blue where the platform gives none; `AccentColors.Resolve` in Core holds the rules. Collection colours and overdue red are unaffected.
 - **Calendar** also has *Highlight overlapping events* and *Count all-day events that are marked busy* ([conflict-highlight.md](conflict-highlight.md)), and *Show the same event once* (on) and *Show the same task once* (off) ([duplicate-detection.md](duplicate-detection.md)).
 - **Workload** has the switch for the Upcoming strip and the two limits at which a day counts as heavy ([workload-glance.md](workload-glance.md)).
@@ -123,4 +123,4 @@ Single PR. No migration (new key in an existing table).
 - `CalendarShellViewModel` no longer reads `CultureInfo` for the first day; it asks `SettingsService`
   and reloads on `Changed`.
 - To add a setting: a property on `AppSettings` (and its `Parse`/`ToJson`), a property on
-  `SettingsViewModel`, a row in `SettingsWindow.axaml`.
+  `SettingsViewModel`, a row on the right page of `SettingsWindow.axaml`.
