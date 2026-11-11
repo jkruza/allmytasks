@@ -32,7 +32,8 @@ public sealed class GitLabFactory(HttpMessageHandler? handler = null, ILogger? l
             Required: true,
             Help: "In GitLab open Preferences, Access tokens, add a token with only the read_api scope and paste it here. The app only reads. It is stored in your system keyring."),
         new SourceConfigField(SyncScheduler.IntervalKey, "Refresh every (minutes)", FieldKind.Number, Help: "Leave blank for 15."),
-    ]);
+    ],
+    "A personal access token with the read_api scope (Preferences, Access tokens). Leave the address blank for gitlab.com, or enter your own instance.");
 
     public IEnumerable<SourceConfigError> ValidateValues(IReadOnlyDictionary<string, string> values)
     {

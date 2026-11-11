@@ -38,6 +38,9 @@ public sealed record AppSettings
     /// <summary>Minutes a snoozed reminder waits.</summary>
     public int SnoozeMinutes { get; init; } = 10;
 
+    /// <summary>The user closed the first-run checklist for good (docs/design/first-run-onboarding.md).</summary>
+    public bool OnboardingDismissed { get; init; }
+
     /// <summary>Reads settings from JSON. Missing, unknown or corrupt values give the defaults.</summary>
     public static AppSettings Parse(string? json)
     {
@@ -81,6 +84,7 @@ public sealed record AppSettings
                 RemindAboutTasks = ReadBool(root, "remindAboutTasks", result.RemindAboutTasks),
                 DateOnlyTaskReminderTime = ReadTime(root, "dateOnlyTaskReminderTime", result.DateOnlyTaskReminderTime),
                 SnoozeMinutes = ReadMinutes(root, "snoozeMinutes", result.SnoozeMinutes, 1),
+                OnboardingDismissed = ReadBool(root, "onboardingDismissed", result.OnboardingDismissed),
             };
 
             return result;
@@ -104,6 +108,7 @@ public sealed record AppSettings
             ["remindAboutTasks"] = RemindAboutTasks,
             ["dateOnlyTaskReminderTime"] = DateOnlyTaskReminderTime.ToString("HH:mm", CultureInfo.InvariantCulture),
             ["snoozeMinutes"] = SnoozeMinutes,
+            ["onboardingDismissed"] = OnboardingDismissed,
         });
 
     private static bool ReadBool(JsonElement root, string name, bool fallback) =>

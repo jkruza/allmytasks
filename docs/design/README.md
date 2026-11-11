@@ -53,7 +53,7 @@ fix whichever is wrong in the same pull request.
 | [inbox-view.md](inbox-view.md) | Inbox view of tasks without a date (implemented, version 1) |
 | [write-support.md](write-support.md) | Version 2: complete tasks, change dates, reschedule events; how the Todoist preview fits |
 | [research.md](research.md) | Unscheduled topics: runtime plug-ins, MCP support, local-model AI summaries |
-| [first-run-onboarding.md](first-run-onboarding.md) | Proposed (v1): welcome state, guided add-source, first-sync checklist |
+| [first-run-onboarding.md](first-run-onboarding.md) | Implemented (v1): welcome state, guided add-source, first-sync checklist |
 | [conflict-highlight.md](conflict-highlight.md) | Proposed (v1): mark overlapping events across calendars |
 | [duplicate-detection.md](duplicate-detection.md) | Proposed (v1): show one entry for the same meeting or issue from two sources |
 | [source-diagnostics.md](source-diagnostics.md) | Proposed (v1): per-source health details and a secret-free copyable report |

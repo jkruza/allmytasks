@@ -95,13 +95,9 @@ public sealed partial class App : Application
         var scheduler = new SyncScheduler(engine, sources, clock);
         var dialogs = new DialogService(desktop);
 
-        // First run: add the sample source through the registry; the first sync below fills the database through
-        // the normal sync path. After that the app only reads from the local database, so a restart shows the same
-        // data with no network.
-        if (sources.GetSourcesAsync().GetAwaiter().GetResult().Count == 0)
-        {
-            registry.AddAsync(SampleSourceFactory.KindName, "Sample data", new Dictionary<string, string>()).GetAwaiter().GetResult();
-        }
+        // First run: nothing is added. The window shows the welcome state (docs/design/first-run-onboarding.md), where the
+        // user adds a first source or chooses the sample data, which then goes through the registry and the normal sync path.
+        // After that the app only reads from the local database, so a restart shows the same data with no network.
 
         var viewState = new ViewStateStore(settings);
         var appSettings = new SettingsService(viewState);
@@ -132,7 +128,27 @@ public sealed partial class App : Application
             () => _ = dialogs.ShowSettingsAsync(new SettingsViewModel(appSettings, autostart)),
             changes,
             new SearchService(viewItems, sources, new IcalRecurrenceExpander(), clock),
-            new SavedFilterStore(settings));
+            new SavedFilterStore(settings),
+            new OnboardingViewModel(
+                appSettings,
+                async () =>
+                {
+                    var editor = new SourceEditorViewModel(registry, null, sources);
+                    if (await dialogs.ShowSourceEditorAsync(editor))
+                    {
+                        await shell!.OnCollectionsChangedAsync();
+                        if (editor.SavedSourceId is { } id)
+                        {
+                            _ = engine.SyncSourceAsync(id);
+                        }
+                    }
+                },
+                async () =>
+                {
+                    var sample = await registry.AddAsync(SampleSourceFactory.KindName, "Sample data", new Dictionary<string, string>());
+                    await shell!.OnCollectionsChangedAsync();
+                    _ = engine.SyncSourceAsync(sample.Id);
+                }));
 
         var window = new MainWindow { DataContext = shell };
         window.Activated += (_, _) => _ = scheduler.OnWindowActivatedAsync();

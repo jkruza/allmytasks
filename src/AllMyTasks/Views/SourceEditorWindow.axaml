@@ -16,6 +16,12 @@
         </ComboBox.ItemTemplate>
       </ComboBox>
     </StackPanel>
+    <Border Classes="card" IsVisible="{Binding WhatYouNeed, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+      <StackPanel Spacing="2">
+        <TextBlock Classes="section" Text="What you need" />
+        <TextBlock Text="{Binding WhatYouNeed}" TextWrapping="Wrap" />
+      </StackPanel>
+    </Border>
     <StackPanel Spacing="4">
       <TextBlock Text="Name *" />
       <TextBox Text="{Binding Name}" />

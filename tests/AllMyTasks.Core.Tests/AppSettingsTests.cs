@@ -105,4 +105,12 @@ public class AppSettingsTests
         Assert.Equal(10, parsed.SnoozeMinutes);
         Assert.Equal(new TimeOnly(9, 0), parsed.DateOnlyTaskReminderTime);
     }
+
+    [Fact]
+    public void The_onboarding_dismissal_defaults_to_off_and_round_trips()
+    {
+        Assert.False(new AppSettings().OnboardingDismissed);
+        Assert.True(AppSettings.Parse(new AppSettings { OnboardingDismissed = true }.ToJson()).OnboardingDismissed);
+        Assert.False(AppSettings.Parse("""{"onboardingDismissed":1}""").OnboardingDismissed);
+    }
 }
