@@ -20,6 +20,7 @@ internal sealed class TrayService : IDisposable
     private readonly CalendarShellViewModel _shell;
     private readonly SettingsService _settings;
     private readonly TrayIcon _icon;
+    private readonly NativeMenuItem _updateItem = new() { IsVisible = false };
     private bool _quitting;
 
     public TrayService(
@@ -41,6 +42,13 @@ internal sealed class TrayService : IDisposable
             Menu = BuildMenu(),
             IsVisible = true,
         };
+        _updateItem.Click += (_, _) => _ = OpenReleaseAsync();
+        if (shell.Update is { } update)
+        {
+            update.PropertyChanged += (_, _) => ShowUpdateItem(update);
+            ShowUpdateItem(update);
+        }
+
         _icon.Clicked += (_, _) => Show();
         TrayIcon.SetIcons(application, [_icon]);
 
@@ -77,6 +85,7 @@ internal sealed class TrayService : IDisposable
     private NativeMenu BuildMenu()
     {
         var menu = new NativeMenu();
+        menu.Items.Add(_updateItem);
         menu.Items.Add(Item("Show All My Tasks", Show));
         menu.Items.Add(new NativeMenuItemSeparator());
         menu.Items.Add(Item("Day", () => ShowView(ViewMode.Day)));
@@ -90,6 +99,21 @@ internal sealed class TrayService : IDisposable
         menu.Items.Add(new NativeMenuItemSeparator());
         menu.Items.Add(Item("Quit", Quit));
         return menu;
+    }
+
+    // "Version X is available" shows only while an update is offered; it opens the release page.
+    private void ShowUpdateItem(UpdateBannerViewModel update)
+    {
+        _updateItem.IsVisible = update.IsVisible;
+        _updateItem.Header = update.Text.TrimEnd('.') + ": view release";
+    }
+
+    private async Task OpenReleaseAsync()
+    {
+        if (_shell.Update?.Url is { } url && Uri.TryCreate(url, UriKind.Absolute, out var uri) && TopLevel.GetTopLevel(_window)?.Launcher is { } launcher)
+        {
+            await launcher.LaunchUriAsync(uri);
+        }
     }
 
     private static NativeMenuItem Item(string header, Action action)

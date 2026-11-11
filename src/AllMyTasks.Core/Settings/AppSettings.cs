@@ -44,6 +44,9 @@ public sealed record AppSettings
     /// <summary>Also let all-day events that the source marks as busy take part in conflicts.</summary>
     public bool CountAllDayBusy { get; init; }
 
+    /// <summary>Ask GitHub once a day whether a newer release exists. When off, the app makes no such request.</summary>
+    public bool CheckForUpdates { get; init; } = true;
+
     /// <summary>Reads settings from JSON. Missing, unknown or corrupt values give the defaults.</summary>
     public static AppSettings Parse(string? json)
     {
@@ -89,6 +92,7 @@ public sealed record AppSettings
                 SnoozeMinutes = ReadMinutes(root, "snoozeMinutes", result.SnoozeMinutes, 1),
                 HighlightConflicts = ReadBool(root, "highlightConflicts", result.HighlightConflicts),
                 CountAllDayBusy = ReadBool(root, "countAllDayBusy", result.CountAllDayBusy),
+                CheckForUpdates = ReadBool(root, "checkForUpdates", result.CheckForUpdates),
             };
 
             return result;
@@ -114,6 +118,7 @@ public sealed record AppSettings
             ["snoozeMinutes"] = SnoozeMinutes,
             ["highlightConflicts"] = HighlightConflicts,
             ["countAllDayBusy"] = CountAllDayBusy,
+            ["checkForUpdates"] = CheckForUpdates,
         });
 
     private static bool ReadBool(JsonElement root, string name, bool fallback) =>

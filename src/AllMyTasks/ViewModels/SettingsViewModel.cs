@@ -57,6 +57,7 @@ public sealed partial class SettingsViewModel : ViewModelBase
         SelectedTaskTime = TaskTimeOptions.First(o => o.Value == settings.Current.DateOnlyTaskReminderTime);
         HighlightConflicts = settings.Current.HighlightConflicts;
         CountAllDayBusy = settings.Current.CountAllDayBusy;
+        CheckForUpdates = settings.Current.CheckForUpdates;
     }
 
     /// <summary>Mark events that overlap in time (docs/design/conflict-highlight.md).</summary>
@@ -72,6 +73,14 @@ public sealed partial class SettingsViewModel : ViewModelBase
 
     partial void OnCountAllDayBusyChanged(bool value) =>
         _settings.Update(s => s with { CountAllDayBusy = value });
+
+
+    /// <summary>Whether the app may ask GitHub once a day for newer releases (docs/design/update-check.md).</summary>
+    [ObservableProperty]
+    public partial bool CheckForUpdates { get; set; }
+
+    partial void OnCheckForUpdatesChanged(bool value) =>
+        _settings.Update(s => s with { CheckForUpdates = value });
 
     public IReadOnlyList<MinutesOption> LeadOptions { get; }
 

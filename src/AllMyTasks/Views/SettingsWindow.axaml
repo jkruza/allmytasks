@@ -87,6 +87,13 @@
         <TextBlock Text="Keep running in the system tray when the window is closed" TextWrapping="Wrap" />
       </CheckBox>
     </StackPanel>
+    <StackPanel Spacing="8">
+      <TextBlock Classes="section" Text="Updates" />
+      <CheckBox IsChecked="{Binding CheckForUpdates}">
+        <TextBlock Text="Check for new versions" TextWrapping="Wrap" />
+      </CheckBox>
+      <TextBlock Classes="small" TextWrapping="Wrap" Text="Once a day the app asks GitHub for the list of releases. The request carries no information about you or this computer. Nothing is downloaded or installed; you are only told, and the release page opens in your browser." />
+    </StackPanel>
     <Button Content="Close" IsDefault="True" IsCancel="True" HorizontalAlignment="Right" Click="OnClose" />
   </StackPanel>
 </Window>

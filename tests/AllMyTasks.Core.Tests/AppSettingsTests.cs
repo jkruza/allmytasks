@@ -118,4 +118,12 @@ public class AppSettingsTests
         Assert.True(parsed.CountAllDayBusy);
         Assert.True(AppSettings.Parse("""{"highlightConflicts":"off"}""").HighlightConflicts);
     }
+
+    [Fact]
+    public void Update_check_defaults_to_on_and_round_trips()
+    {
+        Assert.True(new AppSettings().CheckForUpdates);
+        Assert.False(AppSettings.Parse(new AppSettings { CheckForUpdates = false }.ToJson()).CheckForUpdates);
+        Assert.True(AppSettings.Parse("""{"checkForUpdates":"no"}""").CheckForUpdates);
+    }
 }
