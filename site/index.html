@@ -53,7 +53,7 @@ html{scroll-behavior:smooth}
 <a href="https://github.com/jkruza/allmytasks" style="display: inline-block; padding: 12px 20px; border-radius: 6px; border: 1px solid var(--bd); background: var(--s000); text-decoration: none; font-weight: 600; font-size: 14px; line-height: 20px">View on GitHub</a>
 <a href="#start" style="display: inline-block; padding: 12px 20px; border-radius: 6px; border: 1px solid var(--bd); background: var(--s000); text-decoration: none; font-weight: 600; font-size: 14px; line-height: 20px">Build from source</a>
 </div>
-<p style="margin: 0; font-size: 14px; line-height: 20px; color: var(--mut)"><strong style="color: var(--ink)">Status: early, and read-only.</strong> Working today: iCalendar feeds, CalDAV, Todoist, Microsoft and Google accounts, GitHub, Jira Cloud and GitLab. Todoist, GitHub, Microsoft and Google have been tried on real accounts; Jira and GitLab not yet. All views are built, including the Inbox, and Windows and Linux packages are published as prereleases.</p>
+<p style="margin: 0; font-size: 14px; line-height: 20px; color: var(--mut)"><strong style="color: var(--ink)">Status: early, and read-only.</strong> Working today: iCalendar feeds, CalDAV, Todoist, Microsoft and Google accounts, GitHub, Jira Cloud and GitLab. Todoist, GitHub, Jira, GitLab, Microsoft and Google have been tried on real accounts. All views are built, including the Inbox, and Windows and Linux packages are published as prereleases.</p>
 </div>
 
 <!-- Illustration of the app -->
@@ -144,7 +144,7 @@ html{scroll-behavior:smooth}
 <div style="flex: 1 1 320px; min-width: 0; background: var(--s000); border: 1px solid var(--bd); border-radius: 6px; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; gap: 8px">
 <span aria-hidden="true" style="width: 28px; height: 4px; border-radius: 2px; background: var(--green)"></span>
 <h3 style="margin: 0; font-size: 18px; line-height: 24px; font-weight: 600">Many sources, one model</h3>
-<p style="margin: 0; font-size: 14px; line-height: 22px; color: var(--mut)">iCalendar feeds, CalDAV, Todoist, personal Microsoft accounts, Google accounts and GitHub work today; Todoist, Microsoft, Google and GitHub are tried on real accounts. Jira Cloud and GitLab work too, not yet tried on live sites. Events and tasks stay separate types, so task-only services fit naturally.</p>
+<p style="margin: 0; font-size: 14px; line-height: 22px; color: var(--mut)">iCalendar feeds, CalDAV, Todoist, personal Microsoft accounts, Google accounts and GitHub work today; Todoist, Microsoft, Google, GitHub, Jira Cloud and GitLab are all tried on real accounts. Events and tasks stay separate types, so task-only services fit naturally.</p>
 </div>
 
 <div style="flex: 1 1 320px; min-width: 0; background: var(--s000); border: 1px solid var(--bd); border-radius: 6px; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; gap: 8px">
@@ -176,7 +176,7 @@ html{scroll-behavior:smooth}
 <!-- Providers -->
 <section id="providers" style="max-width: 1120px; margin: 0 auto; padding: 80px 24px 0; box-sizing: border-box">
 <h2 style="margin: 0 0 8px; font-size: 26px; line-height: 32px; font-weight: 600">Providers</h2>
-<p style="margin: 0 0 24px; max-width: 640px; color: var(--mut)">Version 1 is a read-only overview. Jira and GitLab are built but not yet tried on live accounts; writing back is a version 2 goal.</p>
+<p style="margin: 0 0 24px; max-width: 640px; color: var(--mut)">Version 1 is a read-only overview. All providers have been tried on live accounts; writing back is a version 2 goal.</p>
 <div style="background: var(--s000); border: 1px solid var(--bd); border-radius: 6px; overflow: hidden">
 
 <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding: 16px 20px; border-bottom: 1px solid var(--bd)">
@@ -205,7 +205,7 @@ html{scroll-behavior:smooth}
 
 <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding: 16px 20px; border-bottom: 1px solid var(--bd)">
 <span style="flex: 1 1 200px; display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 14px; line-height: 20px"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 9999px; background: var(--gray)"></span>Jira</span>
-<span style="flex: 1 1 360px; font-size: 14px; line-height: 20px; color: var(--mut)">Open issues assigned to you on Jira Cloud, with their due dates, using your email and an API token. Not yet tried on a live site.</span>
+<span style="flex: 1 1 360px; font-size: 14px; line-height: 20px; color: var(--mut)">Open issues assigned to you on Jira Cloud, with their due dates, using your email and an API token; tried on a real site.</span>
 <span style="display: flex; align-items: center; gap: 6px; font-size: 12px; line-height: 16px; background: var(--s200); border-radius: 8px; padding: 4px 10px"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 9999px; background: var(--amber)"></span>Experimental</span>
 </div>
 
@@ -217,7 +217,7 @@ html{scroll-behavior:smooth}
 
 <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding: 16px 20px; border-bottom: 1px solid var(--bd)">
 <span style="flex: 1 1 200px; display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 14px; line-height: 20px"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 9999px; background: var(--gray)"></span>GitLab</span>
-<span style="flex: 1 1 360px; font-size: 14px; line-height: 20px; color: var(--mut)">Issues and merge requests assigned to you or waiting for your review, on gitlab.com or your own server, using a personal access token. Not yet tried on a live instance.</span>
+<span style="flex: 1 1 360px; font-size: 14px; line-height: 20px; color: var(--mut)">Issues and merge requests assigned to you or waiting for your review, on gitlab.com or your own server, using a personal access token; tried on a real instance.</span>
 <span style="display: flex; align-items: center; gap: 6px; font-size: 12px; line-height: 16px; background: var(--s200); border-radius: 8px; padding: 4px 10px"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 9999px; background: var(--amber)"></span>Experimental</span>
 </div>
 
@@ -277,13 +277,12 @@ html{scroll-behavior:smooth}
 <h3 style="margin: 0 0 12px; font-size: 16px; line-height: 22px; font-weight: 600; display: flex; align-items: center; gap: 8px"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 9999px; background: var(--green)"></span>Version 1: read-only overview</h3>
 <ul style="margin: 0; padding: 0 0 0 20px; font-size: 14px; line-height: 24px">
 <li>General framework: model, providers, local storage, sync (built)</li>
-<li>Todoist, Microsoft Outlook and To Do, Google Calendar and Tasks, GitHub (built, tried on live accounts)</li>
-<li>Jira and GitLab (built, not yet tried on live accounts)</li>
+<li>Todoist, Microsoft Outlook and To Do, Google Calendar and Tasks, GitHub, Jira and GitLab (built, tried on live accounts)</li>
 <li>Views: calendar grids (day, week, month), Upcoming and All tasks (built)</li>
 <li>Inbox: tasks without a date (built)</li>
 <li>Search, saved filters, reminders, system tray, launch at login (built)</li>
 <li>Windows MSI and Linux packages (built, prereleases published)</li>
-<li>Still open: live-account checks for Jira and GitLab, work and school Microsoft accounts</li>
+<li>Still open: work and school Microsoft accounts</li>
 <li>First-run welcome and checklist, overlap highlighting, duplicate collapsing, source diagnostics, update check, workload strip in Upcoming (built)</li>
 </ul>
 </div>

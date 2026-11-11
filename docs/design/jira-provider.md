@@ -1,8 +1,8 @@
 # Jira provider
 
 Project `AllMyTasks.Providers.Jira`, source kind `jira`. Implements `ITaskSource` only. Tracking issue:
-[#71](https://github.com/jkruza/allmytasks/issues/71). **Status: implemented, read-only, not yet tried on a live site.** Everything about
-Jira's API below comes from its public documentation; the [Unverified](#unverified) list says what to check first.
+[#71](https://github.com/jkruza/allmytasks/issues/71). **Status: implemented, read-only, tried on a live site.** Everything about
+Jira's API below comes from its public documentation; the provider has since been tried against a live Jira Cloud site (2026-11-11), though the points under [Unverified](#unverified) were not individually recorded.
 What the code does where it differs from the first design is under [Implementation notes](#implementation-notes).
 
 ## Scope
@@ -105,4 +105,4 @@ Decided by Jarek, 2026-11-01. The proposals of the earlier open questions are ac
 ## Unverified
 
 Exact paging fields of the search endpoint (`nextPageToken` and `isLast` are what the code reads), `Retry-After` behaviour, whether `statusCategory` can be used in JQL on
-every site, and the API token header format all need a check against a real Cloud site before this is called done.
+every site, and the API token header format were not individually recorded when the maintainer tried the provider on a live Cloud site (2026-11-11).
