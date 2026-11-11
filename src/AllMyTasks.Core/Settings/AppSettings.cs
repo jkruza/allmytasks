@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.Json;
+using AllMyTasks.Core.Views;
 
 namespace AllMyTasks.Core.Settings;
 
@@ -37,6 +38,15 @@ public sealed record AppSettings
 
     /// <summary>Minutes a snoozed reminder waits.</summary>
     public int SnoozeMinutes { get; init; } = 10;
+
+    /// <summary>Show the seven-day workload strip at the top of Upcoming (docs/design/workload-glance.md).</summary>
+    public bool ShowWorkload { get; init; } = true;
+
+    /// <summary>Hours of meetings at which a day counts as heavy.</summary>
+    public int WorkloadMeetingHours { get; init; } = 6;
+
+    /// <summary>Number of tasks due at which a day counts as heavy.</summary>
+    public int WorkloadTasks { get; init; } = 8;
 
     /// <summary>Reads settings from JSON. Missing, unknown or corrupt values give the defaults.</summary>
     public static AppSettings Parse(string? json)
@@ -81,6 +91,9 @@ public sealed record AppSettings
                 RemindAboutTasks = ReadBool(root, "remindAboutTasks", result.RemindAboutTasks),
                 DateOnlyTaskReminderTime = ReadTime(root, "dateOnlyTaskReminderTime", result.DateOnlyTaskReminderTime),
                 SnoozeMinutes = ReadMinutes(root, "snoozeMinutes", result.SnoozeMinutes, 1),
+                ShowWorkload = ReadBool(root, "showWorkload", result.ShowWorkload),
+                WorkloadMeetingHours = ReadInt(root, "workloadMeetingHours", result.WorkloadMeetingHours, 1, 16),
+                WorkloadTasks = ReadInt(root, "workloadTasks", result.WorkloadTasks, 1, 50),
             };
 
             return result;
@@ -90,6 +103,8 @@ public sealed record AppSettings
             return new AppSettings();
         }
     }
+
+    public WorkloadOptions ToWorkloadOptions() => new(TimeSpan.FromHours(Math.Clamp(WorkloadMeetingHours, 1, 16)), Math.Clamp(WorkloadTasks, 1, 50));
 
     public string ToJson() => JsonSerializer.Serialize(
         new Dictionary<string, object>
@@ -104,10 +119,18 @@ public sealed record AppSettings
             ["remindAboutTasks"] = RemindAboutTasks,
             ["dateOnlyTaskReminderTime"] = DateOnlyTaskReminderTime.ToString("HH:mm", CultureInfo.InvariantCulture),
             ["snoozeMinutes"] = SnoozeMinutes,
+            ["showWorkload"] = ShowWorkload,
+            ["workloadMeetingHours"] = WorkloadMeetingHours,
+            ["workloadTasks"] = WorkloadTasks,
         });
 
     private static bool ReadBool(JsonElement root, string name, bool fallback) =>
         root.TryGetProperty(name, out var value) && value.ValueKind is JsonValueKind.True or JsonValueKind.False ? value.GetBoolean() : fallback;
+
+    private static int ReadInt(JsonElement root, string name, int fallback, int minimum, int maximum) =>
+        root.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.Number && value.TryGetInt32(out var number) && number >= minimum && number <= maximum
+            ? number
+            : fallback;
 
     private static int ReadMinutes(JsonElement root, string name, int fallback, int minimum) =>
         root.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.Number && value.TryGetInt32(out var minutes) && minutes >= minimum && minutes <= 24 * 60

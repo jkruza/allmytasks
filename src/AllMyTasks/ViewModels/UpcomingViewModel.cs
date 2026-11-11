@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Globalization;
+using AllMyTasks.Core.Settings;
 using AllMyTasks.Core.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 
@@ -10,7 +11,11 @@ public sealed class DayGroupHeader(string text)
     public string Text { get; } = text;
 }
 
-public sealed partial class UpcomingViewModel(IAgendaService agenda) : ContentViewModel
+public sealed partial class UpcomingViewModel(
+    IAgendaService agenda,
+    Func<AppSettings>? settings = null,
+    Action<DateOnly>? openDay = null,
+    Action? openOverdue = null) : ContentViewModel
 {
     private int _days = 14;
 
@@ -18,6 +23,10 @@ public sealed partial class UpcomingViewModel(IAgendaService agenda) : ContentVi
 
     [ObservableProperty]
     public partial bool IsEmpty { get; set; }
+
+    /// <summary>The seven-day strip; null when it is switched off or the view is empty.</summary>
+    [ObservableProperty]
+    public partial WorkloadStripViewModel? Workload { get; set; }
 
     public void LoadMore() => _days += 14;
 
@@ -39,6 +48,11 @@ public sealed partial class UpcomingViewModel(IAgendaService agenda) : ContentVi
         }
 
         IsEmpty = list.IsEmpty;
+
+        var current = settings?.Invoke();
+        Workload = current is { ShowWorkload: true } && !list.IsEmpty
+            ? new WorkloadStripViewModel(WorkloadSummary.Build(entries, today, context.Zone, current.ToWorkloadOptions()), today, openDay ?? (_ => { }), openOverdue ?? (() => { }))
+            : null;
     }
 
     private static string Heading(DayGroup group) => group.Kind switch
