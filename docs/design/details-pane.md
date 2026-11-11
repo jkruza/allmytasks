@@ -25,7 +25,7 @@ the rest of the app.
 | --- | --- | --- |
 | Popover anchored to the entry | Close to the click | Hard to place in Week and Month where entries sit at window edges and are tiny; long descriptions need a scrolling popup; selected text and links inside popups behave differently per platform |
 | Modal dialog | Plenty of room | Blocks the window for a read-only glance; needs the dialog-owner handling in `DialogService`; one more window to manage on every click |
-| **Docked right pane** | Same behaviour in every view; no window or popup ownership issues; room for long text; stays open while the user clicks through entries; keyboard and screen reader friendly | Takes about 320 px from the content while open |
+| **Docked right pane** | Same behaviour in every view; no window or popup ownership issues; room for long text; stays open while the user clicks through entries; keyboard and screen reader friendly | Takes about 340 px from the content while open (the user can resize it, see [details-pane-resize.md](details-pane-resize.md)) |
 
 The pane wins because it is the only option that needs no per-view placement logic and no
 extra windows. It is closed by default, so the cost is paid only while the user is reading
@@ -39,7 +39,7 @@ details. Week and Month use uniform grids, so they simply get narrower.
 object? SelectedDetails   // null = pane closed
 ```
 
-`MainWindow.axaml` docks a pane on the right. It is visible when `SelectedDetails` is not
+`MainWindow.axaml` shows a pane on the right, with a draggable splitter between it and the view (width 260 to 640 px, remembered: [details-pane-resize.md](details-pane-resize.md)). It is visible when `SelectedDetails` is not
 null and renders it with a `ContentControl` whose `DataTemplate`s map details view models
 to views. A header with a Close button sits above the content.
 
@@ -70,8 +70,8 @@ model only exposes it. Rows that have no value are not shown.
 | Status | `Status` | Only shown when Tentative or Cancelled |
 | Show as | `Availability` | Only shown when Free |
 | Categories | `Categories` | Comma separated |
-| Link | `Url` | A button; only `http` and `https` links are openable, other schemes are shown as text |
-| Description | `Description` | Plain text, selectable, scrolls. Capped at 20 000 characters with a "…" so a huge feed value cannot stall the UI |
+| Link | `Url` | An "Open link" button with the address as its tooltip, never as text; only `http` and `https` links are offered ([hidden-links.md](hidden-links.md)) |
+| Description | `Description` | Selectable, scrolls; Markdown and HTML are shown with basic formatting ([formatted-notes.md](formatted-notes.md)). Capped at 20 000 characters with a "…" so a huge feed value cannot stall the UI |
 | Last changed | `LastModified` | Small print, when the provider supplies it |
 
 Dated tasks that appear in the calendar views, and rows of the All tasks view, open the
@@ -83,7 +83,7 @@ model, view and `DataTemplate`.
 
 Descriptions, locations and titles come from third-party feeds. They are only ever shown
 as text in selectable text blocks, never parsed as markup, and links are only opened from
-the explicit link row after a scheme check.
+the explicit link button after a scheme check.
 
 ## Core types
 
@@ -95,7 +95,7 @@ public sealed record EntryDetails(
     bool IsTask,
     string AccentColor,                // collection colour, #RRGGBB
     IReadOnlyList<DetailRow> Rows,     // When, Repeats, Where, Calendar, Status, ...
-    Uri? Link,                         // http/https only, else null (the raw value is a row)
+    Uri? Link,                         // http/https only, else null; shown as a button tooltip, not a row
     string? Description);
 
 public static class EntryDetailsBuilder

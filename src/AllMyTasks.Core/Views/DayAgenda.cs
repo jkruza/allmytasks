@@ -15,6 +15,34 @@ public sealed record DayAgenda(
     IReadOnlyList<DaySegment> Overdue,
     int? NowIndex)
 {
+    /// <summary>Counts for the day header, such as "3 events · 2 tasks · 1 overdue". Empty when the day has nothing.</summary>
+    public string Summary
+    {
+        get
+        {
+            var shown = AllDay.Concat(Timed).ToList();
+            var events = shown.Count(s => s.Entry is not TaskEntry);
+            var tasks = shown.Count(s => s.Entry is TaskEntry);
+            var parts = new List<string>(3);
+            if (events > 0)
+            {
+                parts.Add(events == 1 ? "1 event" : $"{events} events");
+            }
+
+            if (tasks > 0)
+            {
+                parts.Add(tasks == 1 ? "1 task" : $"{tasks} tasks");
+            }
+
+            if (Overdue.Count > 0)
+            {
+                parts.Add(Overdue.Count == 1 ? "1 overdue" : $"{Overdue.Count} overdue");
+            }
+
+            return string.Join(" · ", parts);
+        }
+    }
+
     public bool IsEmpty => AllDay.Count == 0 && Timed.Count == 0 && Overdue.Count == 0;
 
     /// <summary>

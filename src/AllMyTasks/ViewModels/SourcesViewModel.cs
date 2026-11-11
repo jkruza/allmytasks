@@ -317,10 +317,9 @@ public sealed partial class SourcesViewModel : ViewModelBase, IDisposable
         }
 
         await _registry.RemoveAsync(item.Info.Id);
+        // Raises SourceSynced, so the open views drop the removed source's items straight away; no sync needed.
         _engine.Forget(item.Info.Id);
         await LoadAsync();
-        // The cache changed, so the open views need to re-query.
-        await _engine.SyncAllAsync();
     }
 
     public void Dispose()

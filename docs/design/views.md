@@ -103,8 +103,11 @@ A 6×7 grid (always six rows so the layout does not jump between months).
 
 - Leading/trailing days from adjacent months are shown dimmed and **do** include their
   entries.
-- Each cell shows up to N entries (N from available height); the rest collapse into
-  "+3 more", which opens that day in the day agenda.
+- Each cell shows as many entries as fit. N comes from the cell's real height: the view measures the
+  space below the day number and the span-bar lanes, divides by the measured chip height, and re-fits whenever the
+  cell is resized (`Controls/CellFit`, calculation in Core `MonthCellFit.VisibleCount`). If every entry fits, no
+  "+N more" is shown; otherwise room for it is reserved and the rest collapse into "+3 more", which opens that day in
+  the day agenda. Until the first layout pass a cell shows three (minus span-bar lanes) so it is never empty.
 - Multi-day and all-day events render as bars across cells, laid out per week row with the
   same lane-packing idea as the week header.
 - Timed events render as a one-line chip with start time and title.

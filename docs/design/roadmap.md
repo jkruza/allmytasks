@@ -10,8 +10,8 @@ The goal is a **read-only overview** of tasks and events from many sources; see 
 
 | Version | Goals | State |
 | --- | --- | --- |
-| 1 | General framework; Todoist, Microsoft Outlook / To Do, Google Calendar / Tasks, Jira, GitHub, GitLab; views: calendar grids, Upcoming, All tasks, Inbox | Framework, Todoist, Microsoft, Google, Jira ([#71](https://github.com/jkruza/allmytasks/issues/71), not yet tried on a live site), GitHub ([#72](https://github.com/jkruza/allmytasks/issues/72), not yet tried on a live account), GitLab ([#73](https://github.com/jkruza/allmytasks/issues/73), not yet tried on a live instance) and all views including the Inbox ([#74](https://github.com/jkruza/allmytasks/issues/74)) are in. Open: live-account checks of the providers |
-| 2 | More services (to be chosen); write support for completing tasks, changing task dates and rescheduling events | Planned: [write-support.md](write-support.md), [#75](https://github.com/jkruza/allmytasks/issues/75). Todoist completion exists as an opt-in preview |
+| 1 | General framework; Todoist, Microsoft Outlook / To Do, Google Calendar / Tasks, Jira, GitHub, GitLab; views: calendar grids, Upcoming, All tasks, Inbox | Framework, Todoist, Microsoft, Google, GitHub (all four tried on live accounts), Jira ([#71](https://github.com/jkruza/allmytasks/issues/71), not yet tried on a live site), GitHub ([#72](https://github.com/jkruza/allmytasks/issues/72)), GitLab ([#73](https://github.com/jkruza/allmytasks/issues/73), not yet tried on a live instance) and all views including the Inbox ([#74](https://github.com/jkruza/allmytasks/issues/74)) are in. Open: live-account checks of the providers. Proposed additions, designed but not built: onboarding ([#135](https://github.com/jkruza/allmytasks/issues/135)), conflicts ([#136](https://github.com/jkruza/allmytasks/issues/136)), duplicates ([#137](https://github.com/jkruza/allmytasks/issues/137)), diagnostics ([#138](https://github.com/jkruza/allmytasks/issues/138)), update check ([#139](https://github.com/jkruza/allmytasks/issues/139)), workload glance ([#140](https://github.com/jkruza/allmytasks/issues/140)) |
+| 2 | More services (to be chosen); write support for completing tasks, changing task dates and rescheduling events | Planned: [write-support.md](write-support.md), [#75](https://github.com/jkruza/allmytasks/issues/75). Todoist completion exists as an opt-in preview. Also proposed: compact window ([#141](https://github.com/jkruza/allmytasks/issues/141)), command palette ([#142](https://github.com/jkruza/allmytasks/issues/142)), localisation ([#143](https://github.com/jkruza/allmytasks/issues/143)), database encryption ([#144](https://github.com/jkruza/allmytasks/issues/144)) |
 | Research | Runtime plug-ins, MCP support, AI summaries and planning with local models | Unscheduled: [research.md](research.md), [#76](https://github.com/jkruza/allmytasks/issues/76), [#77](https://github.com/jkruza/allmytasks/issues/77), [#78](https://github.com/jkruza/allmytasks/issues/78) |
 
 The milestones M1 to M6 below are the history of how the framework was built. The "Later" list that follows them
@@ -25,8 +25,8 @@ recurrence expander, the Core view logic (`AgendaService`, day/week/month/upcomi
 tasks over sample data, backed by the SQLite store with settings and secret stores. The sync engine, scheduler,
 source registry and the Sources / Add source UI are in; the `ical` feed provider
 (`AllMyTasks.Providers.ICal`) and the real recurrence expander (Ical.Net) are in, next to the sample provider.
-Clicking a calendar entry opens a read-only details pane ([details-pane.md](details-pane.md)); events with an online meeting show a Join button, and the organiser and attendees are listed ([meeting-url-and-attendees.md](meeting-url-and-attendees.md)).
-Clicking a task, in any view, opens its read-only details with subtasks ([task-details.md](task-details.md)).
+Clicking a calendar entry opens a read-only details pane ([details-pane.md](details-pane.md)) whose width you can drag and which is remembered ([details-pane-resize.md](details-pane-resize.md), [#124](https://github.com/jkruza/allmytasks/issues/124)); events with an online meeting show a Join button, and the organiser and attendees are listed ([meeting-url-and-attendees.md](meeting-url-and-attendees.md)).
+Clicking a task, in any view, opens its read-only details with subtasks ([task-details.md](task-details.md)). Notes and descriptions written in Markdown or HTML are shown with basic formatting ([formatted-notes.md](formatted-notes.md), [#120](https://github.com/jkruza/allmytasks/issues/120)).
 CalDAV (read-only, events) is in as kind `caldav`. Verified by hand against a local Radicale 3.8
 only; Nextcloud and a hosted service (Fastmail/iCloud) still need a manual check with throwaway accounts.
 
@@ -100,11 +100,16 @@ incrementally.
 New since the refocus on a read-only overview (version 1 unless stated):
 
 - Jira provider: [jira-provider.md](jira-provider.md), [#71](https://github.com/jkruza/allmytasks/issues/71). Implemented read-only with an API token; not yet tried on a live Jira Cloud site.
-- GitHub provider: [github-provider.md](github-provider.md), [#72](https://github.com/jkruza/allmytasks/issues/72). Implemented read-only with a personal access token; not yet tried on a live account.
+- GitHub provider: [github-provider.md](github-provider.md), [#72](https://github.com/jkruza/allmytasks/issues/72). Implemented read-only with a personal access token; tried on a live account.
 - GitLab provider: [gitlab-provider.md](gitlab-provider.md), [#73](https://github.com/jkruza/allmytasks/issues/73). Implemented read-only with a personal access token, including review requests; not yet tried on a live instance.
 - Inbox view of tasks without a date: [inbox-view.md](inbox-view.md), [#74](https://github.com/jkruza/allmytasks/issues/74). Implemented.
 - Version 2: write support for completing tasks, changing task dates and rescheduling events, and more services: [write-support.md](write-support.md), [#75](https://github.com/jkruza/allmytasks/issues/75).
 - Research, unscheduled: [research.md](research.md).
+
+Proposed 2026-11-11 (designs only, nothing built):
+
+- Version 1: [first-run-onboarding.md](first-run-onboarding.md) ([#135](https://github.com/jkruza/allmytasks/issues/135)), [conflict-highlight.md](conflict-highlight.md) ([#136](https://github.com/jkruza/allmytasks/issues/136)), [duplicate-detection.md](duplicate-detection.md) ([#137](https://github.com/jkruza/allmytasks/issues/137)), [source-diagnostics.md](source-diagnostics.md) ([#138](https://github.com/jkruza/allmytasks/issues/138)), [update-check.md](update-check.md) ([#139](https://github.com/jkruza/allmytasks/issues/139)), [workload-glance.md](workload-glance.md) ([#140](https://github.com/jkruza/allmytasks/issues/140)).
+- Version 2: [compact-upcoming-window.md](compact-upcoming-window.md) ([#141](https://github.com/jkruza/allmytasks/issues/141)), [command-palette.md](command-palette.md) ([#142](https://github.com/jkruza/allmytasks/issues/142)), [localisation.md](localisation.md) ([#143](https://github.com/jkruza/allmytasks/issues/143)), [database-encryption.md](database-encryption.md) ([#144](https://github.com/jkruza/allmytasks/issues/144)).
 
 Earlier items:
 
@@ -114,7 +119,7 @@ Earlier items:
 - Google and Microsoft providers (OAuth), all read-only in v1:
   - Google Calendar: [google-calendar-provider.md](google-calendar-provider.md), [#28](https://github.com/jkruza/allmytasks/issues/28). Implemented read-only, same `google` source as Tasks; tried on a real account; the project's OAuth client still has to be created and verified.
   - Google Tasks: [google-tasks-provider.md](google-tasks-provider.md), [#26](https://github.com/jkruza/allmytasks/issues/26). Implemented read-only; same caveats.
-  - Outlook calendar (Microsoft Graph, personal accounts): [outlook-calendar-provider.md](outlook-calendar-provider.md), [#32](https://github.com/jkruza/allmytasks/issues/32); the shared Microsoft sign-in is described there. Implemented read-only; tried on a real account. Work and school accounts are deferred.
+  - Outlook calendar (Microsoft Graph, personal accounts): [outlook-calendar-provider.md](outlook-calendar-provider.md), [#32](https://github.com/jkruza/allmytasks/issues/32); the shared Microsoft sign-in is described there. Implemented read-only; tried on a real account. Work and school accounts are designed (as a research item, not scheduled) in [microsoft-work-accounts.md](microsoft-work-accounts.md) ([#118](https://github.com/jkruza/allmytasks/issues/118)), not built yet.
   - Microsoft To Do (personal accounts): [microsoft-todo-provider.md](microsoft-todo-provider.md), [#24](https://github.com/jkruza/allmytasks/issues/24). Implemented read-only, same source as Outlook; tried on a real account.
 - Write support (version 2, see [write-support.md](write-support.md)): complete tasks first, then date changes and event rescheduling; create and edit are not planned. Completing and reopening tasks is implemented for Todoist only, as an opt-in, off-by-default preview of version 2: [complete-tasks.md](complete-tasks.md), [#54](https://github.com/jkruza/allmytasks/issues/54); not yet verified on a live account. Google Tasks and Microsoft To Do follow in version 2.
 - System tray icon with menu, `--tray` start and close-to-tray: [system-tray.md](system-tray.md), [#39](https://github.com/jkruza/allmytasks/issues/39). Implemented.
@@ -123,7 +128,7 @@ Earlier items:
 - Global search and saved filters for All tasks: [search-and-saved-filters.md](search-and-saved-filters.md), [#56](https://github.com/jkruza/allmytasks/issues/56). Implemented; not yet used against large real data sets, and the saved-filter and search screens have not been looked at on every OS.
 - Meeting join links and attendees on events: [meeting-url-and-attendees.md](meeting-url-and-attendees.md), [#57](https://github.com/jkruza/allmytasks/issues/57). Implemented for Google, Outlook and iCalendar/CalDAV; Google and Outlook tried on real accounts.
 - Installers and signing: [packaging.md](packaging.md) (Windows MSI and Linux packages built, unsigned, not yet tried on a release; macOS open), Windows [#58](https://github.com/jkruza/allmytasks/issues/58), macOS [#59](https://github.com/jkruza/allmytasks/issues/59), Linux [#60](https://github.com/jkruza/allmytasks/issues/60).
-- Database encryption.
+- Database encryption: now [database-encryption.md](database-encryption.md) (version 2).
 
 ## Risks
 
@@ -153,9 +158,9 @@ discussion or an issue, then record the outcome in the decision log in
 | # | Question | Proposal |
 | --- | --- | --- |
 | 1 | Is "iCal/WebDAV" meant to mean CalDAV (calendar sync), or also plain WebDAV file hosting of `.ics` files? | CalDAV plus plain `.ics` URLs; a bare WebDAV file is just a URL |
-| 5 | Encrypt database at rest? | Not in v1; document it |
+| 5 | Encrypt database at rest? | Not in v1; opt-in in version 2, see [database-encryption.md](database-encryption.md) |
 | 6 | Sync time-range limiting for CalDAV | Not in v1; sync everything |
 | 7 | Default refresh interval | 15 minutes, per-source override |
 | 8 | Separate projects per provider from the start, or one `Providers` project until there are two? | Own project for iCal (it brings a dependency); decide again at provider two |
-| 9 | UI localisation and culture | Use OS culture for dates and week start from day one; translations later |
+| 9 | UI localisation and culture | Use OS culture for dates and week start from day one; translations in version 2, see [localisation.md](localisation.md) |
 | 10 | App name | Decided 2026-11-01: "All My Tasks" is the official name |

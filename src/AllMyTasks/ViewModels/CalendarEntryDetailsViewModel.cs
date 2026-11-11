@@ -1,3 +1,4 @@
+using AllMyTasks.Core.Notes;
 using AllMyTasks.Core.Views;
 using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -16,6 +17,7 @@ public sealed partial class CalendarEntryDetailsViewModel : ViewModelBase
         Rows = details.Rows;
         Link = details.Link;
         Description = details.Description;
+        DescriptionDocument = NoteFormatter.Format(details.Description);
         _details = details;
         MeetingUrl = details.MeetingUrl;
         MeetingLabel = details.MeetingLabel;
@@ -64,9 +66,18 @@ public sealed partial class CalendarEntryDetailsViewModel : ViewModelBase
 
     public string? Description { get; }
 
+    /// <summary>The description with Markdown or HTML turned into whitelisted blocks; see formatted-notes.md.</summary>
+    public NoteDocument DescriptionDocument { get; }
+
     public bool HasLink => Link is not null;
 
-    public bool HasDescription => !string.IsNullOrEmpty(Description);
+    /// <summary>The address, shown only as the tooltip of Open link.</summary>
+    public string? LinkTooltip => Link?.AbsoluteUri;
+
+    /// <summary>The meeting address, shown only as the tooltip of Join.</summary>
+    public string? MeetingTooltip => MeetingUrl?.AbsoluteUri;
+
+    public bool HasDescription => DescriptionDocument.Blocks.Count > 0;
 
     public string AutomationName => $"Details for {Title}";
 }

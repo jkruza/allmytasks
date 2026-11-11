@@ -9,6 +9,9 @@ namespace AllMyTasks.ViewModels;
 /// <summary>One choice in the week start drop-down.</summary>
 public sealed record WeekStartOption(WeekStartSetting Value, string Label);
 
+/// <summary>One choice in the accent colour list. <see cref="Swatch"/> is null for the system accent, which has no fixed colour.</summary>
+public sealed record AccentChoice(string Id, string Label, Avalonia.Media.IBrush? Swatch);
+
 /// <summary>One choice in a drop-down of minutes.</summary>
 public sealed record MinutesOption(int Minutes, string Label);
 
@@ -35,6 +38,8 @@ public sealed partial class SettingsViewModel : ViewModelBase
             new(WeekStartSetting.Monday, "Monday"),
         ];
         SelectedWeekStart = WeekStartOptions.First(o => o.Value == settings.Current.WeekStart);
+        AccentOptions = [.. AccentColors.Options.Select(o => new AccentChoice(o.Id, o.Label, o.Hex is null ? null : Avalonia.Media.Brush.Parse(o.Hex)))];
+        SelectedAccent = AccentOptions.First(o => o.Id == AccentColors.Normalize(settings.Current.Accent));
         CloseToTray = settings.Current.CloseToTray;
         _applying = true;
         LaunchAtLogin = settings.Current.LaunchAtLogin && autostart.IsSupported;
@@ -100,6 +105,14 @@ public sealed partial class SettingsViewModel : ViewModelBase
         var times = Enumerable.Range(0, 48).Select(i => new TimeOnly(i / 2, i % 2 * 30)).Append(current).Distinct().Order();
         return [.. times.Select(t => new TimeOption(t, t.ToString("t", CultureInfo.CurrentCulture)))];
     }
+
+    public IReadOnlyList<AccentChoice> AccentOptions { get; }
+
+    [ObservableProperty]
+    public partial AccentChoice SelectedAccent { get; set; }
+
+    partial void OnSelectedAccentChanged(AccentChoice value) =>
+        _settings.Update(s => s with { Accent = value.Id });
 
     public IReadOnlyList<WeekStartOption> WeekStartOptions { get; }
 

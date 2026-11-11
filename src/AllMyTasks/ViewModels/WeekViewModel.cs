@@ -10,6 +10,10 @@ public sealed class WeekDayViewModel(DayColumn column, DateTimeOffset now, TimeZ
 
     public string Header { get; } = column.Date.ToString("ddd d", System.Globalization.CultureInfo.CurrentCulture);
 
+    public string WeekdayText { get; } = column.Date.ToString("ddd", System.Globalization.CultureInfo.CurrentCulture);
+
+    public string DayNumber { get; } = column.Date.Day.ToString(System.Globalization.CultureInfo.CurrentCulture);
+
     public bool IsToday { get; } = column.IsToday;
 
     public int TotalMinutes { get; } = column.TotalMinutes;

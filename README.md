@@ -9,7 +9,7 @@ Todoist, Outlook, Google, Jira, GitHub and GitLab; this app only looks. Built wi
 
 **Status:** early, and read-only. Working today: iCalendar feeds, CalDAV calendars, Todoist tasks
 (add one with a Todoist API token), personal Microsoft accounts (Outlook calendar and Microsoft To Do) and Google
-accounts (Google Calendar and Google Tasks), Jira Cloud (issues assigned to you, with an API token) and GitHub (issues and pull requests assigned to you or awaiting your review, with a personal access token). The Microsoft and Google providers have been tried on real accounts; the Jira and GitHub providers have not been tried on a live account yet. GitLab (gitlab.com or self-managed; issues and merge requests assigned to you or awaiting your review, with a personal access token) is in too but has not been tried on a live instance either; the Inbox view is built, see the [roadmap](docs/design/roadmap.md).
+accounts (Google Calendar and Google Tasks), Jira Cloud (issues assigned to you, with an API token) and GitHub (issues and pull requests assigned to you or awaiting your review, with a personal access token). The Microsoft, Google, Todoist and GitHub providers have been tried on real accounts; Jira is in but has not been tried on a live site yet. GitLab (gitlab.com or self-managed; issues and merge requests assigned to you or awaiting your review, with a personal access token) is in too but has not been tried on a live instance either; the Inbox view is built, see the [roadmap](docs/design/roadmap.md).
 Todoist tasks can also be completed and reopened from the app once you switch on "Allow All My Tasks to change tasks in Todoist (preview)" for that source. That is an early preview of version 2 write support, off by default, and not yet verified against a live account.
 
 ## Roadmap
@@ -20,6 +20,10 @@ Todoist tasks can also be completed and reopened from the app once you switch on
 - **Version 2:** more services (to be chosen), and write support for completing tasks, changing task dates and
   rescheduling events.
 - **Further research:** runtime plug-in support, MCP support, and AI summaries and planning with local models.
+
+Several further ideas are designed but not built yet (onboarding, overlap highlighting, duplicate detection, source
+diagnostics, update check, workload glance for version 1; compact window, command palette, localisation, database
+encryption for version 2); they are listed in the roadmap.
 
 Details: [product scope](docs/design/product-scope.md) and [roadmap](docs/design/roadmap.md).
 
@@ -32,7 +36,7 @@ source, register a free app once (a few minutes, no secret, no verification for 
 Application (client) ID into the source form; or build with `AMT_MICROSOFT_CLIENT_ID` set to embed it. Steps:
 [Register an app](docs/oauth-setup.md#microsoft-register-an-app-in-microsoft-entra). After you save the source, a
 browser window opens to sign in; only a refresh token is kept, in your system keyring. Work and school accounts
-are not supported yet. A calendar-only alternative that needs no registration is the Outlook.com *published
+are not supported yet (research item, not scheduled; [design](docs/design/microsoft-work-accounts.md)). A calendar-only alternative that needs no registration is the Outlook.com *published
 calendar* link, added as an iCalendar feed.
 
 ### Google accounts
@@ -57,6 +61,11 @@ dotnet build AllMyTasks.slnx
 dotnet test --solution AllMyTasks.slnx
 dotnet run --project src/AllMyTasks
 ```
+
+### Troubleshooting
+
+The app writes problems, including any unhandled exception, to `logs/allmytasks.log` in its data folder (on Windows
+`%LOCALAPPDATA%\AllMyTasks`). See [docs/design/graceful-shutdown.md](docs/design/graceful-shutdown.md).
 
 ### System tray
 

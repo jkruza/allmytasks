@@ -4,23 +4,23 @@
              xmlns:c="using:AllMyTasks.Controls"
              x:Class="AllMyTasks.Views.EntryRow"
              x:DataType="vm:EntryItem">
-  <Grid ColumnDefinitions="4,150,*,Auto" ColumnSpacing="10" Margin="0,3" Opacity="{Binding Opacity}"
+  <Grid ColumnDefinitions="130,Auto,*,Auto" ColumnSpacing="10" Margin="0,4" Opacity="{Binding Opacity}"
         AutomationProperties.Name="{Binding Spoken}" c:EntryActivation.Enabled="True" Background="Transparent">
-    <Border Grid.Column="0" Background="{Binding Accent}" CornerRadius="2" />
-    <TextBlock Grid.Column="1" Text="{Binding TimeText}" VerticalAlignment="Center" Opacity="0.8" />
+    <TextBlock Grid.Column="0" Classes="small" Text="{Binding TimeText}" VerticalAlignment="Center" />
+    <Border Grid.Column="1" Classes="dot" Background="{Binding Accent}" />
     <StackPanel Grid.Column="2" VerticalAlignment="Center">
       <StackPanel Orientation="Horizontal" Spacing="6">
         <TextBlock Text="{Binding Glyph}" IsVisible="{Binding IsTask}" />
-        <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
-        <PathIcon Data="M2,4 H11 V12 H2 Z M12,7 L16,4 V12 L12,9 Z" Width="14" Height="14" IsVisible="{Binding HasMeeting}" Opacity="0.7"
+        <TextBlock Classes="title" Text="{Binding Title}" TextTrimming="CharacterEllipsis" />
+        <PathIcon Data="M2,4 H11 V12 H2 Z M12,7 L16,4 V12 L12,9 Z" Width="14" Height="14" IsVisible="{Binding HasMeeting}" Foreground="{DynamicResource AmtMutedBrush}"
                   ToolTip.Tip="Online meeting" />
-        <TextBlock Text="(tentative)" IsVisible="{Binding IsTentative}" Opacity="0.7" />
-        <TextBlock Text="overdue" IsVisible="{Binding IsOverdue}" Foreground="IndianRed" FontWeight="SemiBold" />
+        <TextBlock Classes="small" Text="(tentative)" IsVisible="{Binding IsTentative}" />
+        <TextBlock Classes="overdue" Text="overdue" IsVisible="{Binding IsOverdue}" />
       </StackPanel>
-      <TextBlock Text="{Binding Location}" IsVisible="{Binding HasLocation}" Opacity="0.7" FontSize="12" />
+      <TextBlock Classes="small" Text="{Binding Location}" IsVisible="{Binding HasLocation}" />
     </StackPanel>
-    <Border Grid.Column="3" Padding="6,1" CornerRadius="8" Background="{DynamicResource SystemControlBackgroundBaseLowBrush}" VerticalAlignment="Center">
-      <TextBlock Text="{Binding CollectionName}" FontSize="11" />
+    <Border Grid.Column="3" Classes="badge" VerticalAlignment="Center">
+      <TextBlock Classes="meta" Text="{Binding CollectionName}" />
     </Border>
   </Grid>
 </UserControl>

@@ -6,9 +6,14 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace AllMyTasks.ViewModels;
 
-public sealed class MonthCellViewModel
+public sealed class MonthCellViewModel : ObservableObject
 {
-    public const int MaxItems = 3;
+    /// <summary>Entries shown before the real cell height is known, so the first frame is not empty.</summary>
+    public const int InitialItems = 3;
+
+    private readonly IReadOnlyList<EntryItem> _all;
+    private IReadOnlyList<EntryItem> _items;
+    private int _hidden;
 
     public MonthCellViewModel(DayCell cell, int laneCount, DateTimeOffset now, TimeZoneInfo zone, Action<DateOnly> openDay)
     {
@@ -16,10 +21,10 @@ public sealed class MonthCellViewModel
         DayNumber = cell.Date.Day.ToString(CultureInfo.CurrentCulture);
         IsCurrentMonth = cell.IsCurrentMonth;
         IsToday = cell.IsToday;
-        var room = Math.Max(1, MaxItems - laneCount);
-        Items = [.. cell.Items.Take(cell.Items.Count > room ? room - 1 : room).Select(s => new EntryItem(s, now, zone))];
-        Hidden = Math.Max(0, cell.Items.Count - Items.Count);
-        MoreText = Hidden > 0 ? $"+{Hidden} more" : string.Empty;
+        LaneCount = laneCount;
+        _all = [.. cell.Items.Select(s => new EntryItem(s, now, zone))];
+        _items = [];
+        ShowCount(Math.Min(_all.Count, Math.Max(1, InitialItems - laneCount)));
         ItemsMargin = new Avalonia.Thickness(0, laneCount * 20, 0, 0);
         OpenDayCommand = new RelayCommand(() => openDay(Date));
     }
@@ -32,13 +37,40 @@ public sealed class MonthCellViewModel
 
     public bool IsToday { get; }
 
-    public IReadOnlyList<EntryItem> Items { get; }
+    public bool IsWeekend => Date.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday;
 
-    public int Hidden { get; }
+    public bool IsRecessed => IsWeekend && !IsToday;
 
-    public string MoreText { get; }
+    public int LaneCount { get; }
 
-    public bool HasMore => Hidden > 0;
+    public int TotalItems => _all.Count;
+
+    public IReadOnlyList<EntryItem> Items => _items;
+
+    public int Hidden => _hidden;
+
+    public string MoreText => _hidden > 0 ? $"+{_hidden} more" : string.Empty;
+
+    public bool HasMore => _hidden > 0;
+
+    /// <summary>Re-fits the cell to the height left for entries (below the day number and the span-bar lanes).</summary>
+    public void Fit(double availableHeight, double itemHeight, double moreHeight) =>
+        ShowCount(MonthCellFit.VisibleCount(_all.Count, availableHeight, itemHeight, moreHeight));
+
+    private void ShowCount(int count)
+    {
+        if (count == _items.Count && _hidden == _all.Count - count)
+        {
+            return;
+        }
+
+        _items = [.. _all.Take(count)];
+        _hidden = _all.Count - _items.Count;
+        OnPropertyChanged(nameof(Items));
+        OnPropertyChanged(nameof(Hidden));
+        OnPropertyChanged(nameof(MoreText));
+        OnPropertyChanged(nameof(HasMore));
+    }
 
     public Avalonia.Thickness ItemsMargin { get; }
 

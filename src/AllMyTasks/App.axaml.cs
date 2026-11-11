@@ -29,6 +29,9 @@ namespace AllMyTasks;
 
 public sealed partial class App : Application
 {
+    /// <summary>The exit clean-up; also tells the unhandled-exception handlers that the app is closing.</summary>
+    internal static ShutdownSequence Shutdown { get; } = new();
+
     public override void Initialize() => AvaloniaXamlLoader.Load(this);
 
     public override void OnFrameworkInitializationCompleted()
@@ -105,6 +108,8 @@ public sealed partial class App : Application
         var appSettings = new SettingsService(viewState);
         appSettings.LoadAsync().GetAwaiter().GetResult();
 
+        new AccentService(application, appSettings).Apply();
+
         // Rewrite the login entry from the settings so it follows the executable if the app was moved or updated.
         var autostart = AutostartManager.ForCurrentProcess(dataDirectoryOption);
         if (appSettings.Current.LaunchAtLogin)
@@ -160,23 +165,36 @@ public sealed partial class App : Application
         appSettings.Changed += (_, _) => _ = reminders.TickAsync();
         engine.SourceSynced += (_, _) => _ = reminders.TickAsync();
 
-        desktop.Exit += (_, _) =>
+        // Exit clean-up, in this order: stop the background work first, then the tray and the view models, then the
+        // things they use. Every step is guarded, so a failure is logged and never reaches the operating system
+        // (an exception here during a Windows shutdown shows "Application Error 0xe0434352").
+        var shutdown = Shutdown;
+        shutdown.Add("reminders", reminders.Dispose);
+        shutdown.Add("scheduler", scheduler.Dispose);
+        shutdown.Add("sync engine", engine.Dispose);
+        shutdown.Add("tray icon", tray.Dispose);
+        shutdown.Add("view models", shell.Dispose);
+        shutdown.Add("feed factory", feedFactory.Dispose);
+        shutdown.Add("CalDAV factory", davFactory.Dispose);
+        shutdown.Add("Todoist factory", todoistFactory.Dispose);
+        shutdown.Add("Jira factory", jiraFactory.Dispose);
+        shutdown.Add("Google factory", googleFactory.Dispose);
+        shutdown.Add("GitHub factory", gitHubFactory.Dispose);
+        shutdown.Add("GitLab factory", gitlabFactory.Dispose);
+        shutdown.Add("Microsoft factory", microsoftFactory.Dispose);
+        shutdown.Add("change service", changes.Dispose);
+        shutdown.Add("secrets", secrets.Dispose);
+        desktop.Exit += (_, _) => shutdown.Run(log);
+
+        // A UI-thread exception raised while the app is closing is logged and dropped; at any other time it still
+        // surfaces as before.
+        Avalonia.Threading.Dispatcher.UIThread.UnhandledException += (_, e) =>
         {
-            reminders.Dispose();
-            tray.Dispose();
-            scheduler.Dispose();
-            feedFactory.Dispose();
-            davFactory.Dispose();
-            todoistFactory.Dispose();
-            jiraFactory.Dispose();
-            googleFactory.Dispose();
-            gitHubFactory.Dispose();
-            gitlabFactory.Dispose();
-            microsoftFactory.Dispose();
-            shell.Dispose();
-            changes.Dispose();
-            engine.Dispose();
-            secrets.Dispose();
+            if (shutdown.HasStarted)
+            {
+                Program.Report(log, Microsoft.Extensions.Logging.LogLevel.Warning, "UI exception while exiting", e.Exception);
+                e.Handled = true;
+            }
         };
 
         // Show cached data first, then sync in the background.

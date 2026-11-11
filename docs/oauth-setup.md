@@ -126,13 +126,13 @@ For Google, the project's consent screen should be moved to *In production* and 
 release; see
 [google-calendar-provider.md](design/google-calendar-provider.md#oauth-client-and-verification-a-maintainer-task-not-code).
 
-### Work and school accounts (not supported yet)
+### Work and school accounts (designed, not supported yet)
 
-Supporting them would need a second registration setting, not different code: **Supported account types** *Accounts in any
-organizational directory and personal Microsoft accounts*, and **publisher verification** through a Microsoft Partner Center
-(MPN) account so that organizations do not show "needs admin approval" for an unverified publisher. The app also needs its
-sign-in authority changed from `consumers` to `common`. This is design only; see
-[outlook-calendar-provider.md](design/outlook-calendar-provider.md#work-and-school-accounts-not-in-v1).
+Supporting them needs a registration with **Supported account types** *Accounts in any organizational directory and personal
+Microsoft accounts*, ideally **publisher verification** through a Microsoft Partner Center account, and a sign-in authority
+change in the app from `consumers` to a per-source setting. Even then most organizations require an administrator to approve
+the app once, because Microsoft's default consent policy does not let users consent to calendar and task read permissions.
+This is design only; see [microsoft-work-accounts.md](design/microsoft-work-accounts.md) (issue #118).
 
 ### Building locally with your own client
 

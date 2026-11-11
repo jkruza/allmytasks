@@ -6,9 +6,26 @@
         Title="Settings" Width="440" SizeToContent="Height" CanResize="False"
         WindowStartupLocation="CenterOwner">
   <StackPanel Margin="20" Spacing="16">
-    <TextBlock Text="Settings" FontSize="18" FontWeight="SemiBold" />
+    <TextBlock Classes="title" Text="Settings" />
     <StackPanel Spacing="8">
-      <TextBlock Text="Calendar" FontWeight="SemiBold" />
+      <TextBlock Classes="section" Text="Appearance" />
+      <StackPanel Spacing="4">
+        <TextBlock Text="Accent colour" />
+        <ComboBox ItemsSource="{Binding AccentOptions}" SelectedItem="{Binding SelectedAccent}" HorizontalAlignment="Stretch">
+          <ComboBox.ItemTemplate>
+            <DataTemplate x:DataType="vm:AccentChoice">
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <Border Classes="dot" Background="{Binding Swatch}" IsVisible="{Binding Swatch, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                <TextBlock Text="{Binding Label}" />
+              </StackPanel>
+            </DataTemplate>
+          </ComboBox.ItemTemplate>
+        </ComboBox>
+        <TextBlock Classes="small" TextWrapping="Wrap" Text="System accent follows your operating system and falls back to blue where it does not provide one. Calendar and list colours, and overdue red, do not change." />
+      </StackPanel>
+    </StackPanel>
+    <StackPanel Spacing="8">
+      <TextBlock Classes="section" Text="Calendar" />
       <StackPanel Spacing="4">
         <TextBlock Text="Week starts on" />
         <ComboBox ItemsSource="{Binding WeekStartOptions}" SelectedItem="{Binding SelectedWeekStart}" HorizontalAlignment="Stretch">
@@ -19,11 +36,11 @@
       </StackPanel>
     </StackPanel>
     <StackPanel Spacing="8">
-      <TextBlock Text="Notifications" FontWeight="SemiBold" />
+      <TextBlock Classes="section" Text="Notifications" />
       <CheckBox IsChecked="{Binding RemindersEnabled}">
         <TextBlock Text="Show reminders" TextWrapping="Wrap" />
       </CheckBox>
-      <TextBlock Text="Reminders only appear while All My Tasks is running. Turn on launching at login (below) to have it start with your computer." TextWrapping="Wrap" Opacity="0.7" />
+      <TextBlock Text="Reminders only appear while All My Tasks is running. Turn on launching at login (below) to have it start with your computer." Classes="small" TextWrapping="Wrap" />
       <StackPanel Spacing="4" IsEnabled="{Binding RemindersEnabled}">
         <TextBlock Text="Remind before events" />
         <ComboBox ItemsSource="{Binding LeadOptions}" SelectedItem="{Binding SelectedLead}" HorizontalAlignment="Stretch">
@@ -49,17 +66,17 @@
       </StackPanel>
     </StackPanel>
     <StackPanel Spacing="8">
-      <TextBlock Text="Startup" FontWeight="SemiBold" />
+      <TextBlock Classes="section" Text="Startup" />
       <CheckBox IsChecked="{Binding LaunchAtLogin}" IsEnabled="{Binding CanChangeLaunchAtLogin}">
         <TextBlock Text="Launch All My Tasks when I log in" TextWrapping="Wrap" />
       </CheckBox>
       <CheckBox Margin="24,0,0,0" IsChecked="{Binding StartInTrayAtLogin}" IsEnabled="{Binding LaunchAtLogin}">
         <TextBlock Text="Start minimized to tray (only when started at login)" TextWrapping="Wrap" />
       </CheckBox>
-      <TextBlock Text="{Binding AutostartMessage}" IsVisible="{Binding AutostartMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" TextWrapping="Wrap" Opacity="0.7" />
+      <TextBlock Text="{Binding AutostartMessage}" IsVisible="{Binding AutostartMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" Classes="small" TextWrapping="Wrap" />
     </StackPanel>
     <StackPanel Spacing="8">
-      <TextBlock Text="Window" FontWeight="SemiBold" />
+      <TextBlock Classes="section" Text="Window" />
       <CheckBox IsChecked="{Binding CloseToTray}">
         <TextBlock Text="Keep running in the system tray when the window is closed" TextWrapping="Wrap" />
       </CheckBox>

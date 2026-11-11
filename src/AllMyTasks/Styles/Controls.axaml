@@ -1,0 +1,185 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <!-- Shared classes of the design system, see docs/design/design-system.md. Always reference tokens with
+       DynamicResource so the theme variant can change at runtime. -->
+
+  <Style Selector="Window">
+    <Setter Property="Background" Value="{DynamicResource AmtCanvasBrush}" />
+  </Style>
+
+  <!-- Text roles. Use these classes instead of hand-set FontSize, Opacity or colours. -->
+  <Style Selector="TextBlock.meta">
+    <Setter Property="FontSize" Value="{DynamicResource AmtFontSizeMeta}" />
+    <Setter Property="Foreground" Value="{DynamicResource AmtMutedBrush}" />
+  </Style>
+  <Style Selector="TextBlock.small">
+    <Setter Property="FontSize" Value="{DynamicResource AmtFontSizeSmall}" />
+    <Setter Property="Foreground" Value="{DynamicResource AmtMutedBrush}" />
+  </Style>
+  <Style Selector="TextBlock.title">
+    <Setter Property="FontSize" Value="{DynamicResource AmtFontSizeTitle}" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+  <Style Selector="TextBlock.heading">
+    <Setter Property="FontSize" Value="{DynamicResource AmtFontSizeHeading}" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+  <Style Selector="TextBlock.display">
+    <Setter Property="FontSize" Value="{DynamicResource AmtFontSizeDisplay}" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+  <!-- Group and section headers: quiet, so the rows below carry the weight. -->
+  <Style Selector="TextBlock.section">
+    <Setter Property="FontSize" Value="{DynamicResource AmtFontSizeSmall}" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="Foreground" Value="{DynamicResource AmtMutedBrush}" />
+  </Style>
+  <!-- Empty states. -->
+  <Style Selector="TextBlock.empty">
+    <Setter Property="FontSize" Value="{DynamicResource AmtFontSizeTitle}" />
+    <Setter Property="Foreground" Value="{DynamicResource AmtMutedBrush}" />
+    <Setter Property="TextWrapping" Value="Wrap" />
+  </Style>
+  <Style Selector="TextBlock.overdue">
+    <Setter Property="Foreground" Value="{DynamicResource AmtOverdueBrush}" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+  <Style Selector="TextBlock.error">
+    <Setter Property="Foreground" Value="{DynamicResource AmtOverdueBrush}" />
+    <Setter Property="TextWrapping" Value="Wrap" />
+  </Style>
+  <Style Selector="TextBlock.warning">
+    <Setter Property="FontSize" Value="{DynamicResource AmtFontSizeSmall}" />
+    <Setter Property="Foreground" Value="{DynamicResource AmtWarningBrush}" />
+    <Setter Property="TextWrapping" Value="Wrap" />
+  </Style>
+  <Style Selector="TextBlock.mono">
+    <Setter Property="FontFamily" Value="Cascadia Mono, Consolas, Menlo, monospace" />
+    <Setter Property="FontSize" Value="{DynamicResource AmtFontSizeSmall}" />
+  </Style>
+  <Style Selector="TextBox.mono">
+    <Setter Property="FontFamily" Value="Cascadia Mono, Consolas, Menlo, monospace" />
+    <Setter Property="FontSize" Value="{DynamicResource AmtFontSizeSmall}" />
+  </Style>
+
+  <!-- Surfaces. -->
+  <Style Selector="Border.card">
+    <Setter Property="Background" Value="{DynamicResource AmtSurfaceBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource AmtBorderBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="{DynamicResource AmtRadiusCard}" />
+    <Setter Property="Padding" Value="12" />
+  </Style>
+  <Style Selector="Border.badge">
+    <Setter Property="Background" Value="{DynamicResource AmtRaisedBrush}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource AmtRadiusPill}" />
+    <Setter Property="Padding" Value="8,1" />
+  </Style>
+  <!-- Toolbar and pane edges: a hairline, not a shadow. -->
+  <Style Selector="Border.hairline-bottom">
+    <Setter Property="BorderThickness" Value="0,0,0,1" />
+    <Setter Property="BorderBrush" Value="{DynamicResource AmtBorderBrush}" />
+  </Style>
+  <Style Selector="Border.hairline-left">
+    <Setter Property="BorderThickness" Value="1,0,0,0" />
+    <Setter Property="BorderBrush" Value="{DynamicResource AmtBorderBrush}" />
+  </Style>
+  <!-- The one selected treatment: raised surface plus a 2 px accent bar on the left. -->
+  <Style Selector="Border.selected">
+    <Setter Property="Background" Value="{DynamicResource AmtRaisedBrush}" />
+    <Setter Property="BorderThickness" Value="2,0,0,0" />
+    <Setter Property="BorderBrush" Value="{DynamicResource AmtAccentBrush}" />
+  </Style>
+
+  <!-- Collection identity: an 8 px dot in dense lists, a 3 px bar on calendar chips. -->
+  <Style Selector="Border.dot">
+    <Setter Property="Width" Value="8" />
+    <Setter Property="Height" Value="8" />
+    <Setter Property="CornerRadius" Value="4" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+  </Style>
+  <Style Selector="Border.bar">
+    <Setter Property="Width" Value="3" />
+    <Setter Property="CornerRadius" Value="{DynamicResource AmtRadiusChip}" />
+  </Style>
+  <!-- Calendar chip: 15 % tint of the collection colour behind ink text, with a 3 px bar in the colour itself.
+       Set BorderBrush to the collection colour. -->
+  <Style Selector="Border.chip-box">
+    <Setter Property="BorderThickness" Value="3,0,0,0" />
+    <Setter Property="CornerRadius" Value="{DynamicResource AmtRadiusChip}" />
+    <Setter Property="Padding" Value="4,1" />
+  </Style>
+  <Style Selector="Border.chip-box > TextBlock">
+    <Setter Property="Foreground" Value="{DynamicResource AmtInkBrush}" />
+    <Setter Property="FontSize" Value="{DynamicResource AmtFontSizeSmall}" />
+  </Style>
+
+  <!-- Calendar grids: surface cells with hairlines; today is tinted and its number sits in a filled accent circle. -->
+  <Style Selector="Border.cell">
+    <Setter Property="Background" Value="{DynamicResource AmtSurfaceBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource AmtBorderBrush}" />
+  </Style>
+  <Style Selector="Border.cell.today">
+    <Setter Property="Background" Value="{DynamicResource AmtRaisedBrush}" />
+  </Style>
+  <Style Selector="Border.cell.recessed">
+    <Setter Property="Background" Value="{DynamicResource AmtCanvasBrush}" />
+  </Style>
+  <Style Selector="Border.daynum">
+    <Setter Property="MinWidth" Value="24" />
+    <Setter Property="Height" Value="24" />
+    <Setter Property="CornerRadius" Value="12" />
+    <Setter Property="Padding" Value="4,0" />
+  </Style>
+  <Style Selector="Border.daynum.today">
+    <Setter Property="Background" Value="{DynamicResource AmtAccentBrush}" />
+  </Style>
+  <Style Selector="Border.daynum.today > TextBlock">
+    <Setter Property="Foreground" Value="{DynamicResource AmtOnAccentBrush}" />
+  </Style>
+  <Style Selector="Border.daynum > TextBlock">
+    <Setter Property="HorizontalAlignment" Value="Center" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+
+  <!-- Segmented view switcher and quiet toolbar buttons. -->
+  <Style Selector="ToggleButton.seg">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="CornerRadius" Value="{DynamicResource AmtRadiusChip}" />
+    <Setter Property="Padding" Value="10,4" />
+    <Setter Property="FontSize" Value="{DynamicResource AmtFontSizeBody}" />
+    <Setter Property="Foreground" Value="{DynamicResource AmtMutedBrush}" />
+  </Style>
+  <Style Selector="ToggleButton.seg:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource AmtRaisedBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource AmtInkBrush}" />
+  </Style>
+  <Style Selector="ToggleButton.seg:checked /template/ ContentPresenter#PART_ContentPresenter, ToggleButton.seg:checked:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource AmtRaisedBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource AmtInkBrush}" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+  <Style Selector="Button.tool, DropDownButton.tool">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Padding" Value="8,4" />
+    <Setter Property="FontSize" Value="{DynamicResource AmtFontSizeBody}" />
+  </Style>
+  <Style Selector="Button.tool:pointerover /template/ ContentPresenter#PART_ContentPresenter, DropDownButton.tool:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource AmtRaisedBrush}" />
+  </Style>
+  <Style Selector="DropDownButton.chip">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="BorderBrush" Value="{DynamicResource AmtBorderBrush}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource AmtRadiusPill}" />
+    <Setter Property="Padding" Value="10,3" />
+    <Setter Property="FontSize" Value="{DynamicResource AmtFontSizeSmall}" />
+  </Style>
+  <Style Selector="DropDownButton.chip.active">
+    <Setter Property="BorderBrush" Value="{DynamicResource AmtAccentBrush}" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+</Styles>

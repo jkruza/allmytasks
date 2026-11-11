@@ -21,12 +21,16 @@ fix whichever is wrong in the same pull request.
 | [microsoft-todo-provider.md](microsoft-todo-provider.md) | Microsoft To Do tasks via Microsoft Graph, personal accounts, read-only |
 | [todoist-provider.md](todoist-provider.md) | Todoist task provider: API token auth, Sync API delta, mapping, read-only |
 | [outlook-calendar-provider.md](outlook-calendar-provider.md) | Outlook calendar via Microsoft Graph (personal accounts), and the Microsoft sign-in and client id shared with To Do |
+| [microsoft-work-accounts.md](microsoft-work-accounts.md) | Research design: Microsoft work and school accounts, sign-in authority, tenant admin consent, fallbacks, failure modes, tests |
 | [oauth-client-configuration.md](oauth-client-configuration.md) | How Microsoft and Google client IDs reach a build (release secrets), what the app does without them, Google revoke on removal; user setup steps are in [../oauth-setup.md](../oauth-setup.md) |
 | [views.md](views.md) | Day agenda, week, month and upcoming views and the Core logic behind them |
 | [toolbar.md](toolbar.md) | Main toolbar look (title and segmented view switcher) and the All tasks filter bar |
 | [details-pane.md](details-pane.md) | Right-hand details pane and the calendar entry details shown in it |
+| [details-pane-resize.md](details-pane-resize.md) | Draggable splitter for the details pane: limits, remembered width, why it is not an `AppSettings` field |
 | [app-icon.md](app-icon.md) | The three-lines logo as window, executable and tray icon, and how the files are generated |
+| [design-system.md](design-system.md) | Proposal: colour and type tokens, mapping to Avalonia FluentTheme and the `seg` / `tool` / `chip` classes, light and dark, and a cleaner look for the calendar and task views |
 | [system-tray.md](system-tray.md) | Tray icon and menu, `--tray` start option, close-to-tray, Linux StatusNotifier caveat |
+| [graceful-shutdown.md](graceful-shutdown.md) | Guarded exit clean-up, cancelling syncs on exit, unhandled-exception logging (Windows shutdown crash) |
 | [launch-at-login.md](launch-at-login.md) | Settings option to start at login on Windows, Linux and macOS, optionally tray-only |
 | [complete-tasks.md](complete-tasks.md) | Complete and reopen Todoist tasks from the app: write interface, pending-changes queue, opt-in per source |
 | [reminders.md](reminders.md) | Desktop notifications before events and at task due times: planner, scheduler, per-OS notifier; implementation notes |
@@ -34,6 +38,7 @@ fix whichever is wrong in the same pull request.
 | [meeting-url-and-attendees.md](meeting-url-and-attendees.md) | Join links and attendees on events: model, provider mapping, display |
 | [packaging.md](packaging.md) | Installers and signing for Windows, macOS and Linux, shared release decisions |
 | [storage-and-sync.md](storage-and-sync.md) | Local database, credentials, cache and refresh behaviour |
+| [formatted-notes.md](formatted-notes.md) | Detecting Markdown and HTML in notes and descriptions and showing basic formatting safely: whitelist, comments hidden, no scripts or iframes, Markdig and AngleSharp |
 | [task-details.md](task-details.md) | Read-only details of a clicked task: fields, subtasks, where the data comes from |
 | [settings.md](settings.md) | Settings dialog, persistence of app preferences, week start |
 | [ci-docs-only-changes.md](ci-docs-only-changes.md) | How CI skips build and test for docs-only changes while required checks still report |
@@ -44,9 +49,20 @@ fix whichever is wrong in the same pull request.
 | [jira-provider.md](jira-provider.md) | Jira Cloud issues assigned to me (implemented, version 1; not yet tried on a live site) |
 | [github-provider.md](github-provider.md) | GitHub issues and pull requests assigned to me or awaiting review (implemented read-only, version 1) |
 | [gitlab-provider.md](gitlab-provider.md) | GitLab issues and merge requests, gitlab.com and self-managed (implemented, version 1; not yet tried on a live instance) |
+| [hidden-links.md](hidden-links.md) | Details pane shows links as an Open link button with the address as tooltip, not as text |
 | [inbox-view.md](inbox-view.md) | Inbox view of tasks without a date (implemented, version 1) |
 | [write-support.md](write-support.md) | Version 2: complete tasks, change dates, reschedule events; how the Todoist preview fits |
 | [research.md](research.md) | Unscheduled topics: runtime plug-ins, MCP support, local-model AI summaries |
+| [first-run-onboarding.md](first-run-onboarding.md) | Proposed (v1): welcome state, guided add-source, first-sync checklist |
+| [conflict-highlight.md](conflict-highlight.md) | Proposed (v1): mark overlapping events across calendars |
+| [duplicate-detection.md](duplicate-detection.md) | Proposed (v1): show one entry for the same meeting or issue from two sources |
+| [source-diagnostics.md](source-diagnostics.md) | Proposed (v1): per-source health details and a secret-free copyable report |
+| [update-check.md](update-check.md) | Proposed (v1): opt-out, notify-only check for a new release |
+| [workload-glance.md](workload-glance.md) | Proposed (v1): meeting hours and tasks due per day for the coming week |
+| [compact-upcoming-window.md](compact-upcoming-window.md) | Proposed (v2): small window with the next entries |
+| [command-palette.md](command-palette.md) | Proposed (v2): Ctrl+K jump to dates, views, filters, sources and items |
+| [localisation.md](localisation.md) | Proposed (v2): UI strings in resources, Polish first |
+| [database-encryption.md](database-encryption.md) | Proposed (v2): opt-in encryption of the local cache |
 | [roadmap.md](roadmap.md) | Milestones and open questions |
 
 ## Goals

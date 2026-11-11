@@ -175,6 +175,26 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
 
     public bool IsDetailsOpen => SelectedDetails is not null;
 
+    /// <summary>Width of the details pane. Set by the window when the user drags the splitter; remembered across restarts.</summary>
+    [ObservableProperty]
+    public partial double DetailsWidth { get; set; } = DetailsPaneWidth.Default;
+
+    /// <summary>Remembers the width the user dragged the pane to. Out-of-range values are clamped.</summary>
+    public void SetDetailsWidth(double width, double windowWidth)
+    {
+        var clamped = DetailsPaneWidth.Clamp(width, windowWidth);
+        if (clamped == DetailsWidth)
+        {
+            return;
+        }
+
+        DetailsWidth = clamped;
+        if (_state is not null && !_restoring)
+        {
+            _ = _state.SaveAsync("view.details", new DetailsState(clamped));
+        }
+    }
+
     /// <summary>Whether global search is shown in place of the current view.</summary>
     public bool IsSearching => Content is SearchViewModel;
 
@@ -611,6 +631,11 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
 
         await _tasks.RestoreAsync();
         await _inbox.RestoreAsync();
+        if (await _state.LoadAsync<DetailsState>("view.details") is { } details)
+        {
+            DetailsWidth = DetailsPaneWidth.Clamp(details.Width);
+        }
+
         if (await _state.LoadAsync<ShellState>("view.shell") is not { } saved)
         {
             return;

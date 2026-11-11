@@ -114,7 +114,8 @@ public sealed partial class ReminderScheduler : IDisposable
         _notifier.Activated -= OnActivated;
         _stopping.Cancel();
         _timer?.Dispose();
-        _stopping.Dispose();
+
+        // The token source is not disposed: a tick that is still winding down reads its token, and that throws once disposed.
     }
 
     private async Task CheckAsync(CancellationToken ct)
