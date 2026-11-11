@@ -95,7 +95,7 @@ public sealed class SampleSourceFactory(TimeProvider clock, TimeZoneInfo zone) :
 
     public string DisplayName => "Sample data";
 
-    public SourceConfigSchema ConfigSchema => SourceConfigSchema.Empty;
+    public SourceConfigSchema ConfigSchema { get; } = new([], "Nothing. These are made-up events and tasks to look around with; remove them from Sources any time.");
 
     public ISource Create(string sourceId, string displayName, SourceConfig config, ISecretStore secrets) =>
         new SampleSource(sourceId, displayName, clock, zone);

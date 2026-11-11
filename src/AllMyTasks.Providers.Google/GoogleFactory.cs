@@ -49,7 +49,10 @@ public sealed class GoogleFactory(
         new SourceConfigField(CalendarField, "Google Calendar", FieldKind.Bool, Help: "Leave both switches off to read both calendars and tasks."),
         new SourceConfigField(TasksField, "Google Tasks", FieldKind.Bool),
         new SourceConfigField(SyncScheduler.IntervalKey, "Refresh every (minutes)", FieldKind.Number, Help: "Leave blank for 15. After you save, a browser window opens to sign in to your Google account."),
-    ]);
+    ],
+    HasBuiltInClient
+        ? "A Google account. After you save, a browser window opens to sign in; the app only reads Calendar and Tasks."
+        : "A Google account, and your own Desktop-app OAuth client from Google Cloud because this build has none built in (see docs/oauth-setup.md). A browser window opens to sign in.");
 
     private bool HasBuiltInClient => !string.IsNullOrWhiteSpace(_defaultClientId);
 

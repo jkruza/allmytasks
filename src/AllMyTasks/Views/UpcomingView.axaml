@@ -5,7 +5,7 @@
              x:Class="AllMyTasks.Views.UpcomingView"
              x:DataType="vm:UpcomingViewModel">
   <Grid RowDefinitions="*,Auto">
-    <TextBlock Classes="empty" Text="Nothing coming up" IsVisible="{Binding IsEmpty}"
+    <TextBlock Classes="empty" Text="{Binding EmptyText}" IsVisible="{Binding IsEmpty}"
                HorizontalAlignment="Center" VerticalAlignment="Center" />
     <!-- The only unbounded list, so it is virtualised. -->
     <ScrollViewer Grid.Row="0" Margin="24,12">

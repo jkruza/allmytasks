@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using AllMyTasks.Core.Changes;
 using AllMyTasks.Core.Model;
+using AllMyTasks.Core.Onboarding;
 using AllMyTasks.Core.Reminders;
 using AllMyTasks.Core.Search;
 using AllMyTasks.Core.Settings;
@@ -65,9 +66,11 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
         ITaskChangeService? changes = null,
         ISearchService? search = null,
         SavedFilterStore? savedFilters = null,
-        UpdateBannerViewModel? update = null)
+        UpdateBannerViewModel? update = null,
+        OnboardingViewModel? onboarding = null)
     {
         Update = update;
+        Onboarding = onboarding ?? new OnboardingViewModel();
         _state = state;
         _changes = changes;
         if (changes is not null)
@@ -113,6 +116,9 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
 
     /// <summary>The new-version banner, or null when update checks are not wired up.</summary>
     public UpdateBannerViewModel? Update { get; }
+
+    /// <summary>The welcome state and the first-run checklist.</summary>
+    public OnboardingViewModel Onboarding { get; }
 
     public ObservableCollection<CollectionToggle> Collections { get; } = [];
 
@@ -755,7 +761,12 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
         });
     }
 
-    private void OnSettingsChanged(object? sender, EventArgs e) => Dispatcher.UIThread.Post(() => _ = ReloadAsync());
+    private void OnSettingsChanged(object? sender, EventArgs e) =>
+        Dispatcher.UIThread.Post(() =>
+        {
+            _ = ReloadAsync();
+            _ = RefreshOnboardingAsync();
+        });
 
     private void OnStatusChanged(object? sender, SourceStatus status) =>
         Dispatcher.UIThread.Post(() =>
@@ -763,6 +774,7 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
             _statuses[status.SourceId] = status;
             UpdateSummary();
             _ = RefreshPendingTextAsync();
+            _ = RefreshOnboardingAsync();
         });
 
     private void UpdateSummary()
@@ -829,6 +841,25 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
         {
             Collections.Add(new CollectionToggle(c, _sources, ReloadAsync));
         }
+
+        await RefreshOnboardingAsync();
+    }
+
+    // Welcome state and checklist follow the source list, the sync statuses and the settings (docs/design/first-run-onboarding.md).
+    private async Task RefreshOnboardingAsync()
+    {
+        if (_settings is null)
+        {
+            return;
+        }
+
+        var wasPending = Onboarding.IsFirstSyncPending;
+        Onboarding.Apply(OnboardingState.Compute(await _sources.GetSourcesAsync(), [.. _statuses.Values], _settings.Current));
+        if (wasPending && !Onboarding.IsFirstSyncPending)
+        {
+            // The first sync ended, so "waiting for the first sync" must go from the empty views.
+            _ = ReloadAsync();
+        }
     }
 
     private async Task ReloadAsync()
@@ -840,7 +871,7 @@ public sealed partial class CalendarShellViewModel : ViewModelBase, IDisposable
         var culture = CultureInfo.CurrentCulture;
         Title = FormatTitle(culture);
 
-        var context = new ViewContext(CurrentDate, new ViewFilter(ShowEvents, ShowTasks, ShowCompleted), now, _zone, FirstDayOfWeek, ConflictOptionsNow());
+        var context = new ViewContext(CurrentDate, new ViewFilter(ShowEvents, ShowTasks, ShowCompleted), now, _zone, FirstDayOfWeek, ConflictOptionsNow(), FirstSyncRunning: Onboarding.IsFirstSyncPending);
         IsLoading = true;
         try
         {

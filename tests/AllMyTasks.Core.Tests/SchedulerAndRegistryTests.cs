@@ -127,7 +127,8 @@ public class SourceRegistryTests
             new SourceConfigField("user", "User name", FieldKind.Text),
             new SourceConfigField("password", "Password", FieldKind.Password),
             new SourceConfigField("refreshMinutes", "Refresh every (minutes)", FieldKind.Number),
-        ]);
+        ],
+        "A feed address.");
 
         public ISource Create(string sourceId, string displayName, SourceConfig config, ISecretStore secrets) =>
             new ScriptedSource(sourceId, List(sourceId));
@@ -157,7 +158,7 @@ public class SourceRegistryTests
 
         public string DisplayName => "Clean";
 
-        public SourceConfigSchema ConfigSchema { get; } = new([new SourceConfigField("id", "Id", FieldKind.Text)]);
+        public SourceConfigSchema ConfigSchema { get; } = new([new SourceConfigField("id", "Id", FieldKind.Text)], "An id.");
 
         public ISource Create(string sourceId, string displayName, SourceConfig config, ISecretStore secrets) =>
             new CleaningSource(sourceId, log, fail);

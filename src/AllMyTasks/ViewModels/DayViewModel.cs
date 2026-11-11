@@ -74,7 +74,7 @@ public sealed partial class DayViewModel(IAgendaService agenda) : ContentViewMod
         WeekdayText = date.ToString("dddd, MMMM yyyy", culture);
         SummaryText = day.Summary;
         IsEmpty = day.IsEmpty;
-        EmptyText = "Nothing planned";
+        EmptyText = context.FirstSyncRunning ? "Waiting for the first sync…" : "Nothing planned";
         OnPropertyChanged(nameof(HasAllDay));
         OnPropertyChanged(nameof(HasOverdue));
     }

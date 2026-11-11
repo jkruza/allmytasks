@@ -19,6 +19,9 @@ public sealed partial class UpcomingViewModel(IAgendaService agenda) : ContentVi
     [ObservableProperty]
     public partial bool IsEmpty { get; set; }
 
+    [ObservableProperty]
+    public partial string EmptyText { get; set; } = "Nothing coming up";
+
     public void LoadMore() => _days += 14;
 
     public override async Task LoadAsync(ViewContext context, CancellationToken cancellationToken)
@@ -40,6 +43,7 @@ public sealed partial class UpcomingViewModel(IAgendaService agenda) : ContentVi
         }
 
         IsEmpty = list.IsEmpty;
+        EmptyText = context.FirstSyncRunning ? "Waiting for the first sync…" : "Nothing coming up";
     }
 
     private static string Heading(DayGroup group) => group.Kind switch

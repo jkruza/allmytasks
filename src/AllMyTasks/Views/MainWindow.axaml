@@ -102,6 +102,28 @@
         <Button Grid.Column="2" Classes="tool" Content="Skip this version" Command="{Binding SkipCommand}" />
       </Grid>
     </Border>
+    <!-- First-run checklist: until the first sync of a real source worked, or until dismissed.
+         docs/design/first-run-onboarding.md -->
+    <Border DockPanel.Dock="Top" DataContext="{Binding Onboarding}" x:DataType="vm:OnboardingViewModel" IsVisible="{Binding IsChecklistVisible}"
+            Padding="16,8" Background="{DynamicResource AmtRaisedBrush}">
+      <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+        <TextBlock Classes="section" Text="Getting started" VerticalAlignment="Center" />
+        <ItemsControl Grid.Column="1" ItemsSource="{Binding Steps}">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:OnboardingStepItem">
+              <StackPanel Orientation="Horizontal" Spacing="4" Margin="0,0,16,0" Opacity="{Binding Opacity}">
+                <TextBlock Text="{Binding Glyph}" Foreground="{DynamicResource AmtAccentBrush}" />
+                <TextBlock Text="{Binding Text}" />
+              </StackPanel>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+        <Button Grid.Column="2" Classes="tool" Content="Dismiss" Command="{Binding DismissCommand}" ToolTip.Tip="Hide this for good" />
+      </Grid>
+    </Border>
     <!-- Short message after a change, with Undo; see docs/design/complete-tasks.md. -->
     <Border DockPanel.Dock="Top" IsVisible="{Binding HasNotice}" Padding="16,6" Background="{DynamicResource AmtRaisedBrush}">
       <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
@@ -122,6 +144,23 @@
           <DataTemplate DataType="vm:SearchViewModel"><views:SearchView /></DataTemplate>
         </ContentControl.DataTemplates>
       </ContentControl>
+      <!-- Welcome state: shown in place of the calendar while no source is configured. -->
+      <Border DataContext="{Binding Onboarding}" x:DataType="vm:OnboardingViewModel" IsVisible="{Binding IsWelcome}"
+              Background="{DynamicResource AmtCanvasBrush}">
+        <StackPanel MaxWidth="460" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="14">
+          <TextBlock Classes="display" Text="Welcome to All My Tasks" TextWrapping="Wrap" />
+          <TextBlock TextWrapping="Wrap"
+                     Text="One place to see your calendars and tasks from many services, so you can see how much work is coming. The app only reads: it never changes anything at the provider, and your data stays on this computer." />
+          <TextBlock Classes="small" TextWrapping="Wrap"
+                     Text="Because the app only reads, a read-only token or sign-in is enough." />
+          <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,6,0,0">
+            <Button Content="Add your first source" Command="{Binding AddSourceCommand}" Classes="accent" IsDefault="True" />
+            <Button Content="Look around with sample data" Command="{Binding TrySampleCommand}" IsVisible="{Binding CanTrySample}" />
+          </StackPanel>
+          <TextBlock Classes="small" TextWrapping="Wrap" IsVisible="{Binding CanTrySample}"
+                     Text="Sample data is made up and clearly named; remove it from Sources at any time." />
+        </StackPanel>
+      </Border>
       <!-- Details pane: one host for every kind of details; see docs/design/details-pane.md.
            The splitter beside it resizes it: docs/design/details-pane-resize.md. -->
       <Border x:Name="DetailsPane" Grid.Column="2" Classes="hairline-left" Padding="16,12" IsVisible="{Binding IsDetailsOpen}"

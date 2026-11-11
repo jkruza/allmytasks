@@ -47,6 +47,9 @@ public sealed record AppSettings
     /// <summary>Ask GitHub once a day whether a newer release exists. When off, the app makes no such request.</summary>
     public bool CheckForUpdates { get; init; } = true;
 
+    /// <summary>The user closed the first-run checklist for good (docs/design/first-run-onboarding.md).</summary>
+    public bool OnboardingDismissed { get; init; }
+
     /// <summary>Reads settings from JSON. Missing, unknown or corrupt values give the defaults.</summary>
     public static AppSettings Parse(string? json)
     {
@@ -93,6 +96,7 @@ public sealed record AppSettings
                 HighlightConflicts = ReadBool(root, "highlightConflicts", result.HighlightConflicts),
                 CountAllDayBusy = ReadBool(root, "countAllDayBusy", result.CountAllDayBusy),
                 CheckForUpdates = ReadBool(root, "checkForUpdates", result.CheckForUpdates),
+                OnboardingDismissed = ReadBool(root, "onboardingDismissed", result.OnboardingDismissed),
             };
 
             return result;
@@ -119,6 +123,7 @@ public sealed record AppSettings
             ["highlightConflicts"] = HighlightConflicts,
             ["countAllDayBusy"] = CountAllDayBusy,
             ["checkForUpdates"] = CheckForUpdates,
+            ["onboardingDismissed"] = OnboardingDismissed,
         });
 
     private static bool ReadBool(JsonElement root, string name, bool fallback) =>

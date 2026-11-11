@@ -107,6 +107,14 @@ public class AppSettingsTests
     }
 
     [Fact]
+    public void The_onboarding_dismissal_defaults_to_off_and_round_trips()
+    {
+        Assert.False(new AppSettings().OnboardingDismissed);
+        Assert.True(AppSettings.Parse(new AppSettings { OnboardingDismissed = true }.ToJson()).OnboardingDismissed);
+        Assert.False(AppSettings.Parse("""{"onboardingDismissed":1}""").OnboardingDismissed);
+    }
+
+    [Fact]
     public void Conflict_settings_default_to_the_documented_values_and_round_trip()
     {
         var defaults = new AppSettings();
