@@ -11,6 +11,7 @@ import html
 import json
 import re
 import sys
+from pathlib import Path
 
 ALL_RELEASES = "https://github.com/jkruza/allmytasks/releases"
 START, END = "<!-- downloads:start -->", "<!-- downloads:end -->"
@@ -92,7 +93,19 @@ def render(releases):
     return '<div style="display: flex; flex-wrap: wrap; gap: 16px">' + "".join(cards) + "</div>"
 
 
+def checked_file(path):
+    """Returns the resolved path of an existing regular file; refuses `..` segments and anything else."""
+    p = Path(path)
+    if ".." in p.parts:
+        sys.exit(f"{path}: '..' is not allowed in a path")
+    p = p.resolve()
+    if not p.is_file():
+        sys.exit(f"{path}: not an existing file")
+    return p
+
+
 def main(releases_path, index_path):
+    releases_path, index_path = checked_file(releases_path), checked_file(index_path)
     with open(releases_path, encoding="utf-8") as f:
         releases = flatten(json.load(f))
     with open(index_path, encoding="utf-8") as f:

@@ -20,7 +20,18 @@ internal static class Program
             return 0;
         }
 
-        var log = new FileLog(DataDirectory.Resolve(DataDirectory.FromArguments(args)), TimeProvider.System);
+        string dataDirectory;
+        try
+        {
+            dataDirectory = DataDirectory.Resolve(DataDirectory.FromArguments(args));
+        }
+        catch (ArgumentException ex)
+        {
+            Console.Error.WriteLine($"AllMyTasks: invalid {DataDirectory.OptionName}: {ex.Message}");
+            return 2;
+        }
+
+        var log = new FileLog(dataDirectory, TimeProvider.System);
         InstallExceptionLogging(log);
         try
         {

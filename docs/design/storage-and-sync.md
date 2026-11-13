@@ -17,7 +17,8 @@ The database file lives in the per-user application data directory
 (`%APPDATA%\AllMyTasks`, `~/Library/Application Support/AllMyTasks`,
 `$XDG_DATA_HOME/allmytasks` or `~/.local/share/allmytasks`), resolved through
 `Environment.GetFolderPath`. A `--data-dir` option overrides it, which makes tests and
-portable installs easy.
+portable installs easy. The path must not contain a `..` segment or a NUL character; the app
+prints an error and exits with code 2 otherwise (see [snyk.md](snyk.md)).
 
 **The cache is disposable.** Deleting the database loses source configuration and local
 preferences but never provider data. A "Reset cache" action drops items and sync state

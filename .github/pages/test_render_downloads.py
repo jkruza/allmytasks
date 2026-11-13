@@ -1,6 +1,6 @@
 import unittest
 
-from render_downloads import pick, render
+from render_downloads import checked_file, pick, render
 
 
 def rel(tag, when, pre=False, draft=False):
@@ -61,6 +61,21 @@ class RenderTests(unittest.TestCase):
         out = render([r])
         self.assertNotIn("<b>", out)
         self.assertNotIn("javascript:", out)
+
+
+class PathTests(unittest.TestCase):
+    def test_refuses_parent_segments(self):
+        with self.assertRaises(SystemExit):
+            checked_file("a/../b.json")
+
+    def test_refuses_missing_file_and_directory(self):
+        with self.assertRaises(SystemExit):
+            checked_file("/nonexistent/releases.json")
+        with self.assertRaises(SystemExit):
+            checked_file(".")
+
+    def test_accepts_existing_file(self):
+        self.assertTrue(checked_file(__file__).is_file())
 
 
 if __name__ == "__main__":

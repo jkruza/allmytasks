@@ -1,0 +1,11 @@
+# Snyk policy. See docs/design/snyk.md.
+version: v1.25.0
+ignore: {}
+exclude:
+  code:
+    # Other checkouts of this repo that Claude sessions keep inside the working tree.
+    - .claude/worktrees/**
+    # Tests use made-up credentials as fixtures (csharp/NoHardcodedCredentials/test).
+    - tests/**
+  global:
+    - .claude/worktrees/**
